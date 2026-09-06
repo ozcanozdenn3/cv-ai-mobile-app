@@ -31,6 +31,9 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late CvModel _cv;
+  late String _cvLanguage;
+
+  String _cvTr(String key) => LocalizationService.trFor(_cvLanguage, key);
 
   Future<void> _pickProfilePhotoFromGallery() async {
     final hasPerm =
@@ -99,6 +102,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
         setState(() {
           _isAiGenerating = true;
           _summaryController.text = cleanText;
+          _cv.summary = cleanText;
         });
 
         try {
@@ -109,8 +113,9 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
           );
           if (!mounted) return;
 
-          if (parseResult.totalExtractedItems > 0) {
-            _completeAiImport(parseResult);
+          if (parseResult.isSuccess && parseResult.totalExtractedItems > 0) {
+            // Voice input fills absent data but never erases the current CV.
+            _applyAiParseResult(parseResult);
           } else {
             final enhancedText = await AiCvService.enhanceSummary(
               rawSummary: cleanText,
@@ -139,12 +144,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
       TextEditingController();
 
   List<String> get _quickSkills => LocalizationService.getQuickSkills();
-  List<String> get _quickTraits => LocalizationService.getQuickTraits();
+  List<String> get _quickTraits =>
+      LocalizationService.getQuickTraits(_cvLanguage);
   List<String> get _quickCustomTitles =>
-      LocalizationService.getQuickCustomTitles();
-  List<String> get _languageLevels => LocalizationService.getLanguageLevels();
+      LocalizationService.getQuickCustomTitles(_cvLanguage);
+  List<String> get _languageLevels =>
+      LocalizationService.getLanguageLevels(_cvLanguage);
   List<Map<String, dynamic>> get _themePalette =>
-      LocalizationService.getThemePalettes();
+      LocalizationService.getThemePalettes(_cvLanguage);
 
   @override
   void initState() {
@@ -153,6 +160,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     _cv = (initial != null && !initial.isSample)
         ? initial
         : CvModel.createEmpty(LocalizationService.currentLocale);
+    _cvLanguage = _cv.targetLanguage ?? LocalizationService.currentLocale;
     _tabController = TabController(length: 13, vsync: this, initialIndex: 0);
     _tabController.addListener(_onTabChanged);
 
@@ -180,6 +188,10 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               saved.experiences.any((e) => e.company.isNotEmpty))) {
         setState(() {
           _cv = saved;
+          if (saved.targetLanguage != null &&
+              saved.targetLanguage!.isNotEmpty) {
+            _cvLanguage = saved.targetLanguage!;
+          }
           _nameController.text = _cv.fullName;
           _titleController.text = _cv.jobTitle;
           _emailController.text = _cv.email;
@@ -245,6 +257,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
   }
 
   void _syncCvData() {
+    _cv.targetLanguage = _cvLanguage;
     _cv.fullName = _nameController.text;
     _cv.jobTitle = _titleController.text;
     _cv.email = _emailController.text;
@@ -635,7 +648,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.file_present_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr('cv_tab_file')),
+                                    Text(_cvTr('cv_tab_file')),
                                   ],
                                 ),
                               ),
@@ -646,8 +659,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   children: [
                                     const Icon(Icons.person_rounded, size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_personal')),
+                                    Text(_cvTr('cv_tab_personal')),
                                   ],
                                 ),
                               ),
@@ -658,8 +670,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   children: [
                                     const Icon(Icons.work_rounded, size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_experience')),
+                                    Text(_cvTr('cv_tab_experience')),
                                   ],
                                 ),
                               ),
@@ -670,8 +681,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   children: [
                                     const Icon(Icons.school_rounded, size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_education')),
+                                    Text(_cvTr('cv_tab_education')),
                                   ],
                                 ),
                               ),
@@ -682,8 +692,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   children: [
                                     const Icon(Icons.bolt_rounded, size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_skills')),
+                                    Text(_cvTr('cv_tab_skills')),
                                   ],
                                 ),
                               ),
@@ -694,8 +703,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   children: [
                                     const Icon(Icons.star_rounded, size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_traits')),
+                                    Text(_cvTr('cv_tab_traits')),
                                   ],
                                 ),
                               ),
@@ -707,8 +715,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.language_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_languages')),
+                                    Text(_cvTr('cv_tab_languages')),
                                   ],
                                 ),
                               ),
@@ -720,8 +727,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.rocket_launch_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_projects')),
+                                    Text(_cvTr('cv_tab_projects')),
                                   ],
                                 ),
                               ),
@@ -733,8 +739,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.workspace_premium_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_certificates')),
+                                    Text(_cvTr('cv_tab_certificates')),
                                   ],
                                 ),
                               ),
@@ -746,8 +751,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.people_alt_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_references')),
+                                    Text(_cvTr('cv_tab_references')),
                                   ],
                                 ),
                               ),
@@ -759,8 +763,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.add_circle_outline_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_custom')),
+                                    Text(_cvTr('cv_tab_custom')),
                                   ],
                                 ),
                               ),
@@ -772,8 +775,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                     const Icon(Icons.swap_vert_rounded,
                                         size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_ordering')),
+                                    Text(_cvTr('cv_tab_ordering')),
                                   ],
                                 ),
                               ),
@@ -784,8 +786,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   children: [
                                     const Icon(Icons.palette_rounded, size: 17),
                                     const SizedBox(width: 7),
-                                    Text(LocalizationService.tr(
-                                        'cv_tab_template')),
+                                    Text(_cvTr('cv_tab_template')),
                                   ],
                                 ),
                               ),
@@ -928,7 +929,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         Row(
                           children: [
                             Text(
-                              LocalizationService.tr('cv_photo'),
+                              _cvTr('cv_photo'),
                               style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w800,
@@ -945,8 +946,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  LocalizationService.tr('success')
-                                      .toUpperCase(),
+                                  _cvTr('success').toUpperCase(),
                                   style: const TextStyle(
                                       fontSize: 8.5,
                                       fontWeight: FontWeight.w900,
@@ -959,8 +959,8 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         const SizedBox(height: 2),
                         Text(
                           _cv.hasPhoto
-                              ? LocalizationService.tr('cv_photo_pick')
-                              : LocalizationService.tr('cv_photo_ats'),
+                              ? _cvTr('cv_photo_pick')
+                              : _cvTr('cv_photo_ats'),
                           style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -990,8 +990,8 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         icon: const Icon(Icons.photo_library_rounded, size: 16),
                         label: Text(
                           _cv.profilePhotoBytes == null
-                              ? LocalizationService.tr('cv_photo_pick')
-                              : LocalizationService.tr('cv_photo'),
+                              ? _cvTr('cv_photo_pick')
+                              : _cvTr('cv_photo'),
                           style: const TextStyle(
                               fontWeight: FontWeight.w800, fontSize: 12),
                         ),
@@ -1060,7 +1060,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      LocalizationService.tr('cv_tab_personal'),
+                      _cvTr('cv_tab_personal'),
                       style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w800,
@@ -1069,16 +1069,21 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   ],
                 ),
                 const SizedBox(height: 14),
-                _buildTextField(LocalizationService.tr('cv_name'),
-                    _nameController, Icons.badge_outlined, isDark),
-                _buildTextField(LocalizationService.tr('cv_job_title'),
-                    _titleController, Icons.work_outline_rounded, isDark),
-                _buildTextField(LocalizationService.tr('cv_email'),
-                    _emailController, Icons.mail_outline_rounded, isDark),
-                _buildTextField(LocalizationService.tr('cv_phone'),
-                    _phoneController, Icons.phone_outlined, isDark),
-                _buildTextField(LocalizationService.tr('cv_location'),
-                    _locationController, Icons.location_on_outlined, isDark),
+                _buildTextField(_cvTr('cv_name'), _nameController,
+                    Icons.badge_outlined, isDark,
+                    hint: _cvTr('hint_full_name')),
+                _buildTextField(_cvTr('cv_job_title'), _titleController,
+                    Icons.work_outline_rounded, isDark,
+                    hint: _cvTr('hint_position')),
+                _buildTextField(_cvTr('cv_email'), _emailController,
+                    Icons.mail_outline_rounded, isDark,
+                    hint: _cvTr('hint_email')),
+                _buildTextField(_cvTr('cv_phone'), _phoneController,
+                    Icons.phone_outlined, isDark,
+                    hint: _cvTr('hint_phone')),
+                _buildTextField(_cvTr('cv_location'), _locationController,
+                    Icons.location_on_outlined, isDark,
+                    hint: _cvTr('hint_location')),
               ],
             ),
           ),
@@ -1117,7 +1122,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    LocalizationService.tr('cv_links_social'),
+                    _cvTr('cv_links_social'),
                     style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
@@ -1126,12 +1131,15 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ],
               ),
               const SizedBox(height: 14),
-              _buildTextField(LocalizationService.tr('cv_linkedin'),
-                  _linkedinController, Icons.business_center_outlined, isDark),
-              _buildTextField(LocalizationService.tr('cv_github'),
-                  _githubController, Icons.code_rounded, isDark),
-              _buildTextField(LocalizationService.tr('cv_website'),
-                  _portfolioController, Icons.language_rounded, isDark),
+              _buildTextField(_cvTr('cv_linkedin'), _linkedinController,
+                  Icons.business_center_outlined, isDark,
+                  hint: _cvTr('hint_linkedin')),
+              _buildTextField(_cvTr('cv_github'), _githubController,
+                  Icons.code_rounded, isDark,
+                  hint: _cvTr('hint_github')),
+              _buildTextField(_cvTr('cv_website'), _portfolioController,
+                  Icons.language_rounded, isDark,
+                  hint: _cvTr('hint_portfolio')),
             ],
           ),
         ),
@@ -1176,7 +1184,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        LocalizationService.tr('cv_summary'),
+                        _cvTr('cv_summary'),
                         style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w800,
@@ -1225,12 +1233,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 const SizedBox(height: 14),
                 _buildTextField(
-                  LocalizationService.tr('cv_summary'),
+                  _cvTr('cv_summary'),
                   _summaryController,
                   Icons.notes_rounded,
                   isDark,
                   maxLines: null,
                   minLines: 5,
+                  hint: _cvTr('cv_hint_summary'),
                 ),
                 const SizedBox(height: 14),
                 Column(
@@ -1303,12 +1312,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      '${LocalizationService.tr('cv_experiences_title')} (${_cv.experiences.length})',
+                      '${_cvTr('cv_experiences_title')} (${_cv.experiences.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor)),
-                  Text(LocalizationService.tr('cv_experiences_sub'),
+                  Text(_cvTr('cv_experiences_sub'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1353,15 +1362,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
         ..._cv.experiences.asMap().entries.map((entry) {
           final index = entry.key;
           final exp = entry.value;
-          final isGlowing =
-              index == 0 && _glowingItemKeys.contains('experience_0');
+          final isGlowing = _glowingItemKeys.contains('experience_$index');
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.only(bottom: 12),
             child: AiAuroraGlowCard(
               isGlowing: isGlowing,
               onDismissGlow: () =>
-                  setState(() => _glowingItemKeys.remove('experience_0')),
+                  setState(() => _glowingItemKeys.remove('experience_$index')),
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -1385,7 +1393,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 4),
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
@@ -1403,7 +1411,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                           child: Text(
                             exp.position.isNotEmpty
                                 ? exp.position
-                                : LocalizationService.tr('cv_new_experience'),
+                                : _cvTr('cv_new_experience'),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
@@ -1425,20 +1433,20 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     ),
                     const SizedBox(height: 14),
                     _buildModernInput(
-                      label: LocalizationService.tr('cv_exp_position'),
+                      label: _cvTr('cv_exp_position'),
                       initialValue: exp.position,
                       icon: Icons.badge_outlined,
                       isDark: isDark,
-                      hint: LocalizationService.tr('hint_position'),
+                      hint: _cvTr('hint_position'),
                       onChanged: (val) => exp.position = val,
                     ),
                     const SizedBox(height: 8),
                     _buildModernInput(
-                      label: LocalizationService.tr('cv_exp_company'),
+                      label: _cvTr('cv_exp_company'),
                       initialValue: exp.company,
                       icon: Icons.business_rounded,
                       isDark: isDark,
-                      hint: LocalizationService.tr('hint_company'),
+                      hint: _cvTr('hint_company'),
                       onChanged: (val) => exp.company = val,
                     ),
                     const SizedBox(height: 8),
@@ -1446,7 +1454,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       children: [
                         Expanded(
                           child: _buildModernInput(
-                            label: LocalizationService.tr('cv_exp_start_year'),
+                            label: _cvTr('cv_exp_start_year'),
                             initialValue: exp.startDate,
                             icon: Icons.calendar_today_rounded,
                             isDark: isDark,
@@ -1457,11 +1465,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         const SizedBox(width: 10),
                         Expanded(
                           child: _buildModernInput(
-                            label: LocalizationService.tr('cv_exp_end_year'),
+                            label: _cvTr('cv_exp_end_year'),
                             initialValue: exp.endDate,
                             icon: Icons.event_available_rounded,
                             isDark: isDark,
-                            hint: LocalizationService.tr('cv_present'),
+                            hint: _cvTr('cv_present'),
                             onChanged: (val) => exp.endDate = val,
                           ),
                         ),
@@ -1469,12 +1477,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     ),
                     const SizedBox(height: 8),
                     _buildModernInput(
-                      label: LocalizationService.tr('cv_exp_desc'),
+                      label: _cvTr('cv_exp_desc'),
                       initialValue: exp.description,
                       icon: Icons.subject_rounded,
                       isDark: isDark,
-                      maxLines: 3,
-                      hint: LocalizationService.tr('cv_hint_exp_desc'),
+                      maxLines: 6,
+                      hint: _cvTr('cv_hint_exp_desc'),
                       onChanged: (val) => exp.description = val,
                     ),
                   ],
@@ -1502,12 +1510,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      '${LocalizationService.tr('cv_educations_title')} (${_cv.educations.length})',
+                      '${_cvTr('cv_educations_title')} (${_cv.educations.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor)),
-                  Text(LocalizationService.tr('cv_educations_sub'),
+                  Text(_cvTr('cv_educations_sub'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1552,15 +1560,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
         ..._cv.educations.asMap().entries.map((entry) {
           final index = entry.key;
           final edu = entry.value;
-          final isGlowing =
-              index == 0 && _glowingItemKeys.contains('education_0');
+          final isGlowing = _glowingItemKeys.contains('education_$index');
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.only(bottom: 12),
             child: AiAuroraGlowCard(
               isGlowing: isGlowing,
               onDismissGlow: () =>
-                  setState(() => _glowingItemKeys.remove('education_0')),
+                  setState(() => _glowingItemKeys.remove('education_$index')),
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -1584,7 +1591,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 4),
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color:
                                 AppColors.accentEmerald.withValues(alpha: 0.12),
@@ -1603,7 +1610,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                           child: Text(
                             edu.school.isNotEmpty
                                 ? edu.school
-                                : LocalizationService.tr('cv_new_education'),
+                                : _cvTr('cv_new_education'),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
@@ -1625,11 +1632,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     ),
                     const SizedBox(height: 14),
                     _buildModernInput(
-                      label: LocalizationService.tr('cv_edu_school'),
+                      label: _cvTr('cv_edu_school'),
                       initialValue: edu.school,
                       icon: Icons.school_outlined,
                       isDark: isDark,
-                      hint: LocalizationService.tr('hint_school'),
+                      hint: _cvTr('hint_school'),
                       onChanged: (val) => edu.school = val,
                     ),
                     const SizedBox(height: 8),
@@ -1637,22 +1644,22 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       children: [
                         Expanded(
                           child: _buildModernInput(
-                            label: LocalizationService.tr('cv_edu_degree'),
+                            label: _cvTr('cv_edu_degree'),
                             initialValue: edu.degree,
                             icon: Icons.workspace_premium_outlined,
                             isDark: isDark,
-                            hint: LocalizationService.tr('hint_degree'),
+                            hint: _cvTr('hint_degree'),
                             onChanged: (val) => edu.degree = val,
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: _buildModernInput(
-                            label: LocalizationService.tr('cv_edu_field'),
+                            label: _cvTr('cv_edu_field'),
                             initialValue: edu.field,
                             icon: Icons.menu_book_outlined,
                             isDark: isDark,
-                            hint: LocalizationService.tr('hint_field'),
+                            hint: _cvTr('hint_field'),
                             onChanged: (val) => edu.field = val,
                           ),
                         ),
@@ -1663,7 +1670,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       children: [
                         Expanded(
                           child: _buildModernInput(
-                            label: LocalizationService.tr('cv_edu_start'),
+                            label: _cvTr('cv_edu_start'),
                             initialValue: edu.startDate,
                             icon: Icons.calendar_today_rounded,
                             isDark: isDark,
@@ -1674,7 +1681,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         const SizedBox(width: 10),
                         Expanded(
                           child: _buildModernInput(
-                            label: LocalizationService.tr('cv_edu_end'),
+                            label: _cvTr('cv_edu_end'),
                             initialValue: edu.endDate,
                             icon: Icons.event_available_rounded,
                             isDark: isDark,
@@ -1686,11 +1693,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     ),
                     const SizedBox(height: 8),
                     _buildModernInput(
-                      label: LocalizationService.tr('cv_edu_gpa'),
+                      label: _cvTr('cv_edu_gpa'),
                       initialValue: edu.gpa,
                       icon: Icons.grade_rounded,
                       isDark: isDark,
-                      hint: LocalizationService.tr('hint_gpa'),
+                      hint: _cvTr('hint_gpa'),
                       onChanged: (val) => edu.gpa = val,
                     ),
                   ],
@@ -1742,14 +1749,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${LocalizationService.tr('cv_tab_skills')} (${_cv.skills.length})',
+                      '${_cvTr('cv_tab_skills')} (${_cv.skills.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor),
                     ),
                     Text(
-                      LocalizationService.tr('cv_skills_sub'),
+                      _cvTr('cv_skills_sub'),
                       style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
@@ -1783,7 +1790,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '⚡ ${LocalizationService.tr('cv_popular_skills')}',
+                '⚡ ${_cvTr('cv_popular_skills')}',
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
@@ -1886,7 +1893,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                LocalizationService.tr('cv_add_custom_skill'),
+                _cvTr('cv_add_custom_skill'),
                 style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
@@ -1905,7 +1912,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                           fontWeight: FontWeight.w600),
                       decoration: InputDecoration(
                         isDense: true,
-                        hintText: LocalizationService.tr('hint_custom_skill'),
+                        hintText: _cvTr('hint_custom_skill'),
                         hintStyle: TextStyle(
                             color: subColor.withValues(alpha: 0.65),
                             fontSize: 12.5),
@@ -1974,7 +1981,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(LocalizationService.tr('cv_skill_level'),
+                  Text(_cvTr('cv_skill_level'),
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -2026,8 +2033,8 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
 
         // Added Skills List
         if (_cv.skills.isEmpty)
-          _buildEmptyState(LocalizationService.tr('cv_empty_skills'),
-              Icons.bolt_outlined, isDark, subColor),
+          _buildEmptyState(
+              _cvTr('cv_empty_skills'), Icons.bolt_outlined, isDark, subColor),
 
         ..._cv.skills.asMap().entries.map((entry) {
           final idx = entry.key;
@@ -2164,14 +2171,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          LocalizationService.tr('cv_soft_skills_title'),
+                          _cvTr('cv_soft_skills_title'),
                           style: TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.w800,
                               color: textColor),
                         ),
                         Text(
-                          LocalizationService.tr('cv_soft_skills_sub'),
+                          _cvTr('cv_soft_skills_sub'),
                           style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -2213,7 +2220,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      LocalizationService.tr('cv_ready_traits_pool'),
+                      _cvTr('cv_ready_traits_pool'),
                       style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w800,
@@ -2336,7 +2343,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       size: 18, color: AppColors.primary),
                   const SizedBox(width: 6),
                   Text(
-                    LocalizationService.tr('cv_add_custom_trait'),
+                    _cvTr('cv_add_custom_trait'),
                     style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
@@ -2357,7 +2364,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                           fontWeight: FontWeight.w600),
                       decoration: InputDecoration(
                         isDense: true,
-                        hintText: LocalizationService.tr('hint_custom_trait'),
+                        hintText: _cvTr('hint_custom_trait'),
                         hintStyle: TextStyle(
                             color: subColor.withValues(alpha: 0.65),
                             fontSize: 12.5),
@@ -2456,7 +2463,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${LocalizationService.tr('cv_selected_traits')} (${_cv.personalTraits.length})',
+                    '${_cvTr('cv_selected_traits')} (${_cv.personalTraits.length})',
                     style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
@@ -2469,7 +2476,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(50, 30)),
-                      child: Text(LocalizationService.tr('cv_clear_all'),
+                      child: Text(_cvTr('cv_clear_all'),
                           style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.accentRose,
@@ -2479,7 +2486,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               ),
               const SizedBox(height: 10),
               if (_cv.personalTraits.isEmpty)
-                _buildEmptyState(LocalizationService.tr('cv_empty_traits'),
+                _buildEmptyState(_cvTr('cv_empty_traits'),
                     Icons.psychology_outlined, isDark, subColor),
               Wrap(
                 spacing: 8,
@@ -2549,10 +2556,10 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
   }
 
   String _getSkillLabel(int level) {
-    if (level >= 90) return LocalizationService.tr('skill_expert');
-    if (level >= 75) return LocalizationService.tr('skill_advanced');
-    if (level >= 50) return LocalizationService.tr('skill_intermediate');
-    return LocalizationService.tr('skill_basic');
+    if (level >= 90) return _cvTr('skill_expert');
+    if (level >= 75) return _cvTr('skill_advanced');
+    if (level >= 50) return _cvTr('skill_intermediate');
+    return _cvTr('skill_basic');
   }
 
   // TAB 6: FOREIGN LANGUAGES (SEAMLESS PRO CARD)
@@ -2570,12 +2577,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      '${LocalizationService.tr('cv_languages_title')} (${_cv.languages.length})',
+                      '${_cvTr('cv_languages_title')} (${_cv.languages.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor)),
-                  Text(LocalizationService.tr('cv_languages_sub'),
+                  Text(_cvTr('cv_languages_sub'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -2590,8 +2597,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               onPressed: () {
                 setState(() {
                   _cv.languages.add(LanguageItem(
-                      language: '',
-                      level: LocalizationService.tr('cv_default_lang_level')));
+                      language: '', level: _cvTr('cv_default_lang_level')));
                 });
               },
               style: ElevatedButton.styleFrom(
@@ -2657,7 +2663,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         Text(
                           lang.language.isNotEmpty
                               ? lang.language
-                              : LocalizationService.tr('cv_new_language'),
+                              : _cvTr('cv_new_language'),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -2678,11 +2684,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 const SizedBox(height: 14),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_lang_name'),
+                  label: _cvTr('cv_lang_name'),
                   initialValue: lang.language,
                   icon: Icons.language_rounded,
                   isDark: isDark,
-                  hint: LocalizationService.tr('hint_language_name'),
+                  hint: _cvTr('hint_language_name'),
                   onChanged: (val) => lang.language = val,
                 ),
                 const SizedBox(height: 10),
@@ -2690,7 +2696,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      LocalizationService.tr('cv_lang_level'),
+                      _cvTr('cv_lang_level'),
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
@@ -2701,9 +2707,9 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     const SizedBox(height: 5),
                     DropdownButtonFormField<String>(
                       key: ValueKey(
-                          'lang_lvl_${index}_${LocalizationService.currentLocale}_${LocalizationService.normalizeLanguageLevel(lang.level)}'),
+                          'lang_lvl_${index}_${_cvLanguage}_${LocalizationService.normalizeLanguageLevel(lang.level, _cvLanguage)}'),
                       initialValue: LocalizationService.normalizeLanguageLevel(
-                          lang.level),
+                          lang.level, _cvLanguage),
                       dropdownColor: cardBg,
                       style: TextStyle(
                           color: textColor,
@@ -2769,13 +2775,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                      '${LocalizationService.tr('cv_projects_title')} (${_cv.projects.length})',
+                  Text('${_cvTr('cv_projects_title')} (${_cv.projects.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor)),
-                  Text(LocalizationService.tr('cv_projects_sub'),
+                  Text(_cvTr('cv_projects_sub'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -2861,7 +2866,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         Text(
                           proj.name.isNotEmpty
                               ? proj.name
-                              : LocalizationService.tr('cv_new_project'),
+                              : _cvTr('cv_new_project'),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -2882,30 +2887,30 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 const SizedBox(height: 14),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_proj_title'),
+                  label: _cvTr('cv_proj_title'),
                   initialValue: proj.name,
                   icon: Icons.title_rounded,
                   isDark: isDark,
-                  hint: LocalizationService.tr('hint_project_title'),
+                  hint: _cvTr('hint_project_title'),
                   onChanged: (val) => proj.name = val,
                 ),
                 const SizedBox(height: 8),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_proj_tech'),
+                  label: _cvTr('cv_proj_tech'),
                   initialValue: proj.technologies,
                   icon: Icons.code_rounded,
                   isDark: isDark,
-                  hint: LocalizationService.tr('hint_project_tech'),
+                  hint: _cvTr('hint_project_tech'),
                   onChanged: (val) => proj.technologies = val,
                 ),
                 const SizedBox(height: 8),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_proj_desc'),
+                  label: _cvTr('cv_proj_desc'),
                   initialValue: proj.description,
                   icon: Icons.subject_rounded,
                   isDark: isDark,
                   maxLines: 2,
-                  hint: LocalizationService.tr('cv_hint_project_desc'),
+                  hint: _cvTr('cv_hint_project_desc'),
                   onChanged: (val) => proj.description = val,
                 ),
               ],
@@ -2931,13 +2936,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      '${LocalizationService.tr('cv_certificates_title')} (${_cv.certificates.length})',
+                      '${_cvTr('cv_certificates_title')} (${_cv.certificates.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor)),
                   Text(
-                    LocalizationService.tr('cv_certificates_sub'),
+                    _cvTr('cv_certificates_sub'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -2991,7 +2996,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     size: 40, color: subColor.withValues(alpha: 0.5)),
                 const SizedBox(height: 10),
                 Text(
-                  LocalizationService.tr('cv_certificates_sub'),
+                  _cvTr('cv_certificates_sub'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12.5,
@@ -3051,7 +3056,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                           child: Text(
                             cert.name.isNotEmpty
                                 ? cert.name
-                                : LocalizationService.tr('cv_new_certificate'),
+                                : _cvTr('cv_new_certificate'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -3075,11 +3080,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 const SizedBox(height: 14),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_cert_name'),
+                  label: _cvTr('cv_cert_name'),
                   initialValue: cert.name,
                   icon: Icons.workspace_premium_outlined,
                   isDark: isDark,
-                  hint: LocalizationService.tr('hint_cert_name'),
+                  hint: _cvTr('hint_cert_name'),
                   onChanged: (val) => cert.name = val,
                 ),
                 const SizedBox(height: 8),
@@ -3087,22 +3092,22 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   children: [
                     Expanded(
                       child: _buildModernInput(
-                        label: LocalizationService.tr('cv_cert_issuer'),
+                        label: _cvTr('cv_cert_issuer'),
                         initialValue: cert.issuer,
                         icon: Icons.business_rounded,
                         isDark: isDark,
-                        hint: LocalizationService.tr('hint_cert_issuer'),
+                        hint: _cvTr('hint_cert_issuer'),
                         onChanged: (val) => cert.issuer = val,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildModernInput(
-                        label: LocalizationService.tr('cv_cert_date'),
+                        label: _cvTr('cv_cert_date'),
                         initialValue: cert.date,
                         icon: Icons.calendar_today_rounded,
                         isDark: isDark,
-                        hint: LocalizationService.tr('hint_cert_date'),
+                        hint: _cvTr('hint_cert_date'),
                         onChanged: (val) => cert.date = val,
                       ),
                     ),
@@ -3110,11 +3115,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 const SizedBox(height: 8),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_cert_url'),
+                  label: _cvTr('cv_cert_url'),
                   initialValue: cert.credentialUrl,
                   icon: Icons.link_rounded,
                   isDark: isDark,
-                  hint: LocalizationService.tr('hint_cert_url'),
+                  hint: _cvTr('hint_cert_url'),
                   onChanged: (val) => cert.credentialUrl = val,
                 ),
               ],
@@ -3140,13 +3145,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      '${LocalizationService.tr('cv_references_title')} (${_cv.references.length})',
+                      '${_cvTr('cv_references_title')} (${_cv.references.length})',
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: textColor)),
                   Text(
-                    LocalizationService.tr('cv_references_sub'),
+                    _cvTr('cv_references_sub'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -3235,7 +3240,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                             child: Text(
                               ref.name.isNotEmpty
                                   ? ref.name
-                                  : LocalizationService.tr('cv_new_reference'),
+                                  : _cvTr('cv_new_reference'),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
@@ -3258,11 +3263,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 const SizedBox(height: 14),
                 _buildModernInput(
-                  label: LocalizationService.tr('cv_ref_name'),
+                  label: _cvTr('cv_ref_name'),
                   initialValue: ref.name,
                   icon: Icons.person_outline_rounded,
                   isDark: isDark,
-                  hint: LocalizationService.tr('hint_ref_name'),
+                  hint: _cvTr('hint_ref_name'),
                   onChanged: (val) => ref.name = val,
                 ),
                 const SizedBox(height: 8),
@@ -3270,22 +3275,22 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   children: [
                     Expanded(
                       child: _buildModernInput(
-                        label: LocalizationService.tr('cv_ref_position'),
+                        label: _cvTr('cv_ref_position'),
                         initialValue: ref.position,
                         icon: Icons.badge_outlined,
                         isDark: isDark,
-                        hint: LocalizationService.tr('hint_ref_position'),
+                        hint: _cvTr('hint_ref_position'),
                         onChanged: (val) => ref.position = val,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildModernInput(
-                        label: LocalizationService.tr('cv_ref_company'),
+                        label: _cvTr('cv_ref_company'),
                         initialValue: ref.company,
                         icon: Icons.business_rounded,
                         isDark: isDark,
-                        hint: LocalizationService.tr('hint_ref_company'),
+                        hint: _cvTr('hint_ref_company'),
                         onChanged: (val) => ref.company = val,
                       ),
                     ),
@@ -3296,22 +3301,22 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   children: [
                     Expanded(
                       child: _buildModernInput(
-                        label: LocalizationService.tr('cv_ref_phone'),
+                        label: _cvTr('cv_ref_phone'),
                         initialValue: ref.phone,
                         icon: Icons.phone_outlined,
                         isDark: isDark,
-                        hint: LocalizationService.tr('hint_ref_phone'),
+                        hint: _cvTr('hint_ref_phone'),
                         onChanged: (val) => ref.phone = val,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildModernInput(
-                        label: LocalizationService.tr('cv_ref_email'),
+                        label: _cvTr('cv_ref_email'),
                         initialValue: ref.email,
                         icon: Icons.mail_outline_rounded,
                         isDark: isDark,
-                        hint: LocalizationService.tr('hint_ref_email'),
+                        hint: _cvTr('hint_ref_email'),
                         onChanged: (val) => ref.email = val,
                       ),
                     ),
@@ -3333,12 +3338,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         Text(
-          '${LocalizationService.tr('cv_custom_sections_title')} (${_cv.customSections.length})',
+          '${_cvTr('cv_custom_sections_title')} (${_cv.customSections.length})',
           style: TextStyle(
               fontSize: 14.5, fontWeight: FontWeight.w800, color: textColor),
         ),
         Text(
-          LocalizationService.tr('cv_custom_sections_sub'),
+          _cvTr('cv_custom_sections_sub'),
           style: TextStyle(
               fontSize: 11.5, fontWeight: FontWeight.w600, color: subColor),
         ),
@@ -3412,7 +3417,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
-                  hintText: LocalizationService.tr('hint_custom_section_title'),
+                  hintText: _cvTr('hint_custom_section_title'),
                   hintStyle: TextStyle(
                       color: subColor.withValues(alpha: 0.65), fontSize: 12.5),
                   filled: true,
@@ -3449,9 +3454,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                         CustomCvSection(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
                           title: _newSectionTitleController.text.trim(),
-                          items: [
-                            LocalizationService.tr('cv_default_bullet_short')
-                          ],
+                          items: [_cvTr('cv_default_bullet_short')],
                         ),
                       );
                       _newSectionTitleController.clear();
@@ -3468,7 +3471,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 ),
                 icon: const Icon(Icons.add_rounded,
                     color: Colors.white, size: 16),
-                label: Text(LocalizationService.tr('cv_create_section'),
+                label: Text(_cvTr('cv_create_section'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -3526,8 +3529,8 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                               color: AppColors.accentEmerald, size: 20),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          onPressed: () => setState(() => sec.items
-                              .add(LocalizationService.tr('cv_new_bullet'))),
+                          onPressed: () => setState(
+                              () => sec.items.add(_cvTr('cv_new_bullet'))),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
@@ -3639,7 +3642,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       size: 20, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Text(
-                    LocalizationService.tr('cv_ordering_title'),
+                    _cvTr('cv_ordering_title'),
                     style: TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w800,
@@ -3649,7 +3652,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                LocalizationService.tr('cv_ordering_sub'),
+                _cvTr('cv_ordering_sub'),
                 style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
@@ -3735,25 +3738,25 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
   String _getSectionTitle(CvSectionType type) {
     switch (type) {
       case CvSectionType.summary:
-        return LocalizationService.tr('cv_summary');
+        return _cvTr('cv_summary');
       case CvSectionType.experiences:
-        return LocalizationService.tr('cv_experiences_title');
+        return _cvTr('cv_experiences_title');
       case CvSectionType.educations:
-        return LocalizationService.tr('cv_educations_title');
+        return _cvTr('cv_educations_title');
       case CvSectionType.skills:
-        return LocalizationService.tr('cv_tab_skills');
+        return _cvTr('cv_tab_skills');
       case CvSectionType.personalTraits:
-        return LocalizationService.tr('cv_soft_skills_title');
+        return _cvTr('cv_soft_skills_title');
       case CvSectionType.languages:
-        return LocalizationService.tr('cv_languages_title');
+        return _cvTr('cv_languages_title');
       case CvSectionType.projects:
-        return LocalizationService.tr('cv_projects_title');
+        return _cvTr('cv_projects_title');
       case CvSectionType.certificates:
-        return LocalizationService.tr('cv_certificates_title');
+        return _cvTr('cv_certificates_title');
       case CvSectionType.references:
-        return LocalizationService.tr('cv_references_title');
+        return _cvTr('cv_references_title');
       case CvSectionType.customSections:
-        return LocalizationService.tr('cv_custom_sections_title');
+        return _cvTr('cv_custom_sections_title');
     }
   }
 
@@ -3808,7 +3811,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(LocalizationService.tr('cv_active_layout'),
+                    Text(_cvTr('cv_active_layout'),
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -3834,7 +3837,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                child: Text(LocalizationService.tr('cv_inspect_pdf'),
+                child: Text(_cvTr('cv_inspect_pdf'),
                     style: const TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w800)),
               ),
@@ -3845,112 +3848,112 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
         const SizedBox(height: 16),
 
         Text(
-          LocalizationService.tr('cv_template_title'),
+          _cvTr('cv_template_title'),
           style: TextStyle(
               fontSize: 14.5, fontWeight: FontWeight.w800, color: textColor),
         ),
         const SizedBox(height: 10),
 
         _buildTemplateCard(
-          title: LocalizationService.tr('template_sidebar_modern'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_modern'),
+          title: _cvTr('template_sidebar_modern'),
+          subtitle: _cvTr('cv_tpl_subtitle_modern'),
           template: CvTemplate.sidebarModern,
-          badge: LocalizationService.tr('cv_tpl_badge_popular'),
+          badge: _cvTr('cv_tpl_badge_popular'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_modern_tech'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_tech'),
+          title: _cvTr('template_modern_tech'),
+          subtitle: _cvTr('cv_tpl_subtitle_tech'),
           template: CvTemplate.modernTech,
-          badge: LocalizationService.tr('cv_tpl_badge_ats'),
+          badge: _cvTr('cv_tpl_badge_ats'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_executive_classic'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_exec'),
+          title: _cvTr('template_executive_classic'),
+          subtitle: _cvTr('cv_tpl_subtitle_exec'),
           template: CvTemplate.executiveClassic,
-          badge: LocalizationService.tr('cv_tpl_badge_exec'),
+          badge: _cvTr('cv_tpl_badge_exec'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_creative_designer'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_design'),
+          title: _cvTr('template_creative_designer'),
+          subtitle: _cvTr('cv_tpl_subtitle_design'),
           template: CvTemplate.creativeDesigner,
-          badge: LocalizationService.tr('cv_tpl_badge_design'),
+          badge: _cvTr('cv_tpl_badge_design'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_minimalist_pure'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_elegant'),
+          title: _cvTr('template_minimalist_pure'),
+          subtitle: _cvTr('cv_tpl_subtitle_elegant'),
           template: CvTemplate.minimalistPure,
-          badge: LocalizationService.tr('cv_tpl_badge_elegant'),
+          badge: _cvTr('cv_tpl_badge_elegant'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_harvard_academic'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_academic'),
+          title: _cvTr('template_harvard_academic'),
+          subtitle: _cvTr('cv_tpl_subtitle_academic'),
           template: CvTemplate.harvardAcademic,
-          badge: LocalizationService.tr('cv_tpl_badge_academic'),
+          badge: _cvTr('cv_tpl_badge_academic'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_compact_grid'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_engineering'),
+          title: _cvTr('template_compact_grid'),
+          subtitle: _cvTr('cv_tpl_subtitle_engineering'),
           template: CvTemplate.compactGrid,
-          badge: LocalizationService.tr('cv_tpl_badge_engineering'),
+          badge: _cvTr('cv_tpl_badge_engineering'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_infographic_modern'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_metric'),
+          title: _cvTr('template_infographic_modern'),
+          subtitle: _cvTr('cv_tpl_subtitle_metric'),
           template: CvTemplate.infographicModern,
-          badge: LocalizationService.tr('cv_tpl_badge_metric'),
+          badge: _cvTr('cv_tpl_badge_metric'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_corporate_gold'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_luxury'),
+          title: _cvTr('template_corporate_gold'),
+          subtitle: _cvTr('cv_tpl_subtitle_luxury'),
           template: CvTemplate.corporateGold,
-          badge: LocalizationService.tr('cv_tpl_badge_luxury'),
+          badge: _cvTr('cv_tpl_badge_luxury'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_clean_nordic'),
-          subtitle: LocalizationService.tr('cv_tpl_subtitle_nordic'),
+          title: _cvTr('template_clean_nordic'),
+          subtitle: _cvTr('cv_tpl_subtitle_nordic'),
           template: CvTemplate.cleanNordic,
-          badge: LocalizationService.tr('cv_tpl_badge_nordic'),
+          badge: _cvTr('cv_tpl_badge_nordic'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_elite_executive'),
-          subtitle: LocalizationService.tr('template_elite_executive_desc'),
+          title: _cvTr('template_elite_executive'),
+          subtitle: _cvTr('template_elite_executive_desc'),
           template: CvTemplate.eliteExecutive,
-          badge: LocalizationService.tr('cv_tpl_badge_exec'),
+          badge: _cvTr('cv_tpl_badge_exec'),
           isDark: isDark,
         ),
         const SizedBox(height: 10),
         _buildTemplateCard(
-          title: LocalizationService.tr('template_silicon_tech'),
-          subtitle: LocalizationService.tr('template_silicon_tech_desc'),
+          title: _cvTr('template_silicon_tech'),
+          subtitle: _cvTr('template_silicon_tech_desc'),
           template: CvTemplate.siliconTech,
-          badge: LocalizationService.tr('cv_tpl_badge_engineering'),
+          badge: _cvTr('cv_tpl_badge_engineering'),
           isDark: isDark,
         ),
 
         const SizedBox(height: 18),
 
         Text(
-          LocalizationService.tr('cv_theme_title'),
+          _cvTr('cv_theme_title'),
           style: TextStyle(
               fontSize: 14.5, fontWeight: FontWeight.w800, color: textColor),
         ),
@@ -4039,29 +4042,29 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
   String _getTemplateName(CvTemplate template) {
     switch (template) {
       case CvTemplate.sidebarModern:
-        return LocalizationService.tr('template_sidebar_modern');
+        return _cvTr('template_sidebar_modern');
       case CvTemplate.executiveClassic:
-        return LocalizationService.tr('template_executive_classic');
+        return _cvTr('template_executive_classic');
       case CvTemplate.modernTech:
-        return LocalizationService.tr('template_modern_tech');
+        return _cvTr('template_modern_tech');
       case CvTemplate.creativeDesigner:
-        return LocalizationService.tr('template_creative_designer');
+        return _cvTr('template_creative_designer');
       case CvTemplate.minimalistPure:
-        return LocalizationService.tr('template_minimalist_pure');
+        return _cvTr('template_minimalist_pure');
       case CvTemplate.harvardAcademic:
-        return LocalizationService.tr('template_harvard_academic');
+        return _cvTr('template_harvard_academic');
       case CvTemplate.compactGrid:
-        return LocalizationService.tr('template_compact_grid');
+        return _cvTr('template_compact_grid');
       case CvTemplate.infographicModern:
-        return LocalizationService.tr('template_infographic_modern');
+        return _cvTr('template_infographic_modern');
       case CvTemplate.corporateGold:
-        return LocalizationService.tr('template_corporate_gold');
+        return _cvTr('template_corporate_gold');
       case CvTemplate.cleanNordic:
-        return LocalizationService.tr('template_clean_nordic');
+        return _cvTr('template_clean_nordic');
       case CvTemplate.eliteExecutive:
-        return LocalizationService.tr('template_elite_executive');
+        return _cvTr('template_elite_executive');
       case CvTemplate.siliconTech:
-        return LocalizationService.tr('template_silicon_tech');
+        return _cvTr('template_silicon_tech');
     }
   }
 
@@ -4716,7 +4719,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                LocalizationService.tr('cv_tab_file'),
+                _cvTr('cv_tab_file'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -4849,6 +4852,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     ));
   }
 
+  @visibleForTesting
+  void applyAiParseResultForTesting(AiCvParseResult result) =>
+      _applyAiParseResult(result);
+
+  @visibleForTesting
+  CvModel get cvForTesting => _cv;
+
   /// Mevcut verileri KESİNLİKLE silmeden üzerine akıllıca ekleyen (Non-Destructive Merge) motoru
   void _applyAiParseResult(AiCvParseResult result) {
     if (!result.isSuccess) return;
@@ -4906,8 +4916,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
           final exists = _cv.educations.any((e) =>
               e.school.toLowerCase().trim() ==
                   edu.school.toLowerCase().trim() &&
+              e.degree.toLowerCase().trim() ==
+                  edu.degree.toLowerCase().trim() &&
               e.field.toLowerCase().trim() == edu.field.toLowerCase().trim());
-          if (!exists && edu.school.trim().isNotEmpty) {
+          final hasData = edu.school.trim().isNotEmpty ||
+              edu.degree.trim().isNotEmpty ||
+              edu.field.trim().isNotEmpty;
+          if (!exists && hasData) {
             _cv.educations.insert(0, edu);
           }
         }
@@ -4924,8 +4939,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               e.company.toLowerCase().trim() ==
                   exp.company.toLowerCase().trim() &&
               e.position.toLowerCase().trim() ==
-                  exp.position.toLowerCase().trim());
-          if (!exists && exp.company.trim().isNotEmpty) {
+                  exp.position.toLowerCase().trim() &&
+              e.startDate.toLowerCase().trim() ==
+                  exp.startDate.toLowerCase().trim());
+          final hasData = exp.company.trim().isNotEmpty ||
+              exp.position.trim().isNotEmpty ||
+              exp.description.trim().isNotEmpty;
+          if (!exists && hasData) {
             _cv.experiences.insert(0, exp);
           }
         }
@@ -4953,7 +4973,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
         }
       }
 
-      // 7. Diller (Mevcut olanlar korunur)
+      // 7. Diller (Mevcut olanlar korunur, seviyeler normalize edilir)
       if (result.languages.isNotEmpty) {
         _cv.languages.removeWhere((l) => l.language.trim().isEmpty);
         for (final lang in result.languages.reversed) {
@@ -4961,7 +4981,15 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               l.language.toLowerCase().trim() ==
               lang.language.toLowerCase().trim());
           if (!exists && lang.language.trim().isNotEmpty) {
-            _cv.languages.insert(0, lang);
+            final normalizedLevel =
+                LocalizationService.normalizeLanguageLevel(lang.level);
+            _cv.languages.insert(
+              0,
+              LanguageItem(
+                language: lang.language.trim(),
+                level: normalizedLevel,
+              ),
+            );
           }
         }
       }
@@ -4981,7 +5009,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
         }
       }
 
-      // 9. Kişisel Özellikler
+      // 9. Kişisel Özellikler / Nitelikler
       for (final trait in result.personalTraits) {
         final exists = _cv.personalTraits
             .any((t) => t.toLowerCase().trim() == trait.toLowerCase().trim());
@@ -4996,8 +5024,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             (r) => r.name.trim().isEmpty && r.company.trim().isEmpty);
         for (final ref in result.references.reversed) {
           final exists = _cv.references.any((r) =>
-              r.name.toLowerCase().trim() == ref.name.toLowerCase().trim());
-          if (!exists && ref.name.trim().isNotEmpty) {
+              r.name.toLowerCase().trim() == ref.name.toLowerCase().trim() &&
+              r.company.toLowerCase().trim() ==
+                  ref.company.toLowerCase().trim());
+          final hasData = ref.name.trim().isNotEmpty ||
+              ref.company.trim().isNotEmpty ||
+              ref.phone.trim().isNotEmpty ||
+              ref.email.trim().isNotEmpty;
+          if (!exists && hasData) {
             _cv.references.insert(0, ref);
           }
         }
@@ -5029,6 +5063,9 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
       }
       if (result.languages.isNotEmpty) {
         _glowingItemKeys.add('language_0');
+      }
+      if (result.references.isNotEmpty) {
+        _glowingItemKeys.add('reference_0');
       }
 
       _syncCvData();
@@ -5638,6 +5675,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        _buildCvLanguageSelector(
+          isDark: isDark,
+          textColor: textColor,
+          subColor: subColor,
+          borderColor: borderColor,
+        ),
       ],
     );
   }
@@ -5680,6 +5724,379 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCvLanguageSelector({
+    required bool isDark,
+    required Color textColor,
+    required Color subColor,
+    required Color borderColor,
+  }) {
+    final currentOption = LocalizationService.getLanguageOption(_cvLanguage);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1B2032) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.22),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.translate_rounded,
+                    size: 16, color: AppColors.primaryLight),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      LocalizationService.tr('cv_language_prompt'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      LocalizationService.tr('cv_language_subtitle'),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        color: subColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Active Selected Language Banner (tappable to open full sheet)
+          InkWell(
+            onTap: () =>
+                _showCvLanguageSheet(isDark, textColor, subColor, borderColor),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color:
+                    AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    currentOption.flag,
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              currentOption.name,
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _cvTr('cv_language_selected_badge'),
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          currentOption.nativeName,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: subColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.unfold_more_rounded,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Horizontal scroll of all 19 language chips for instant 1-tap switching
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: LocalizationService.supportedLanguages.map((lang) {
+                final isSelected = lang.code == _cvLanguage;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: InkWell(
+                    onTap: () => _onCvLanguageSelected(lang.code),
+                    borderRadius: BorderRadius.circular(20),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark
+                                ? const Color(0xFF22283E)
+                                : const Color(0xFFEBF1F8)),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primary
+                              : borderColor.withValues(alpha: 0.6),
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(lang.flag, style: const TextStyle(fontSize: 14)),
+                          const SizedBox(width: 5),
+                          Text(
+                            lang.name,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: isSelected
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: isSelected
+                                  ? Colors.white
+                                  : (isDark
+                                      ? Colors.white.withValues(alpha: 0.85)
+                                      : const Color(0xFF334155)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCvLanguageSheet(
+      bool isDark, Color textColor, Color subColor, Color borderColor) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = LocalizationService.supportedLanguages.where((l) {
+              if (searchQuery.isEmpty) return true;
+              final q = searchQuery.toLowerCase();
+              return l.name.toLowerCase().contains(q) ||
+                  l.nativeName.toLowerCase().contains(q) ||
+                  l.code.toLowerCase().contains(q);
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.72,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF131827) : Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          LocalizationService.tr('cv_language_sheet_title'),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    onChanged: (val) => setModalState(() => searchQuery = val),
+                    decoration: InputDecoration(
+                      hintText: LocalizationService.tr('search_placeholder'),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                      isDense: true,
+                      filled: true,
+                      fillColor: isDark
+                          ? const Color(0xFF1B2032)
+                          : const Color(0xFFF1F5F9),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      itemBuilder: (context, idx) {
+                        final item = filtered[idx];
+                        final isSelected = _cvLanguage == item.code;
+
+                        return InkWell(
+                          onTap: () {
+                            _onCvLanguageSelected(item.code);
+                            Navigator.pop(ctx);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                      .withValues(alpha: isDark ? 0.2 : 0.1)
+                                  : (isDark
+                                      ? const Color(0xFF1B2032)
+                                      : const Color(0xFFF8FAFC)),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : borderColor,
+                                width: isSelected ? 1.5 : 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(item.flag,
+                                    style: const TextStyle(fontSize: 22)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.name,
+                                        style: TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w800
+                                              : FontWeight.w600,
+                                          color: isSelected
+                                              ? AppColors.primaryLight
+                                              : textColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        item.nativeName,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: subColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Icon(Icons.check_circle_rounded,
+                                      color: AppColors.primary, size: 20),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _onCvLanguageSelected(String langCode) {
+    if (_cvLanguage == langCode) return;
+    setState(() {
+      _cvLanguage = langCode;
+      _cv.targetLanguage = langCode;
+    });
+    CvStorageService.saveActiveCv(_cv);
+    final opt = LocalizationService.getLanguageOption(langCode);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${opt.flag} ${opt.name}'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -5807,6 +6224,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     bool isDark, {
     int? maxLines = 1,
     int? minLines,
+    String? hint,
   }) {
     final textColor =
         isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
@@ -5837,6 +6255,9 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             style: TextStyle(
                 color: textColor, fontWeight: FontWeight.w600, fontSize: 13.5),
             decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(
+                  color: subColor.withValues(alpha: 0.65), fontSize: 12.5),
               prefixIcon: Icon(icon,
                   color: isDark
                       ? const Color(0xFF60A5FA)

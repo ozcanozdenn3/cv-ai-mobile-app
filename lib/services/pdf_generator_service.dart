@@ -382,7 +382,9 @@ class PdfGeneratorService {
 
   static Future<Uint8List> generateCvPdf(CvModel cv, {String? locale}) async {
     final pdf = pw.Document();
-    final activeLocale = locale ?? LocalizationService.currentLocale;
+    final activeLocale = (cv.targetLanguage != null && cv.targetLanguage!.trim().isNotEmpty)
+        ? cv.targetLanguage!
+        : (locale ?? LocalizationService.currentLocale);
 
     final fonts = await _loadCvPdfFonts(activeLocale);
 
@@ -724,7 +726,9 @@ class PdfGeneratorService {
                                           color: PdfColors.white,
                                           fontSize: 9,
                                           fontWeight: pw.FontWeight.bold)),
-                                  pw.Text(lang.level,
+                                  pw.Text(
+                                      LocalizationService.normalizeLanguageLevel(
+                                          lang.level, activeLocale),
                                       style: pw.TextStyle(
                                           color: primaryColor, fontSize: 8)),
                                 ],
@@ -2109,7 +2113,9 @@ class PdfGeneratorService {
                               fontSize: 9,
                               fontWeight: pw.FontWeight.bold,
                               color: darkText)),
-                      pw.Text(l.level,
+                      pw.Text(
+                          LocalizationService.normalizeLanguageLevel(
+                              l.level, activeLocale),
                           style: pw.TextStyle(
                               fontSize: 8.5, color: primaryColor)),
                     ],
@@ -2605,7 +2611,9 @@ class PdfGeneratorService {
                                             fontSize: 8,
                                             fontWeight: pw.FontWeight.bold,
                                             color: darkText)),
-                                    pw.Text(l.level,
+                                    pw.Text(
+                                        LocalizationService.normalizeLanguageLevel(
+                                            l.level, activeLocale),
                                         style: pw.TextStyle(
                                             fontSize: 7.5, color: mutedText)),
                                   ],
@@ -3012,7 +3020,8 @@ class PdfGeneratorService {
                                   ),
                                 ),
                                 pw.Text(
-                                  lang.level,
+                                  LocalizationService.normalizeLanguageLevel(
+                                      lang.level, activeLocale),
                                   style: pw.TextStyle(
                                     color: goldColor,
                                     fontSize: 7.5,

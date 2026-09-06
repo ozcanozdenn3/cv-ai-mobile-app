@@ -518,6 +518,16 @@ class LocalizationService {
     );
   }
 
+  static LanguageOption getLanguageOption(String code) {
+    return supportedLanguages.firstWhere(
+      (l) => l.code == code,
+      orElse: () => supportedLanguages.firstWhere(
+        (l) => _baseLocaleCode(l.code) == _baseLocaleCode(code),
+        orElse: () => supportedLanguages[0],
+      ),
+    );
+  }
+
   static final Map<String, String> _keyAliases = {
     'cv_ai_voice_cancel': 'perm_cancel',
     'home_hero_badge': 'home_ats_badge',
@@ -1080,32 +1090,91 @@ class LocalizationService {
     },
   };
 
-  static List<String> getLanguageLevels() {
+  static List<String> getLanguageLevels([String? locale]) {
+    final trFunc = locale != null ? (String k) => trFor(locale, k) : tr;
     return [
-      tr('lang_level_native'),
-      tr('lang_level_c2'),
-      tr('lang_level_c1'),
-      tr('lang_level_b2'),
-      tr('lang_level_b1'),
-      tr('lang_level_a2'),
-      tr('lang_level_a1'),
+      trFunc('lang_level_native'),
+      trFunc('lang_level_c2'),
+      trFunc('lang_level_c1'),
+      trFunc('lang_level_b2'),
+      trFunc('lang_level_b1'),
+      trFunc('lang_level_a2'),
+      trFunc('lang_level_a1'),
     ];
   }
 
-  static String normalizeLanguageLevel(String rawLevel) {
-    final levels = getLanguageLevels();
-    final lower = rawLevel.toLowerCase();
-    if (lower.contains('c2')) return levels[1];
-    if (lower.contains('c1')) return levels[2];
-    if (lower.contains('b2')) return levels[3];
-    if (lower.contains('b1')) return levels[4];
-    if (lower.contains('a2')) return levels[5];
-    if (lower.contains('a1')) return levels[6];
+  static String normalizeLanguageLevel(String rawLevel, [String? locale]) {
+    final levels = getLanguageLevels(locale);
+    final lower = rawLevel.trim().toLowerCase();
+    if (lower.isEmpty) return levels[2];
+
+    // 0: Native / Ana Dil
     if (lower.contains('ana') ||
         lower.contains('native') ||
         lower.contains('mutter') ||
-        lower.contains('mater')) {
+        lower.contains('mater') ||
+        lower.contains('первый') ||
+        lower.contains('rodzimy')) {
       return levels[0];
+    }
+    // 1: C2 / Master / Proficient / Fluent
+    if (lower.contains('c2') ||
+        lower.contains('master') ||
+        lower.contains('proficient') ||
+        lower.contains('akıcı') ||
+        lower.contains('akici') ||
+        lower.contains('fluent') ||
+        lower.contains('fließend') ||
+        lower.contains('courant') ||
+        lower.contains('fluente')) {
+      return levels[1];
+    }
+    // 2: C1 / Advanced / İleri
+    if (lower.contains('c1') ||
+        lower.contains('ileri') ||
+        lower.contains('advanced') ||
+        lower.contains('fortgeschritten') ||
+        lower.contains('avancé') ||
+        lower.contains('avanzado') ||
+        lower.contains('avanzato') ||
+        lower.contains('iyi') ||
+        lower.contains('good')) {
+      return levels[2];
+    }
+    // 3: B2 / Upper Intermediate / Üst Orta
+    if (lower.contains('b2') ||
+        lower.contains('upper') ||
+        lower.contains('üst orta') ||
+        lower.contains('ust orta')) {
+      return levels[3];
+    }
+    // 4: B1 / Intermediate / Orta
+    if (lower.contains('b1') ||
+        lower.contains('orta') ||
+        lower.contains('intermediate') ||
+        lower.contains('mittel') ||
+        lower.contains('moyen') ||
+        lower.contains('medio')) {
+      return levels[4];
+    }
+    // 5: A2 / Elementary / Temel
+    if (lower.contains('a2') ||
+        lower.contains('elementary') ||
+        lower.contains('temel') ||
+        lower.contains('pre-intermediate') ||
+        lower.contains('grundstufe')) {
+      return levels[5];
+    }
+    // 6: A1 / Beginner / Başlangıç
+    if (lower.contains('a1') ||
+        lower.contains('beginner') ||
+        lower.contains('başlangıç') ||
+        lower.contains('baslangic') ||
+        lower.contains('basic') ||
+        lower.contains('anfänger') ||
+        lower.contains('debutant') ||
+        lower.contains('principiante')) {
+      return levels[6];
     }
     if (levels.contains(rawLevel)) return rawLevel;
     return levels[2];
@@ -1126,8 +1195,8 @@ class LocalizationService {
     ];
   }
 
-  static List<String> getQuickTraits() {
-    final lang = currentLocale.toLowerCase();
+  static List<String> getQuickTraits([String? locale]) {
+    final lang = (locale ?? currentLocale).toLowerCase();
     if (lang.startsWith('tr')) {
       return [
         'Problem Çözme',
@@ -1416,8 +1485,8 @@ class LocalizationService {
     ];
   }
 
-  static List<String> getQuickCustomTitles() {
-    final lang = currentLocale.toLowerCase();
+  static List<String> getQuickCustomTitles([String? locale]) {
+    final lang = (locale ?? currentLocale).toLowerCase();
     if (lang.startsWith('tr')) {
       return [
         '🏆 Ödüller & Başarılar',
@@ -1591,8 +1660,8 @@ class LocalizationService {
     return title;
   }
 
-  static List<Map<String, dynamic>> getThemePalettes() {
-    final lang = currentLocale.toLowerCase();
+  static List<Map<String, dynamic>> getThemePalettes([String? locale]) {
+    final lang = (locale ?? currentLocale).toLowerCase();
     if (lang.startsWith('tr')) {
       return [
         {
@@ -2924,6 +2993,186 @@ class LocalizationService {
     if (index < 0) return null;
 
     const values = <String, List<String>>{
+      'cv_tab_file': [
+        'File',
+        'Dosya',
+        'Datei',
+        'Fichier',
+        'Archivo',
+        'Arquivo',
+        'File',
+        'Bestand',
+        'Plik',
+        'Файл',
+        'ملف',
+        'फ़ाइल',
+        '文件',
+        'ファイル',
+        '파일',
+        'Berkas',
+      ],
+      'cv_language_prompt': [
+        'What will be the CV language?',
+        'CV Dili Ne Olacak?',
+        'Welche Sprache soll der Lebenslauf haben?',
+        'Quelle sera la langue du CV ?',
+        '¿Cuál será el idioma del CV?',
+        'Qual será o idioma do CV?',
+        'Quale sarà la lingua del CV?',
+        'Wat wordt de CV-taal?',
+        'W jakim języku ma być CV?',
+        'Какой язык будет у резюме?',
+        'ما هي لغة السيرة الذاتية؟',
+        'सीवी की भाषा क्या होगी?',
+        '简历语言是什么？',
+        'CVの言語は何にしますか？',
+        '이력서 언어를 선택하세요',
+        'Apa bahasa CV Anda?',
+      ],
+      'cv_language_subtitle': [
+        'Menu, card titles and hint texts will adapt to your selected language.',
+        'Menü, kart başlıkları ve ipucu yazıları seçtiğiniz dile göre uyarlanır.',
+        'Menü-, Kartentitel und Hinweistexte passen sich der gewählten Sprache an.',
+        'Les titres des menus, cartes et indices s’adapteront à la langue choisie.',
+        'Los títulos del menú, tarjetas y sugerencias se adaptarán al idioma seleccionado.',
+        'Os títulos do menu, cartões e sugestões se adaptarão ao idioma selecionado.',
+        'I titoli dei menu, delle schede e i suggerimenti si adatteranno alla lingua selezionata.',
+        'Menu-, kaarttitels en hintteksten worden aangepast aan de geselecteerde taal.',
+        'Tytuły menu, kart i podpowiedzi zostaną dostosowane do wybranego języka.',
+        'Заголовки меню, карточек и подсказки будут адаптированы к выбранному языку.',
+        'ستتطابق عناوين القوائم والبطاقات ونصوص التلميح مع اللغة المحددة.',
+        'मेनू, कार्ड के शीर्षक और संकेत टेक्स्ट चुनी गई भाषा के अनुसार अनुकूलित होंगे।',
+        '菜单、卡片标题及提示文字将自动适配所选语言。',
+        'メニュー、カードの見出し、ヒントテキストが選択した言語に適合します。',
+        '메뉴, 카드 제목 및 힌트 텍스트가 선택한 언어에 맞춰 변경됩니다.',
+        'Judul menu, kartu, dan teks petunjuk akan disesuaikan dengan bahasa yang dipilih.',
+      ],
+      'cv_language_sheet_title': [
+        'Select CV Language',
+        'CV Dili Seçin',
+        'CV-Sprache auswählen',
+        'Choisir la langue du CV',
+        'Seleccionar idioma del CV',
+        'Selecionar idioma do CV',
+        'Seleziona lingua del CV',
+        'CV-taal selecteren',
+        'Wybierz język CV',
+        'Выберите язык резюме',
+        'اختر لغة السيرة الذاتية',
+        'सीवी भाषा चुनें',
+        '选择简历语言',
+        'CVの言語を選択',
+        '이력서 언어 선택',
+        'Pilih Bahasa CV',
+      ],
+      'cv_language_selected_badge': [
+        'Selected',
+        'Seçili',
+        'Ausgewählt',
+        'Sélectionné',
+        'Seleccionado',
+        'Selecionado',
+        'Selezionato',
+        'Geselecteerd',
+        'Wybrany',
+        'Выбрано',
+        'محدد',
+        'चयनित',
+        '已选',
+        '選択中',
+        '선택됨',
+        'Dipilih',
+      ],
+      'hint_full_name': [
+        'e.g. Alex Morgan',
+        'örn: Canberk Yılmaz',
+        'z.B. Max Mustermann',
+        'ex: Jean Dupont',
+        'ej: Carlos García',
+        'ex: Lucas Silva',
+        'es: Marco Rossi',
+        'bijv. Jan Jansen',
+        'np. Jan Kowalski',
+        'напр. Алексей Смирнов',
+        'مثال: أحمد محمود',
+        'जैसे: राहुल शर्मा',
+        '例如：李伟',
+        '例: 山田 太郎',
+        '예: 김민수',
+        'cth: Budi Santoso',
+      ],
+      'hint_location': [
+        'San Francisco, CA',
+        'İstanbul, Türkiye',
+        'Berlin, Deutschland',
+        'Paris, France',
+        'Madrid, España',
+        'São Paulo, Brasil',
+        'Milano, Italia',
+        'Amsterdam, Nederland',
+        'Warszawa, Polska',
+        'Москва, Россия',
+        'دبي، الإمارات',
+        'नई दिल्ली, भारत',
+        '北京，中国',
+        '東京都、日本',
+        '서울, 대한민국',
+        'Jakarta, Indonesia',
+      ],
+      'hint_linkedin': [
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+        'linkedin.com/in/username',
+      ],
+      'hint_github': [
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+        'github.com/username',
+      ],
+      'hint_portfolio': [
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+        'portfolio.dev',
+      ],
       'cv_experiences_sub': [
         'Add career history and achievements',
         'Kariyer geçmişinizi ve başarılarınızı ekleyin',

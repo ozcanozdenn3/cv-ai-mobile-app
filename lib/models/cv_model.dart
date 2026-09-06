@@ -174,6 +174,7 @@ class CvModel {
 
   CvTemplate template;
   int primaryColorHex;
+  String? targetLanguage;
 
   CvModel({
     required this.id,
@@ -201,6 +202,7 @@ class CvModel {
     List<CvSectionType>? sectionOrder,
     this.template = CvTemplate.sidebarModern,
     this.primaryColorHex = 0xFF2563EB,
+    this.targetLanguage,
   })  : personalTraits = personalTraits ?? [],
         references = references ?? [],
         projects = projects ?? [],
@@ -358,6 +360,7 @@ class CvModel {
         ),
       ],
       customSections: [],
+      targetLanguage: locale,
     );
   }
 

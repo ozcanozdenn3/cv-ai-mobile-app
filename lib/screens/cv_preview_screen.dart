@@ -22,8 +22,11 @@ class CvPreviewScreen extends StatelessWidget {
       return;
     }
 
+    final cvLocale = (cv.targetLanguage != null && cv.targetLanguage!.trim().isNotEmpty)
+        ? cv.targetLanguage!
+        : LocalizationService.currentLocale;
     final pdfBytes = await PdfGeneratorService.generateCvPdf(cv,
-        locale: LocalizationService.currentLocale);
+        locale: cvLocale);
     final fileName =
         '${cv.fullName.isNotEmpty ? cv.fullName.replaceAll(' ', '_') : 'CV'}_CV_AI.pdf';
 
@@ -54,8 +57,11 @@ class CvPreviewScreen extends StatelessWidget {
       return;
     }
 
+    final cvLocale = (cv.targetLanguage != null && cv.targetLanguage!.trim().isNotEmpty)
+        ? cv.targetLanguage!
+        : LocalizationService.currentLocale;
     final pdfBytes = await PdfGeneratorService.generateCvPdf(cv,
-        locale: LocalizationService.currentLocale);
+        locale: cvLocale);
     final fileName =
         '${cv.fullName.isNotEmpty ? cv.fullName.replaceAll(' ', '_') : 'CV'}_CV_AI.pdf';
 
@@ -133,7 +139,9 @@ class CvPreviewScreen extends StatelessWidget {
           ),
           body: PdfPreview.builder(
             build: (format) => PdfGeneratorService.generateCvPdf(cv,
-                locale: LocalizationService.currentLocale),
+                locale: (cv.targetLanguage != null && cv.targetLanguage!.trim().isNotEmpty)
+                    ? cv.targetLanguage!
+                    : LocalizationService.currentLocale),
             allowPrinting: false,
             allowSharing: false,
             canChangeOrientation: false,

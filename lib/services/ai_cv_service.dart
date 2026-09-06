@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io' show Platform, File;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -244,7 +243,7 @@ class AiCvService {
     }
     final result = await _callGeminiApi(
       prompt:
-          'Extract the complete CV from the attached document. Read all pages and columns.',
+          'Scan this CV document/image and extract all information completely without any omissions. Read all pages, sidebars, and columns. Extract ALL work experiences with complete full descriptions and achievements, ALL educations, ALL projects, ALL languages with levels, ALL references, ALL skills, ALL personal traits/strengths, and ALL contact links.',
       locale: locale ?? LocalizationService.currentLocale,
       apiKey: apiKey,
       isStrictExtraction: true,
@@ -265,6 +264,9 @@ class AiCvService {
     if (overrideKey != null) {
       return overrideKey.trim();
     }
+    if (AiConstants.defaultGeminiApiKey.isNotEmpty) {
+      return AiConstants.defaultGeminiApiKey;
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final customKey = prefs.getString(AiConstants.prefsGeminiApiKey);
@@ -272,23 +274,6 @@ class AiCvService {
         return customKey.trim();
       }
     } catch (_) {}
-    if (!kIsWeb && Platform.environment['FLUTTER_TEST'] == 'true') {
-      return const String.fromEnvironment('GEMINI_API_KEY');
-    }
-    if (AiConstants.defaultGeminiApiKey.isNotEmpty) {
-      return AiConstants.defaultGeminiApiKey;
-    }
-    if (!kIsWeb) {
-      try {
-        final localEnv = File('.env.ai.local');
-        if (localEnv.existsSync()) {
-          final content = localEnv.readAsStringSync();
-          final parsed = jsonDecode(content);
-          final key = parsed['GEMINI_API_KEY']?.toString();
-          if (key != null && key.isNotEmpty) return key;
-        }
-      } catch (_) {}
-    }
     return '';
   }
 
@@ -468,8 +453,8 @@ class AiCvService {
     Map<String, dynamic>? documentPart,
   }) async {
     final String userInstruction = isStrictExtraction
-        ? 'Analyze this text, detect the exact language, extract the complete professional summary verbatim without shortening it, and extract all personal, education, experience, skill, certificate, and project details as structured JSON.'
-        : 'Analyze this text, detect the exact language, synthesize a persuasive executive summary based on the text, and extract all other details as structured JSON.';
+        ? 'Analyze this document/text, detect the exact language, extract the complete professional summary verbatim without shortening it, and extract ALL work experiences (with complete detailed descriptions, bullet points and achievements without shortening), ALL educations (universities, degrees), ALL projects, ALL languages with proficiency levels, ALL references, ALL skills, ALL personal traits/strengths, and ALL social links (LinkedIn, GitHub, portfolio) into structured JSON.'
+        : 'Analyze this text, detect the exact language, synthesize a persuasive executive summary based on the text, and extract all other details (all experiences with complete descriptions, all educations, all projects, all languages, all skills, traits, references, social links) as structured JSON.';
 
     final String systemInstruction = isStrictExtraction
         ? AiConstants.systemInstructionStrict
@@ -522,6 +507,15 @@ class AiCvService {
     );
   }
 
+  @visibleForTesting
+  static AiCvParseResult parseJsonToResultForTesting(
+    String jsonString, {
+    required String source,
+    required String fallbackLocale,
+  }) =>
+      _parseJsonToResult(jsonString,
+          source: source, fallbackLocale: fallbackLocale);
+
   /// Parses JSON output string into a robust `AiCvParseResult`
   static AiCvParseResult _parseJsonToResult(
     String jsonString, {
@@ -541,110 +535,228 @@ class AiCvService {
       }
       cleaned = cleaned.trim();
 
+      final firstBrace = cleaned.indexOf('{');
+      final lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+      }
+
       final map = jsonDecode(cleaned) as Map<String, dynamic>;
 
-      final educations = (map['educations'] as List<dynamic>?)
-              ?.map((e) => Education(
-                    school: e['school'] as String? ?? '',
-                    degree: e['degree'] as String? ?? '',
-                    field: e['field'] as String? ?? '',
-                    startDate: e['startDate'] as String? ?? '',
-                    endDate: e['endDate'] as String? ?? '',
-                    gpa: e['gpa'] as String? ?? '',
-                  ))
-              .where((e) => e.school.isNotEmpty || e.field.isNotEmpty)
-              .toList() ??
-          [];
+      final educations = <Education>[];
+      if (map['educations'] is List) {
+        for (final e in map['educations'] as List<dynamic>) {
+          if (e is Map) {
+            final school = (e['school'] as String? ?? '').trim();
+            final degree = (e['degree'] as String? ?? '').trim();
+            final field = (e['field'] as String? ?? '').trim();
+            final startDate = (e['startDate'] as String? ?? '').trim();
+            final endDate = (e['endDate'] as String? ?? '').trim();
+            final gpa = (e['gpa'] as String? ?? '').trim();
+            if (school.isNotEmpty || field.isNotEmpty || degree.isNotEmpty) {
+              educations.add(Education(
+                school: school,
+                degree: degree,
+                field: field,
+                startDate: startDate,
+                endDate: endDate,
+                gpa: gpa,
+              ));
+            }
+          }
+        }
+      }
 
-      final experiences = (map['experiences'] as List<dynamic>?)
-              ?.map((e) => WorkExperience(
-                    company: e['company'] as String? ?? '',
-                    position: e['position'] as String? ?? '',
-                    startDate: e['startDate'] as String? ?? '',
-                    endDate: e['endDate'] as String? ?? '',
-                    isCurrent: e['isCurrent'] as bool? ?? false,
-                    description: e['description'] as String? ?? '',
-                  ))
-              .where((e) => e.company.isNotEmpty || e.position.isNotEmpty)
-              .toList() ??
-          [];
+      final experiences = <WorkExperience>[];
+      if (map['experiences'] is List) {
+        for (final e in map['experiences'] as List<dynamic>) {
+          if (e is Map) {
+            final company = (e['company'] as String? ?? '').trim();
+            final position = (e['position'] as String? ?? '').trim();
+            final startDate = (e['startDate'] as String? ?? '').trim();
+            final endDate = (e['endDate'] as String? ?? '').trim();
+            final isCurrent = e['isCurrent'] is bool
+                ? (e['isCurrent'] as bool)
+                : (e['isCurrent']?.toString().toLowerCase() == 'true');
+            final description = (e['description'] as String? ?? '').trim();
+            if (company.isNotEmpty ||
+                position.isNotEmpty ||
+                description.isNotEmpty) {
+              experiences.add(WorkExperience(
+                company: company,
+                position: position,
+                startDate: startDate,
+                endDate: endDate,
+                isCurrent: isCurrent,
+                description: description,
+              ));
+            }
+          }
+        }
+      }
 
-      final skills = (map['skills'] as List<dynamic>?)
-              ?.map((s) {
-                final name = s['name'] as String? ?? '';
-                final level =
-                    s['level'] is num ? (s['level'] as num).toInt() : 80;
-                final levelLabel = s['levelLabel'] as String? ?? 'Advanced';
-                return SkillItem(
-                    name: name,
-                    level: level.clamp(10, 100),
-                    levelLabel: levelLabel);
-              })
-              .where((s) => s.name.isNotEmpty)
-              .toList() ??
-          [];
+      final skills = <SkillItem>[];
+      if (map['skills'] is List) {
+        for (final s in map['skills'] as List<dynamic>) {
+          if (s is String && s.trim().isNotEmpty) {
+            for (final sub in s.split(RegExp(r'[,;•\n]+'))) {
+              final trimmed = sub.trim();
+              if (trimmed.isNotEmpty &&
+                  !skills.any(
+                      (sk) => sk.name.toLowerCase() == trimmed.toLowerCase())) {
+                skills.add(SkillItem(
+                    name: trimmed, level: 80, levelLabel: 'Advanced'));
+              }
+            }
+          } else if (s is Map) {
+            final name = (s['name'] as String? ?? '').trim();
+            if (name.isNotEmpty) {
+              final rawLevel = s['level'];
+              final int level = (rawLevel is num && rawLevel > 0)
+                  ? rawLevel.toInt().clamp(10, 100)
+                  : 80;
+              final rawLabel = (s['levelLabel'] as String? ?? '').trim();
+              final levelLabel = rawLabel.isNotEmpty ? rawLabel : 'Advanced';
+              if (!skills
+                  .any((sk) => sk.name.toLowerCase() == name.toLowerCase())) {
+                skills.add(SkillItem(
+                    name: name, level: level, levelLabel: levelLabel));
+              }
+            }
+          }
+        }
+      }
 
-      final certificates = (map['certificates'] as List<dynamic>?)
-              ?.map((c) => CertificateItem(
-                    name: c['name'] as String? ?? '',
-                    issuer: c['issuer'] as String? ?? '',
-                    date: c['date'] as String? ?? '',
-                    credentialUrl: c['credentialUrl'] as String? ?? '',
-                  ))
-              .where((c) => c.name.isNotEmpty)
-              .toList() ??
-          [];
+      final certificates = <CertificateItem>[];
+      if (map['certificates'] is List) {
+        for (final c in map['certificates'] as List<dynamic>) {
+          if (c is Map) {
+            final name = (c['name'] as String? ?? '').trim();
+            if (name.isNotEmpty) {
+              certificates.add(CertificateItem(
+                name: name,
+                issuer: (c['issuer'] as String? ?? '').trim(),
+                date: (c['date'] as String? ?? '').trim(),
+                credentialUrl: (c['credentialUrl'] as String? ?? '').trim(),
+              ));
+            }
+          }
+        }
+      }
 
-      final languages = (map['languages'] as List<dynamic>?)
-              ?.map((l) => LanguageItem(
-                    language: l['language'] as String? ?? '',
-                    level: l['level'] as String? ?? '',
-                  ))
-              .where((l) => l.language.isNotEmpty)
-              .toList() ??
-          [];
+      final languages = <LanguageItem>[];
+      if (map['languages'] is List) {
+        for (final l in map['languages'] as List<dynamic>) {
+          if (l is String && l.trim().isNotEmpty) {
+            final parts = l.split(RegExp(r'\s*[:–—\-\(]\s*'));
+            final langName = parts[0].replaceAll(')', '').trim();
+            final langLevel = parts.length > 1
+                ? parts.sublist(1).join(' ').replaceAll(')', '').trim()
+                : '';
+            if (langName.isNotEmpty &&
+                !languages.any((item) =>
+                    item.language.toLowerCase() == langName.toLowerCase())) {
+              languages.add(LanguageItem(
+                language: langName,
+                level: LocalizationService.normalizeLanguageLevel(langLevel),
+              ));
+            }
+          } else if (l is Map) {
+            final langName = (l['language'] as String? ?? '').trim();
+            final rawLevel = (l['level'] as String? ?? '').trim();
+            if (langName.isNotEmpty &&
+                !languages.any((item) =>
+                    item.language.toLowerCase() == langName.toLowerCase())) {
+              languages.add(LanguageItem(
+                language: langName,
+                level: LocalizationService.normalizeLanguageLevel(rawLevel),
+              ));
+            }
+          }
+        }
+      }
 
-      final projects = (map['projects'] as List<dynamic>?)
-              ?.map((p) => ProjectItem(
-                    name: p['name'] as String? ?? '',
-                    role: p['role'] as String? ?? '',
-                    link: p['link'] as String? ?? '',
-                    date: p['date'] as String? ?? '',
-                    description: p['description'] as String? ?? '',
-                    technologies: p['technologies'] as String? ?? '',
-                  ))
-              .where((p) => p.name.isNotEmpty)
-              .toList() ??
-          [];
+      final projects = <ProjectItem>[];
+      if (map['projects'] is List) {
+        for (final p in map['projects'] as List<dynamic>) {
+          if (p is Map) {
+            final name = (p['name'] as String? ?? '').trim();
+            if (name.isNotEmpty) {
+              projects.add(ProjectItem(
+                name: name,
+                role: (p['role'] as String? ?? '').trim(),
+                link: (p['link'] as String? ?? '').trim(),
+                date: (p['date'] as String? ?? '').trim(),
+                description: (p['description'] as String? ?? '').trim(),
+                technologies: (p['technologies'] as String? ?? '').trim(),
+              ));
+            }
+          }
+        }
+      }
 
-      final personalTraits = (map['personalTraits'] as List<dynamic>?)
-              ?.map((t) => t.toString().trim())
-              .where((t) => t.isNotEmpty)
-              .toList() ??
-          [];
+      final personalTraits = <String>[];
+      if (map['personalTraits'] is List) {
+        for (final t in map['personalTraits'] as List<dynamic>) {
+          if (t is String && t.trim().isNotEmpty) {
+            for (final sub in t.split(RegExp(r'[,;•\n]+'))) {
+              final clean = sub.trim();
+              if (clean.isNotEmpty &&
+                  !personalTraits.any(
+                      (trait) => trait.toLowerCase() == clean.toLowerCase())) {
+                personalTraits.add(clean);
+              }
+            }
+          } else if (t is Map) {
+            final val = (t['trait'] ?? t['name'] ?? t.values.firstOrNull)
+                ?.toString()
+                .trim();
+            if (val != null &&
+                val.isNotEmpty &&
+                !personalTraits
+                    .any((trait) => trait.toLowerCase() == val.toLowerCase())) {
+              personalTraits.add(val);
+            }
+          }
+        }
+      }
 
-      final references = (map['references'] as List<dynamic>?)
-              ?.map((r) => ReferenceItem(
-                    name: r['name'] as String? ?? '',
-                    position: r['position'] as String? ?? '',
-                    company: r['company'] as String? ?? '',
-                    phone: r['phone'] as String? ?? '',
-                    email: r['email'] as String? ?? '',
-                  ))
-              .where((r) => r.name.isNotEmpty)
-              .toList() ??
-          [];
+      final references = <ReferenceItem>[];
+      if (map['references'] is List) {
+        for (final r in map['references'] as List<dynamic>) {
+          if (r is Map) {
+            final name = (r['name'] as String? ?? '').trim();
+            if (name.isNotEmpty) {
+              references.add(ReferenceItem(
+                name: name,
+                position: (r['position'] as String? ?? '').trim(),
+                company: (r['company'] as String? ?? '').trim(),
+                phone: (r['phone'] as String? ?? '').trim(),
+                email: (r['email'] as String? ?? '').trim(),
+              ));
+            }
+          } else if (r is String && r.trim().isNotEmpty) {
+            references.add(ReferenceItem(
+              name: r.trim(),
+              position: '',
+              company: '',
+              phone: '',
+              email: '',
+            ));
+          }
+        }
+      }
 
       return AiCvParseResult(
-        fullName: map['fullName'] as String? ?? '',
-        jobTitle: map['jobTitle'] as String? ?? '',
-        email: map['email'] as String? ?? '',
-        phone: map['phone'] as String? ?? '',
-        location: map['location'] as String? ?? '',
-        summary: map['summary'] as String? ?? '',
-        linkedin: map['linkedin'] as String? ?? '',
-        github: map['github'] as String? ?? '',
-        portfolioUrl: map['portfolioUrl'] as String? ?? '',
+        fullName: (map['fullName'] as String? ?? '').trim(),
+        jobTitle: (map['jobTitle'] as String? ?? '').trim(),
+        email: (map['email'] as String? ?? '').trim(),
+        phone: (map['phone'] as String? ?? '').trim(),
+        location: (map['location'] as String? ?? '').trim(),
+        summary: (map['summary'] as String? ?? '').trim(),
+        linkedin: (map['linkedin'] as String? ?? '').trim(),
+        github: (map['github'] as String? ?? '').trim(),
+        portfolioUrl: (map['portfolioUrl'] as String? ?? '').trim(),
         educations: educations,
         experiences: experiences,
         skills: skills,
@@ -794,6 +906,22 @@ class AiCvService {
 
     // 8. Extract Skills
     final skills = <SkillItem>[];
+    final namedSkills = _namedSection(text, 'skills');
+    for (final line in namedSkills) {
+      for (final chunk in line.split(RegExp(r'[,;•|\n]+'))) {
+        final clean = _cleanListLine(chunk);
+        if (clean.isNotEmpty &&
+            clean.length <= 40 &&
+            !skills.any((s) => s.name.toLowerCase() == clean.toLowerCase())) {
+          skills.add(SkillItem(
+            name: clean,
+            level: 85,
+            levelLabel: _getLevelLabelForLocale(detectedLang),
+          ));
+        }
+      }
+    }
+
     final skillKeywords = [
       'Flutter',
       'Dart',
@@ -831,7 +959,8 @@ class AiCvService {
     ];
 
     for (final skill in skillKeywords) {
-      if (lower.contains(skill.toLowerCase())) {
+      if (lower.contains(skill.toLowerCase()) &&
+          !skills.any((s) => s.name.toLowerCase() == skill.toLowerCase())) {
         skills.add(SkillItem(
           name: skill,
           level: 85,
@@ -843,7 +972,11 @@ class AiCvService {
     final certificates = _extractCertificatesFromText(text);
     final languages = _extractLanguagesFromText(text);
     final projects = _extractProjectsFromText(text);
-    final summary = _extractSummaryFromText(text);
+    final extractedSummary = _extractSummaryFromText(text);
+    // A spoken note normally has no "Summary" heading. Keep the original
+    // statement visible while the user configures AI, rather than discarding it.
+    final summary =
+        extractedSummary.isNotEmpty ? extractedSummary : text.trim();
     final personalTraits = _extractTraitsFromText(text);
 
     return AiCvParseResult(
@@ -896,15 +1029,15 @@ class AiCvService {
     'experience':
         'experience|work experience|employment|iş deneyimi|is deneyimi|deneyim|deneyimler|tecrübe|berufserfahrung|expérience|expériences professionnelles|experiencia|experiencia laboral|experiência|experiência profissional|esperienza|esperienza lavorativa|werkervaring|doświadczenie|doświadczenie zawodowe|опыт|опыт работы|الخبرة|الخبرات العملية|अनुभव|कार्य अनुभव|工作经历|工作经验|職歴|경력|pengalaman|pengalaman kerja',
     'skills':
-        'skills|beceriler|yetenekler|kenntnisse|fähigkeiten|compétences|habilidades|competencias|competências|competenze|vaardigheden|umiejętności|навыки|المهارات|कौशल|技能|スキル|기술|keahlian|keterampilan',
+        'skills|beceriler|yetenekler|uzmanlıklar|uzmanlık alanları|teknik beceriler|kenntnisse|fähigkeiten|compétences|habilidades|competencias|competências|competenze|vaardigheden|umiejętności|навыки|المهارات|कौशल|技能|スキル|기술|keahlian|keterampilan',
     'languages':
-        'languages|diller|sprachen|langues|idiomas|lingue|talen|języki|языки|اللغات|भाषाएँ|语言|言語|언어|bahasa',
+        'languages|diller|yabancı diller|yabanci diller|sprachen|langues|idiomas|lingue|talen|języki|языки|اللغات|भाषाएँ|语言|言語|언어|bahasa',
     'projects':
         'projects|projeler|projelerim|projekte|projets|proyectos|projetos|progetti|projecten|projekty|проекты|المشاريع|परियोजनाएँ|项目|プロジェクト|프로젝트|proyek',
     'references':
         'references|referanslar|referans|referenzen|références|referencias|referências|referenze|referenties|referencje|рекомендации|рекомендатели|المراجع|संदर्भ|推荐人|推薦人|照会先|추천인|referensi',
     'traits':
-        'personal traits|traits|soft skills|kişisel özellikler|kisisel ozellikler|yetkinlikler|persönliche eigenschaften|qualités personnelles|cualidades personales|qualidades pessoais|qualità personali|persoonlijke eigenschappen|cechy osobiste|личные качества|الصفات الشخصية|व्यक्तिगत गुण|个人特质|性格|개인적 특성|sifat pribadi',
+        'personal traits|traits|soft skills|kişisel özellikler|kisisel ozellikler|yetkinlikler|nitelikler|özellikler|ozellikler|güçlü yönler|guclu yonler|persönliche eigenschaften|qualités personnelles|cualidades personales|qualidades pessoais|qualità personali|persoonlijke eigenschappen|cechy osobiste|личные качества|الصفات الشخصية|व्यक्तिगत गुण|个人特质|性格|개인적 특성|sifat pribadi',
     'certificates':
         'certificates|certifications|sertifikalar|zertifikate|certificats|certificados|certificazioni|certificaten|certyfikaty|сертификаты|الشهادات|प्रमाणपत्र|证书|資格|자격증|sertifikat',
   };
@@ -1182,6 +1315,32 @@ class AiCvService {
       }
     }
     flush();
+    // Voice dictation usually has no heading or date range. Preserve an
+    // explicitly spoken work statement instead of dropping it altogether.
+    if (experiences.isEmpty &&
+        RegExp(r'worked|working|experience|çalıştım|çalışıyorum|tecrübem|deneyim',
+                caseSensitive: false)
+            .hasMatch(text)) {
+      final sentence = text
+          .split(RegExp(r'(?<=[.!?])\s+'))
+          .firstWhere(
+            (line) => RegExp(
+                    r'worked|working|experience|çalıştım|çalışıyorum|tecrübem|deneyim',
+                    caseSensitive: false)
+                .hasMatch(line),
+            orElse: () => '',
+          )
+          .trim();
+      if (sentence.isNotEmpty) {
+        experiences.add(WorkExperience(
+          company: '',
+          position: fallbackJobTitle,
+          startDate: '',
+          endDate: '',
+          description: sentence,
+        ));
+      }
+    }
     return experiences;
   }
 
@@ -1213,9 +1372,46 @@ class AiCvService {
   static List<LanguageItem> _extractLanguagesFromText(String text) {
     final lines = _namedSection(text, 'languages');
     final source = lines.isNotEmpty ? lines.join(', ') : '';
-    if (source.isEmpty) return [];
+    if (source.isEmpty) {
+      final commonLanguages = [
+        'Türkçe',
+        'Turkish',
+        'İngilizce',
+        'English',
+        'Almanca',
+        'German',
+        'Fransızca',
+        'French',
+        'İspanyolca',
+        'Spanish',
+        'İtalyanca',
+        'Italian',
+        'Rusça',
+        'Russian',
+        'Arapça',
+        'Arabic',
+        'Çince',
+        'Chinese',
+        'Japonca',
+        'Japanese'
+      ];
+      final found = <LanguageItem>[];
+      for (final lang in commonLanguages) {
+        final reg =
+            RegExp('\\b${RegExp.escape(lang)}\\b', caseSensitive: false);
+        if (reg.hasMatch(text) &&
+            !found.any((l) => l.language.toLowerCase() == lang.toLowerCase())) {
+          found.add(LanguageItem(
+            language: lang,
+            level:
+                LocalizationService.normalizeLanguageLevel('Native / Fluent'),
+          ));
+        }
+      }
+      return found;
+    }
     final chunks = source
-        .split(RegExp(r'[,;|/]+'))
+        .split(RegExp(r'[,;|/\n]+'))
         .map(_cleanListLine)
         .where((c) => c.isNotEmpty);
     return chunks
@@ -1225,9 +1421,11 @@ class AiCvService {
               .map((p) => p.replaceAll(')', '').trim())
               .where((p) => p.isNotEmpty)
               .toList();
+          final langName = parts.isNotEmpty ? parts.first : chunk;
+          final rawLevel = parts.length > 1 ? parts.sublist(1).join(' ') : '';
           return LanguageItem(
-            language: parts.isNotEmpty ? parts.first : chunk,
-            level: parts.length > 1 ? parts.sublist(1).join(' ') : '',
+            language: langName,
+            level: LocalizationService.normalizeLanguageLevel(rawLevel),
           );
         })
         .where((item) => item.language.isNotEmpty)

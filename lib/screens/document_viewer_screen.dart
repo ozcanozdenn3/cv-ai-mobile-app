@@ -54,7 +54,9 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
         if (activeCv.fullName.isNotEmpty || activeCv.experiences.isNotEmpty) {
           bytes = await PdfGeneratorService.generateCvPdf(
             activeCv,
-            locale: LocalizationService.currentLocale,
+            locale: (activeCv.targetLanguage != null && activeCv.targetLanguage!.trim().isNotEmpty)
+                ? activeCv.targetLanguage!
+                : LocalizationService.currentLocale,
           );
         }
       }

@@ -297,6 +297,7 @@ class CvStorageService {
       'profilePhotoBytes': cv.profilePhotoBytes != null ? base64Encode(cv.profilePhotoBytes!) : null,
       'primaryColorHex': cv.primaryColorHex,
       'template': cv.template.name,
+      'targetLanguage': cv.targetLanguage,
       'personalTraits': cv.personalTraits,
       'experiences': cv.experiences
           .map((e) => {
@@ -384,6 +385,7 @@ class CvStorageService {
       hasPhoto: map['hasPhoto'] as bool? ?? true,
       profilePhotoBytes: photoBytes,
       primaryColorHex: map['primaryColorHex'] as int? ?? 0xFF2563EB,
+      targetLanguage: map['targetLanguage'] as String?,
       template: CvTemplate.values.firstWhere(
         (t) => t.name == map['template'],
         orElse: () => CvTemplate.sidebarModern,
@@ -473,4 +475,10 @@ class CvStorageService {
 
     return cv;
   }
+
+  @visibleForTesting
+  static Map<String, dynamic> cvToMapForTesting(CvModel cv) => _cvToMap(cv);
+
+  @visibleForTesting
+  static CvModel cvFromMapForTesting(Map<String, dynamic> map) => _cvFromMap(map);
 }
