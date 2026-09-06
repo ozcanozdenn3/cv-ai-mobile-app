@@ -1,0 +1,7 @@
+/* Localized Info.plist for ja */
+"NSCameraUsageDescription" = "書類を直接スキャンし、プロフィール写真を撮影するためにカメラへのアクセスが必要です。";
+"NSPhotoLibraryUsageDescription" = "PDFに変換する書類や画像を選択するために写真ライブラリへのアクセスが必要です。";
+"NSPhotoLibraryAddUsageDescription" = "変換されたPDF書類を写真ライブラリに保存するための許可が必要です。";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "音声メモの録音やAIによる履歴書情報の口述入力にマイクのアクセス権が必要です。";
+"NSSpeechRecognitionUsageDescription" = "AIで音声をテキストに変換して履歴書に入力するために音声認識の許可が必要です。";

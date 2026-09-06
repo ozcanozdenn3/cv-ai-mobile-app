@@ -1,0 +1,7 @@
+/* Localized Info.plist for zh-Hans */
+"NSCameraUsageDescription" = "需要相机权限以直接扫描文档并拍摄个人头像照片。";
+"NSPhotoLibraryUsageDescription" = "需要照片图库权限以选择要转换为PDF的文档和图片。";
+"NSPhotoLibraryAddUsageDescription" = "需要权限以将转换后的PDF文档保存到照片图库。";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "需要麦克风权限以便录制语音并通过AI生成简历信息。";
+"NSSpeechRecognitionUsageDescription" = "需要语音识别权限以便通过AI将您的语音转换为简历文本。";

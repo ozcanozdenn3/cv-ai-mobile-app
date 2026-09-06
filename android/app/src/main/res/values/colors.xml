@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App icon background: matches the icon's dark navy gradient top color -->
+    <color name="ic_launcher_background">#0B1520</color>
+    <!-- Native splash screen background matching custom Flutter SplashScreen -->
+    <color name="splash_background">#070913</color>
+</resources>

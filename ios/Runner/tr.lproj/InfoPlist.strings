@@ -1,0 +1,7 @@
+/* Localized Info.plist for tr */
+"NSCameraUsageDescription" = "Belgelerinizi doğrudan taramak ve profil fotoğrafı çekmek için kamera erişimi gereklidir.";
+"NSPhotoLibraryUsageDescription" = "Belgelerinizi seçip PDF'e dönüştürmek için fotoğraf kütüphanesine erişim gereklidir.";
+"NSPhotoLibraryAddUsageDescription" = "Dönüştürülen PDF belgelerini galerinize kaydetmek için izin gereklidir.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Sesinizi kaydederek yapay zeka ile CV bilgilerinizi oluşturabilmek için mikrofon erişimi gereklidir.";
+"NSSpeechRecognitionUsageDescription" = "Sesinizi metne dönüştürerek CVnize otomatik ekleyebilmek için konuşma tanıma izni gereklidir.";

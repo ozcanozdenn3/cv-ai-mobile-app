@@ -1,0 +1,7 @@
+/* Localized Info.plist for nl */
+"NSCameraUsageDescription" = "Cameratoegang is vereist om documenten direct te scannen en profielfoto's te maken.";
+"NSPhotoLibraryUsageDescription" = "Toegang tot foto's is vereist om documenten en afbeeldingen te selecteren om naar PDF te converteren.";
+"NSPhotoLibraryAddUsageDescription" = "Toestemming is vereist om geconverteerde PDF-documenten op te slaan in uw fotobibliotheek.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Toegang tot de microfoon is vereist om spraaknotities op te nemen en uw cv-gegevens met AI in te spreken.";
+"NSSpeechRecognitionUsageDescription" = "Toestemming voor spraakherkenning is vereist om uw spraakinvoer met AI naar cv-tekst om te zetten.";

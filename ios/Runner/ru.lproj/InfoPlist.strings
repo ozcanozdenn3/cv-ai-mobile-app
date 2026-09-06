@@ -1,0 +1,7 @@
+/* Localized Info.plist for ru */
+"NSCameraUsageDescription" = "Доступ к камере необходим для сканирования документов и съемки фото профиля.";
+"NSPhotoLibraryUsageDescription" = "Доступ к фото необходим для выбора документов и изображений для конвертации в PDF.";
+"NSPhotoLibraryAddUsageDescription" = "Требуется разрешение для сохранения созданных PDF-документов в галерею.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Доступ к микрофону необходим для записи голосовых заметок и заполнения резюме с помощью ИИ.";
+"NSSpeechRecognitionUsageDescription" = "Разрешение на распознавание речи требуется для преобразования вашего голоса в текст резюме с помощью ИИ.";

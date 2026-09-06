@@ -1,0 +1,7 @@
+/* Localized Info.plist for ar */
+"NSCameraUsageDescription" = "الوصول إلى الكاميرا مطلوب لمسح المستندات ضوئيًا مباشرة والتقاط صور الملف الشخصي.";
+"NSPhotoLibraryUsageDescription" = "الوصول إلى الصور مطلوب لتحديد المستندات والصور لتحويلها إلى PDF.";
+"NSPhotoLibraryAddUsageDescription" = "مطلوب الإذن لحفظ مستندات PDF المحولة في مكتبة الصور الخاصة بك.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "الوصول إلى الميكروفون مطلوب لتسجيل الملاحظات الصوتية وإملاء بيانات سيرتك الذاتية باستخدام الذكاء الاصطناعي.";
+"NSSpeechRecognitionUsageDescription" = "إذن التعرف على الصوت مطلوب لتحويل صوتك إلى نصوص للسيرة الذاتية باستخدام الذكاء الاصطناعي.";

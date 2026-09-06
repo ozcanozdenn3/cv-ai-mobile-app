@@ -1,0 +1,7 @@
+/* Localized Info.plist for id */
+"NSCameraUsageDescription" = "Akses kamera diperlukan untuk memindai dokumen secara langsung dan mengambil foto profil.";
+"NSPhotoLibraryUsageDescription" = "Akses galeri foto diperlukan untuk memilih dokumen dan gambar yang akan dikonversi ke PDF.";
+"NSPhotoLibraryAddUsageDescription" = "Izin diperlukan untuk menyimpan dokumen PDF yang dikonversi ke galeri foto Anda.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Akses mikrofon diperlukan untuk merekam catatan suara dan mendikte informasi CV Anda dengan AI.";
+"NSSpeechRecognitionUsageDescription" = "Izin pengenalan suara diperlukan untuk menyalin input suara Anda ke dalam teks CV dengan AI.";

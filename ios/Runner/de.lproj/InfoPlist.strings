@@ -1,0 +1,7 @@
+/* Localized Info.plist for de */
+"NSCameraUsageDescription" = "Der Kamerazugriff wird benötigt, um Dokumente direkt zu scannen und Profilfotos aufzunehmen.";
+"NSPhotoLibraryUsageDescription" = "Der Fotozugriff wird benötigt, um Dokumente und Bilder für die PDF-Konvertierung auszuwählen.";
+"NSPhotoLibraryAddUsageDescription" = "Die Erlaubnis ist erforderlich, um konvertierte PDF-Dokumente in Ihrer Fotomediathek zu speichern.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Der Mikrofonzugriff wird benötigt, um Sprachnotizen aufzunehmen und Ihren Lebenslauf mit KI zu erstellen.";
+"NSSpeechRecognitionUsageDescription" = "Die Spracherkennung wird benötigt, um Ihre Spracheingaben per KI in Lebenslauftext umzuwandeln.";

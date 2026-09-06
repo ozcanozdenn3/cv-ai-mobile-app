@@ -1,0 +1,7 @@
+/* Localized Info.plist for hi */
+"NSCameraUsageDescription" = "दस्तावेज़ों को सीधे स्कैन करने और प्रोफ़ाइल फ़ोटो लेने के लिए कैमरा एक्सेस आवश्यक है।";
+"NSPhotoLibraryUsageDescription" = "PDF में बदलने के लिए दस्तावेज़ों और छवियों का चयन करने के लिए फ़ोटो लाइब्रेरी एक्सेस आवश्यक है।";
+"NSPhotoLibraryAddUsageDescription" = "परिवर्तित PDF दस्तावेज़ों को आपकी फ़ोटो लाइब्रेरी में सहेजने के लिए अनुमति आवश्यक है।";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "वॉयस नोट्स रिकॉर्ड करने और AI के साथ अपना CV डिक्टेट करने के लिए माइक्रोफ़ोन एक्सेस आवश्यक है।";
+"NSSpeechRecognitionUsageDescription" = "AI के साथ आपकी आवाज़ को CV टेक्स्ट में बदलने के लिए वाक पहचान अनुमति आवश्यक है।";

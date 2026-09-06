@@ -1,0 +1,7 @@
+/* Localized Info.plist for ko */
+"NSCameraUsageDescription" = "문서를 직접 스캔하고 프로필 사진을 촬영하려면 카메라 접근 권한이 필요합니다.";
+"NSPhotoLibraryUsageDescription" = "PDF로 변환할 문서 및 이미지를 선택하려면 사진 보관함 접근 권한이 필요합니다.";
+"NSPhotoLibraryAddUsageDescription" = "변환된 PDF 문서를 사진 보관함에 저장하려면 권한이 필요합니다.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "음성 메모를 녹음하고 AI를 통해 이력서 정보를 입력하려면 마이크 접근 권한이 필요합니다.";
+"NSSpeechRecognitionUsageDescription" = "AI를 통해 음성을 이력서 텍스트로 변환하려면 음성 인식 권한이 필요합니다.";

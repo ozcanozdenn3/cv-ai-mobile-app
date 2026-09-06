@@ -1,0 +1,7 @@
+/* Localized Info.plist for es */
+"NSCameraUsageDescription" = "Se necesita acceso a la cámara para escanear documentos directamente y tomar fotos de perfil.";
+"NSPhotoLibraryUsageDescription" = "Se necesita acceso a las fotos para seleccionar documentos e imágenes y convertirlos a PDF.";
+"NSPhotoLibraryAddUsageDescription" = "Se requiere permiso para guardar los documentos PDF convertidos en tu galería de fotos.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Se necesita acceso al micrófono para grabar notas de voz y dictar la información de tu CV con IA.";
+"NSSpeechRecognitionUsageDescription" = "Se requiere permiso de reconocimiento de voz para transcribir tu voz a texto de CV con IA.";

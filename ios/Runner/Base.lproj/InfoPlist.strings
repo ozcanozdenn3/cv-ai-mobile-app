@@ -1,0 +1,7 @@
+/* Localized Info.plist for Base */
+"NSCameraUsageDescription" = "Camera access is required to directly scan documents and capture photos.";
+"NSPhotoLibraryUsageDescription" = "Photo library access is required to select documents and images to convert to PDF.";
+"NSPhotoLibraryAddUsageDescription" = "Permission is required to save converted PDF documents to your photo library.";
+"CFBundleDisplayName" = "CV AI";
+"NSMicrophoneUsageDescription" = "Microphone access is required to record voice notes and dictate your CV information with AI.";
+"NSSpeechRecognitionUsageDescription" = "Speech recognition permission is required to transcribe your voice input into CV text with AI.";
