@@ -2786,35 +2786,56 @@ class PdfGeneratorService {
     PdfColor lightBg,
     String activeLocale,
   ) {
+    final atsLabel = activeLocale.startsWith('tr')
+        ? 'ATS SKORU'
+        : (activeLocale.startsWith('de') ? 'ATS-SCORE' : 'ATS SCORE');
+    final expLabel = activeLocale.startsWith('tr')
+        ? 'DENEYİM'
+        : (activeLocale.startsWith('de') ? 'ERFAHRUNG' : 'EXPERIENCE');
+    final eduLabel = activeLocale.startsWith('tr')
+        ? 'EĞİTİM'
+        : (activeLocale.startsWith('de') ? 'AUSBILDUNG' : 'EDUCATION');
+    final skillLabel = activeLocale.startsWith('tr')
+        ? 'YETENEK'
+        : (activeLocale.startsWith('de') ? 'FÄHIGKEITEN' : 'SKILLS');
+
+    final filledExpCount = cv.experiences
+        .where((e) => e.company.isNotEmpty || e.position.isNotEmpty)
+        .length;
+    final filledEduCount = cv.educations
+        .where((e) => e.school.isNotEmpty || e.field.isNotEmpty)
+        .length;
+
     pdf.addPage(
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(0),
+          margin: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 22),
         ),
         build: (pw.Context context) {
           return [
-            // Top Hero Banner
+            // Top Infographic Hero Banner
             pw.Container(
-              padding:
-                  const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              color: primaryColor,
+              padding: const pw.EdgeInsets.all(14),
+              decoration: pw.BoxDecoration(
+                color: primaryColor,
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
               child: pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
-                  if (cv.hasPhoto)
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.only(right: 14),
-                      child: _buildPdfAvatar(
-                        cv,
-                        size: 52,
-                        backgroundColor: PdfColors.white,
-                        borderColor: PdfColors.white,
-                        borderWidth: 2,
-                        textColor: primaryColor,
-                      ),
+                  if (cv.hasPhoto) ...[
+                    _buildPdfAvatar(
+                      cv,
+                      size: 54,
+                      backgroundColor: PdfColors.white,
+                      borderColor: PdfColors.white,
+                      borderWidth: 2,
+                      textColor: primaryColor,
                     ),
+                    pw.SizedBox(width: 14),
+                  ],
                   pw.Expanded(
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -2822,24 +2843,38 @@ class PdfGeneratorService {
                         pw.Text(
                           cv.fullName.isNotEmpty ? cv.fullName : 'Alex Morgan',
                           style: pw.TextStyle(
-                              fontSize: 18,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.white),
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          ),
                         ),
+                        pw.SizedBox(height: 2),
                         pw.Text(
                           cv.jobTitle.isNotEmpty
-                              ? cv.jobTitle
-                              : 'Senior Software Engineer',
-                          style: const pw.TextStyle(
-                              fontSize: 10.5, color: PdfColors.white),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          [cv.email, cv.phone, cv.location]
-                              .where((e) => e.isNotEmpty)
-                              .join('  •  '),
+                              ? cv.jobTitle.toUpperCase()
+                              : 'SENIOR SOFTWARE ENGINEER',
                           style: pw.TextStyle(
-                              fontSize: 7.5, color: PdfColor.fromHex('E2E8F0')),
+                            fontSize: 9.5,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColor.fromHex('E2E8F0'),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        pw.SizedBox(height: 5),
+                        pw.Text(
+                          [
+                            if (cv.email.isNotEmpty) cv.email,
+                            if (cv.phone.isNotEmpty) cv.phone,
+                            if (cv.location.isNotEmpty) cv.location,
+                            if (cv.linkedin.isNotEmpty) 'LinkedIn: ${cv.linkedin}',
+                            if (cv.github.isNotEmpty) 'GitHub: ${cv.github}',
+                            if (cv.portfolioUrl.isNotEmpty)
+                              'Web: ${cv.portfolioUrl}',
+                          ].join('   •   '),
+                          style: pw.TextStyle(
+                            fontSize: 7.5,
+                            color: PdfColor.fromHex('F1F5F9'),
+                          ),
                         ),
                       ],
                     ),
@@ -2847,148 +2882,129 @@ class PdfGeneratorService {
                 ],
               ),
             ),
+            pw.SizedBox(height: 10),
 
-            // 2-Column Body
-            pw.Padding(
+            // Infographic Metric Stats Ribbon
+            pw.Container(
               padding:
-                  const pw.EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+                  const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: pw.BoxDecoration(
+                color: lightBg,
+                borderRadius: pw.BorderRadius.circular(6),
+                border:
+                    pw.Border.all(color: PdfColor.fromHex('E2E8F0'), width: 0.8),
+              ),
               child: pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
                 children: [
-                  // Main Body (Experiences, Educations, Projects)
-                  pw.Expanded(
-                    flex: 65,
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: _buildOrderedSections(
-                        cv,
-                        primaryColor,
-                        darkText,
-                        mutedText,
-                        lightBg,
-                        excludedSections: {
-                          CvSectionType.skills,
-                          CvSectionType.languages
-                        },
-                        activeLocale: activeLocale,
-                        experienceStyle: PdfExperienceStyle.boxedCard,
-                        headerStyle: PdfHeaderStyle.leftAccentLine,
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        atsLabel,
+                        style: pw.TextStyle(
+                          fontSize: 7,
+                          fontWeight: pw.FontWeight.bold,
+                          color: mutedText,
+                        ),
                       ),
-                    ),
+                      pw.Text(
+                        '%${cv.calculateAtsScore()}',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
-                  pw.SizedBox(width: 18),
-
-                  // Right Sidebar (Skills, Languages, References)
-                  pw.Expanded(
-                    flex: 35,
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        if (cv.skills.isNotEmpty) ...[
-                          _buildSectionHeader(
-                              PdfCvLocaleHelper.getSidebarTitle(
-                                  'skills', activeLocale),
-                              primaryColor),
-                          pw.SizedBox(height: 6),
-                          ...cv.skills.map((s) => pw.Padding(
-                                padding: const pw.EdgeInsets.only(bottom: 5),
-                                child: pw.Column(
-                                  crossAxisAlignment:
-                                      pw.CrossAxisAlignment.start,
-                                  children: [
-                                    pw.Row(
-                                      mainAxisAlignment:
-                                          pw.MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        pw.Text(s.name,
-                                            style: pw.TextStyle(
-                                                fontSize: 8,
-                                                fontWeight: pw.FontWeight.bold,
-                                                color: darkText)),
-                                        pw.Text('%${s.level}',
-                                            style: pw.TextStyle(
-                                                fontSize: 7.5,
-                                                color: primaryColor)),
-                                      ],
-                                    ),
-                                    pw.SizedBox(height: 2),
-                                    pw.Container(
-                                      height: 3.5,
-                                      width: 100,
-                                      decoration: pw.BoxDecoration(
-                                        color: PdfColor.fromHex('E2E8F0'),
-                                        borderRadius:
-                                            pw.BorderRadius.circular(2),
-                                      ),
-                                      alignment: pw.Alignment.centerLeft,
-                                      child: pw.Container(
-                                        width: 100 *
-                                            (s.level / 100).clamp(0.0, 1.0),
-                                        decoration: pw.BoxDecoration(
-                                          color: primaryColor,
-                                          borderRadius:
-                                              pw.BorderRadius.circular(2),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )),
-                          pw.SizedBox(height: 12),
-                        ],
-                        if (cv.languages.isNotEmpty) ...[
-                          _buildSectionHeader(
-                              PdfCvLocaleHelper.getSidebarTitle(
-                                  'languages', activeLocale),
-                              primaryColor),
-                          pw.SizedBox(height: 6),
-                          ...cv.languages.map((l) => pw.Padding(
-                                padding: const pw.EdgeInsets.only(bottom: 4),
-                                child: pw.Row(
-                                  mainAxisAlignment:
-                                      pw.MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    pw.Text(l.language,
-                                        style: pw.TextStyle(
-                                            fontSize: 8,
-                                            fontWeight: pw.FontWeight.bold,
-                                            color: darkText)),
-                                    pw.Text(
-                                        LocalizationService.normalizeLanguageLevel(
-                                            l.level, activeLocale),
-                                        style: pw.TextStyle(
-                                            fontSize: 7.5, color: mutedText)),
-                                  ],
-                                ),
-                              )),
-                          pw.SizedBox(height: 12),
-                        ],
-                        if (cv.portfolioUrl.isNotEmpty ||
-                            cv.linkedin.isNotEmpty ||
-                            cv.github.isNotEmpty) ...[
-                          _buildSectionHeader(
-                              PdfCvLocaleHelper.getSidebarTitle(
-                                  'links', activeLocale),
-                              primaryColor),
-                          pw.SizedBox(height: 6),
-                          if (cv.linkedin.isNotEmpty)
-                            pw.Text('LinkedIn: ${cv.linkedin}',
-                                style: pw.TextStyle(
-                                    fontSize: 7.5, color: darkText)),
-                          if (cv.github.isNotEmpty)
-                            pw.Text('GitHub: ${cv.github}',
-                                style: pw.TextStyle(
-                                    fontSize: 7.5, color: darkText)),
-                          if (cv.portfolioUrl.isNotEmpty)
-                            pw.Text('Web: ${cv.portfolioUrl}',
-                                style: pw.TextStyle(
-                                    fontSize: 7.5, color: darkText)),
-                        ],
-                      ],
-                    ),
+                  pw.Container(
+                      width: 0.8,
+                      height: 18,
+                      color: PdfColor.fromHex('CBD5E1')),
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        expLabel,
+                        style: pw.TextStyle(
+                          fontSize: 7,
+                          fontWeight: pw.FontWeight.bold,
+                          color: mutedText,
+                        ),
+                      ),
+                      pw.Text(
+                        '$filledExpCount',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: darkText,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.Container(
+                      width: 0.8,
+                      height: 18,
+                      color: PdfColor.fromHex('CBD5E1')),
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        eduLabel,
+                        style: pw.TextStyle(
+                          fontSize: 7,
+                          fontWeight: pw.FontWeight.bold,
+                          color: mutedText,
+                        ),
+                      ),
+                      pw.Text(
+                        '$filledEduCount',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: darkText,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.Container(
+                      width: 0.8,
+                      height: 18,
+                      color: PdfColor.fromHex('CBD5E1')),
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        skillLabel,
+                        style: pw.TextStyle(
+                          fontSize: 7,
+                          fontWeight: pw.FontWeight.bold,
+                          color: mutedText,
+                        ),
+                      ),
+                      pw.Text(
+                        '${cv.skills.length}',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: darkText,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+            ),
+            pw.SizedBox(height: 12),
+
+            // Dynamic Body Sections (Flow naturally across pages)
+            ..._buildOrderedSections(
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
+              activeLocale: activeLocale,
+              skillStyle: PdfSkillStyle.twoColBar,
+              experienceStyle: PdfExperienceStyle.boxedCard,
+              headerStyle: PdfHeaderStyle.leftAccentLine,
             ),
           ];
         },

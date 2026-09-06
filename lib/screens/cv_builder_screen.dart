@@ -4026,7 +4026,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             crossAxisCount: 3,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 2.6,
+            childAspectRatio: 2.4,
           ),
           itemCount: _themePalette.length,
           itemBuilder: (context, index) {
@@ -4040,7 +4040,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               onTap: () => setState(() => _cv.primaryColorHex = hex),
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
                 decoration: BoxDecoration(
                   color:
                       isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -4075,17 +4075,21 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                   size: 10, color: Colors.white))
                           : null,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 7),
                     Expanded(
                       child: Text(
                         name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10.5,
                           fontWeight:
-                              isSelected ? FontWeight.w900 : FontWeight.w600,
-                          color: isSelected ? color : textColor,
+                              isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected
+                              ? (isDark && hex == 0xFF0F172A
+                                  ? Colors.white
+                                  : color)
+                              : textColor,
                         ),
                       ),
                     ),

@@ -1660,507 +1660,291 @@ class LocalizationService {
     return title;
   }
 
-  static List<Map<String, dynamic>> getThemePalettes([String? locale]) {
-    final lang = (locale ?? currentLocale).toLowerCase();
+  static const List<int> _themePaletteHexes = [
+    0xFF2563EB, // Sapphire Blue
+    0xFF0D9488, // Deep Teal
+    0xFF10B981, // Emerald Green
+    0xFF0284C7, // Ocean Blue
+    0xFF1E3A8A, // Midnight Navy
+    0xFF8B5CF6, // Royal Purple
+    0xFF4F46E5, // Indigo Elite
+    0xFFEF4444, // Ruby Red
+    0xFFBE185D, // Crimson Rose
+    0xFFF59E0B, // Amber Gold
+    0xFFD97706, // Warm Bronze
+    0xFF0F172A, // Obsidian Slate
+  ];
+
+  static List<String> _getLocalizedPaletteNames(String lang) {
     if (lang.startsWith('tr')) {
-      return [
-        {
-          'name': 'Safir Mavi',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Zümrüt Yeşil',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Asil Mürdüm',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Yakut Kırmızı',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Kehribar Altın',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Obsidyen Siyah',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Safir Mavi',
+        'Zümrüt Petrol',
+        'Zümrüt Yeşil',
+        'Okyanus Mavisi',
+        'Gece Laciverti',
+        'Asil Mürdüm',
+        'Çivit Mavisi',
+        'Yakut Kırmızı',
+        'Vişne Çürüğü',
+        'Kehribar Altın',
+        'Sıcak Bronz',
+        'Obsidyen Siyah',
       ];
     }
     if (lang.startsWith('de')) {
-      return [
-        {
-          'name': 'Saphirblau',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Smaragdgrün',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Edles Violett',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Rubinrot',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Bernsteingold',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Obsidianschwarz',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Saphirblau',
+        'Tiefes Petrol',
+        'Smaragdgrün',
+        'Ozeanblau',
+        'Mitternachtsblau',
+        'Königsviolett',
+        'Indigoblau',
+        'Rubinrot',
+        'Karmesinrot',
+        'Bernsteingold',
+        'Warmes Bronze',
+        'Obsidianschwarz',
       ];
     }
     if (lang.startsWith('fr')) {
-      return [
-        {
-          'name': 'Bleu Saphir',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Vert Émeraude',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Violet Noble',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Rouge Rubis',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Or Ambré',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Noir Obsidienne',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Bleu Saphir',
+        'Sarcelle Profond',
+        'Vert Émeraude',
+        'Bleu Océan',
+        'Bleu Nuit',
+        'Pourpre Royal',
+        'Indigo Élite',
+        'Rouge Rubis',
+        'Rose Cramoisi',
+        'Or Ambré',
+        'Bronze Chaud',
+        'Noir Obsidienne',
       ];
     }
     if (lang.startsWith('es')) {
-      return [
-        {
-          'name': 'Azul Zafiro',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Verde Esmeralda',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Púrpura Noble',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Rojo Rubí',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Oro Ámbar',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Negro Obsidiana',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Azul Zafiro',
+        'Verde Azulado',
+        'Verde Esmeralda',
+        'Azul Océano',
+        'Azul Medianoche',
+        'Púrpura Real',
+        'Índigo Élite',
+        'Rojo Rubí',
+        'Rosa Carmesí',
+        'Oro Ámbar',
+        'Bronce Cálido',
+        'Negro Obsidiana',
       ];
     }
     if (lang.startsWith('pt')) {
-      return [
-        {
-          'name': 'Azul Safira',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Verde Esmeralda',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Púrpura Nobre',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Vermelho Rubi',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Ouro Âmbar',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Preto Obsidiana',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Azul Safira',
+        'Azul Petróleo',
+        'Verde Esmeralda',
+        'Azul Oceano',
+        'Azul Meia-Noite',
+        'Púrpura Real',
+        'Índigo Elite',
+        'Vermelho Rubi',
+        'Rosa Carmesim',
+        'Ouro Âmbar',
+        'Bronze Quente',
+        'Preto Obsidiana',
       ];
     }
     if (lang.startsWith('it')) {
-      return [
-        {
-          'name': 'Blu Zaffiro',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Verde Smeraldo',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Viola Nobile',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Rosso Rubino',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Oro Ambrato',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Nero Ossidiana',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Blu Zaffiro',
+        'Ottanio Scuro',
+        'Verde Smeraldo',
+        'Blu Oceano',
+        'Blu Notte',
+        'Viola Reale',
+        'Indaco Elite',
+        'Rosso Rubino',
+        'Rosa Cremisi',
+        'Oro Ambrato',
+        'Bronzo Caldo',
+        'Nero Ossidiana',
       ];
     }
     if (lang.startsWith('nl')) {
-      return [
-        {
-          'name': 'Saffierblauw',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Smaragdgroen',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Koninklijk Paars',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Robijnrood',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Barnsteengoud',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Obsidiaanzwart',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Saffierblauw',
+        'Diep Petrol',
+        'Smaragdgroen',
+        'Oceaanblauw',
+        'Nachtblauw',
+        'Koninklijk Paars',
+        'Indigo Elite',
+        'Robijnrood',
+        'Karmijnrood',
+        'Barnsteengoud',
+        'Warm Brons',
+        'Obsidiaanzwart',
       ];
     }
     if (lang.startsWith('pl')) {
-      return [
-        {
-          'name': 'Szafirowy Błękit',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Szmaragdowa Zieleń',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Szlachetny Fiolet',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Rubinowa Czerwień',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Bursztynowe Złoto',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Obsydianowa Czerń',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Szafirowy Błękit',
+        'Głęboki Morski',
+        'Szmaragdowa Zieleń',
+        'Błękit Oceanu',
+        'Granat Nocy',
+        'Królewski Fiolet',
+        'Indygo Elite',
+        'Rubinowa Czerwień',
+        'Karmazynowy Róż',
+        'Bursztynowe Złoto',
+        'Ciepły Brąz',
+        'Obsydianowa Czerń',
       ];
     }
     if (lang.startsWith('ru')) {
-      return [
-        {
-          'name': 'Сапфировый синий',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Изумрудный зеленый',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Благородный фиолетовый',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Рубиновый красный',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Янтарное золото',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Обсидиановый черный',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Сапфировый синий',
+        'Глубокий бирюзовый',
+        'Изумрудный зеленый',
+        'Океанский синий',
+        'Полуночный синий',
+        'Королевский фиолетовый',
+        'Индиго Элит',
+        'Рубиновый красный',
+        'Малиновый закат',
+        'Янтарное золото',
+        'Теплая бронза',
+        'Обсидиановый черный',
       ];
     }
     if (lang.startsWith('ar')) {
-      return [
-        {
-          'name': 'أزرق ياقوتي',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'أخضر زمردي',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'أرجواني ملكي',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'أحمر ياقوتي',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'ذهبي كهرماني',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'أسود سبجي',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'أزرق ياقوتي',
+        'أخضر مزرق عميق',
+        'أخضر زمردي',
+        'أزرق محيطي',
+        'كحلي ليلي',
+        'أرجواني ملكي',
+        'نيلي نخبوي',
+        'أحمر ياقوتي',
+        'وردي قرمزي',
+        'ذهبي كهرماني',
+        'برونزي دافئ',
+        'أسود سبجي',
       ];
     }
     if (lang.startsWith('hi')) {
-      return [
-        {
-          'name': 'नीलम नीला',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'पन्ना हरा',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'शाही बैंगनी',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'माणिक लाल',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'अम्बर स्वर्ण',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'काला ऑब्सिडियन',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'नीलम नीला',
+        'गहरा टील',
+        'पन्ना हरा',
+        'समुद्री नीला',
+        'मध्यरात्रि नीला',
+        'शाही बैंगनी',
+        'इंडीगो एलीट',
+        'माणिक लाल',
+        'क्रिमसन रोज',
+        'अम्बर स्वर्ण',
+        'वार्म ब्रॉन्ज',
+        'काला ऑब्सिडियन',
       ];
     }
     if (lang.startsWith('zh')) {
-      return [
-        {'name': '经典宝石蓝', 'color': const Color(0xFF2563EB), 'hex': 0xFF2563EB},
-        {'name': '极光翡翠绿', 'color': const Color(0xFF10B981), 'hex': 0xFF10B981},
-        {'name': '高贵紫罗兰', 'color': const Color(0xFF8B5CF6), 'hex': 0xFF8B5CF6},
-        {'name': '热烈宝石红', 'color': const Color(0xFFEF4444), 'hex': 0xFFEF4444},
-        {'name': '琥珀流金', 'color': const Color(0xFFF59E0B), 'hex': 0xFFF59E0B},
-        {'name': '曜石深邃黑', 'color': const Color(0xFF0F172A), 'hex': 0xFF0F172A},
+      return const [
+        '经典宝石蓝',
+        '深海冷杉绿',
+        '极光翡翠绿',
+        '浩瀚大洋蓝',
+        '午夜沉稳蓝',
+        '高贵紫罗兰',
+        '曜石菁英靛',
+        '热烈宝石红',
+        '深绯洋红玫瑰',
+        '琥珀流金',
+        '温润古铜',
+        '曜石深邃黑',
       ];
     }
     if (lang.startsWith('ja')) {
-      return [
-        {
-          'name': 'サファイアブルー',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'エメラルドグリーン',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'ノーブルパープル',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {'name': 'ルビーレッド', 'color': const Color(0xFFEF4444), 'hex': 0xFFEF4444},
-        {
-          'name': 'アンバーゴールド',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'オブシディアンブラック',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'サファイアブルー',
+        'ディープティール',
+        'エメラルドグリーン',
+        'オーシャンブルー',
+        'ミッドナイトネイビー',
+        'ロイヤルパープル',
+        'インディゴエリート',
+        'ルビーレッド',
+        'クリムゾンローズ',
+        'アンバーゴールド',
+        'ウォームブロンズ',
+        'オブシディアンブラック',
       ];
     }
     if (lang.startsWith('ko')) {
-      return [
-        {
-          'name': '사파이어 블루',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': '에메랄드 그린',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {'name': '노블 퍼플', 'color': const Color(0xFF8B5CF6), 'hex': 0xFF8B5CF6},
-        {'name': '루비 레드', 'color': const Color(0xFFEF4444), 'hex': 0xFFEF4444},
-        {'name': '앰버 골드', 'color': const Color(0xFFF59E0B), 'hex': 0xFFF59E0B},
-        {
-          'name': '옵시디언 블랙',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        '사파이어 블루',
+        '딥 틸',
+        '에메랄드 그린',
+        '오션 블루',
+        '미드나잇 네이비',
+        '로열 퍼플',
+        '인디고 엘리트',
+        '루비 레드',
+        '크림슨 로즈',
+        '앰버 골드',
+        '웜 브론즈',
+        '옵시디언 블랙',
       ];
     }
     if (lang.startsWith('id')) {
-      return [
-        {
-          'name': 'Biru Safir',
-          'color': const Color(0xFF2563EB),
-          'hex': 0xFF2563EB
-        },
-        {
-          'name': 'Hijau Zamrud',
-          'color': const Color(0xFF10B981),
-          'hex': 0xFF10B981
-        },
-        {
-          'name': 'Ungu Elegan',
-          'color': const Color(0xFF8B5CF6),
-          'hex': 0xFF8B5CF6
-        },
-        {
-          'name': 'Merah Rubi',
-          'color': const Color(0xFFEF4444),
-          'hex': 0xFFEF4444
-        },
-        {
-          'name': 'Emas Amber',
-          'color': const Color(0xFFF59E0B),
-          'hex': 0xFFF59E0B
-        },
-        {
-          'name': 'Hitam Obsidian',
-          'color': const Color(0xFF0F172A),
-          'hex': 0xFF0F172A
-        },
+      return const [
+        'Biru Safir',
+        'Teal Tua',
+        'Hijau Zamrud',
+        'Biru Samudra',
+        'Biru Tengah Malam',
+        'Ungu Bangsawan',
+        'Indigo Elit',
+        'Merah Rubi',
+        'Mawar Kirmizi',
+        'Emas Amber',
+        'Perunggu Hangat',
+        'Hitam Obsidian',
       ];
     }
-    return [
-      {
-        'name': 'Sapphire Blue',
-        'color': const Color(0xFF2563EB),
-        'hex': 0xFF2563EB
-      },
-      {
-        'name': 'Emerald Green',
-        'color': const Color(0xFF10B981),
-        'hex': 0xFF10B981
-      },
-      {
-        'name': 'Noble Purple',
-        'color': const Color(0xFF8B5CF6),
-        'hex': 0xFF8B5CF6
-      },
-      {'name': 'Ruby Red', 'color': const Color(0xFFEF4444), 'hex': 0xFFEF4444},
-      {
-        'name': 'Amber Gold',
-        'color': const Color(0xFFF59E0B),
-        'hex': 0xFFF59E0B
-      },
-      {
-        'name': 'Obsidian Black',
-        'color': const Color(0xFF0F172A),
-        'hex': 0xFF0F172A
-      },
+    // English (US, UK, default fallback)
+    return const [
+      'Sapphire Blue',
+      'Deep Teal',
+      'Emerald Green',
+      'Ocean Blue',
+      'Midnight Navy',
+      'Royal Purple',
+      'Indigo Elite',
+      'Ruby Red',
+      'Crimson Rose',
+      'Amber Gold',
+      'Warm Bronze',
+      'Obsidian Slate',
     ];
   }
+
+  static List<Map<String, dynamic>> getThemePalettes([String? locale]) {
+    final lang = (locale ?? currentLocale).toLowerCase();
+    final names = _getLocalizedPaletteNames(lang);
+    return List.generate(_themePaletteHexes.length, (i) {
+      return {
+        'name': names[i],
+        'color': Color(_themePaletteHexes[i]),
+        'hex': _themePaletteHexes[i],
+      };
+    });
+  }
+
 
   static String _canonicalLocaleKey(String locale) {
     final normalized = locale.replaceAll('-', '_');
