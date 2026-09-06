@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/subscription_model.dart';
 import 'supabase_service.dart';
 import 'localization_service.dart';
+import 'cv_storage_service.dart';
 
 enum AuthProviderType { email, google, apple, guest }
 
@@ -617,6 +618,7 @@ class AuthService {
     }
     currentUserNotifier.value = null;
     await _persistUser(null);
+    await CvStorageService.clearActiveCvCache();
   }
 
   /// Hesabı Kalıcı Olarak Sil
@@ -634,5 +636,6 @@ class AuthService {
     }
     currentUserNotifier.value = null;
     await _persistUser(null);
+    await CvStorageService.clearActiveCvCache();
   }
 }

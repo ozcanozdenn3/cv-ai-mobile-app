@@ -387,11 +387,15 @@ class PdfGeneratorService {
         : (locale ?? LocalizationService.currentLocale);
 
     final fonts = await _loadCvPdfFonts(activeLocale);
+    // Non-Latin CV locales still commonly contain Latin email addresses, URLs,
+    // and institution names. Keep those glyphs renderable in every template.
+    final latinFallback = await PdfGoogleFonts.robotoRegular();
 
     final theme = pw.ThemeData.withFont(
       base: fonts.regular,
       bold: fonts.bold,
       italic: fonts.italic,
+      fontFallback: [latinFallback],
     );
 
     final primaryColor = PdfColor.fromInt(cv.primaryColorHex);
@@ -1342,7 +1346,6 @@ class PdfGeneratorService {
                       padding: const pw.EdgeInsets.fromLTRB(8, 6, 8, 6),
                       decoration: pw.BoxDecoration(
                         color: PdfColor.fromHex('F8FAFC'),
-                        borderRadius: pw.BorderRadius.circular(4),
                         border: pw.Border(
                           left: pw.BorderSide(color: primaryColor, width: 3),
                           top: pw.BorderSide(
@@ -1496,81 +1499,420 @@ class PdfGeneratorService {
               style: headerStyle,
             ));
             widgets.add(pw.SizedBox(height: 5));
-            for (final edu in cv.educations) {
-              final schoolDetails = [
-                if (edu.degree.isNotEmpty) edu.degree,
-                if (edu.field.isNotEmpty) '(${edu.field})',
-              ].join(' ');
 
-              final fullSchoolLine = [
-                if (edu.school.isNotEmpty) edu.school,
-                if (schoolDetails.isNotEmpty) schoolDetails,
-              ].join(' — ');
+            switch (experienceStyle) {
+              case PdfExperienceStyle.timeline:
+                for (int i = 0; i < cv.educations.length; i++) {
+                  final edu = cv.educations[i];
+                  final isLast = i == cv.educations.length - 1;
+                  final hasDates =
+                      edu.startDate.isNotEmpty || edu.endDate.isNotEmpty;
+                  final dateText = hasDates
+                      ? (edu.startDate.isNotEmpty && edu.endDate.isNotEmpty
+                          ? '${edu.startDate} - ${edu.endDate}'
+                          : '${edu.startDate}${edu.endDate}')
+                      : '';
+                  final degreeField = [
+                    if (edu.degree.isNotEmpty) edu.degree,
+                    if (edu.field.isNotEmpty) edu.field,
+                  ].join(', ');
 
-              widgets.add(
-                pw.Container(
-                  margin: const pw.EdgeInsets.only(bottom: 7),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  widgets.add(
+                    pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Container(
+                          width: 12,
+                          child: pw.Column(
+                            children: [
+                              pw.Container(
+                                width: 6.5,
+                                height: 6.5,
+                                decoration: pw.BoxDecoration(
+                                  color: primaryColor,
+                                  shape: pw.BoxShape.circle,
+                                ),
+                              ),
+                              if (!isLast)
+                                pw.Container(
+                                  width: 1.2,
+                                  height: 32,
+                                  color: PdfColor.fromHex('CBD5E1'),
+                                ),
+                            ],
+                          ),
+                        ),
+                        pw.SizedBox(width: 6),
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Row(
+                                mainAxisAlignment:
+                                    pw.MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                children: [
+                                  pw.Expanded(
+                                    child: pw.Text(
+                                      edu.school.isNotEmpty
+                                          ? edu.school
+                                          : degreeField,
+                                      style: pw.TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: darkText,
+                                      ),
+                                    ),
+                                  ),
+                                  if (dateText.isNotEmpty) ...[
+                                    pw.SizedBox(width: 8),
+                                    pw.Text(
+                                      dateText,
+                                      style: pw.TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (edu.school.isNotEmpty &&
+                                  degreeField.isNotEmpty) ...[
+                                pw.SizedBox(height: 1.5),
+                                pw.Text(
+                                  degreeField,
+                                  style: pw.TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: mutedText,
+                                  ),
+                                ),
+                              ],
+                              if (edu.gpa.isNotEmpty) ...[
+                                pw.SizedBox(height: 2),
+                                pw.Row(
+                                  children: [
+                                    pw.Text(
+                                      '${PdfCvLocaleHelper.getGpaLabel(activeLocale)}: ',
+                                      style: pw.TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                    pw.Text(
+                                      edu.gpa,
+                                      style: pw.TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: darkText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              pw.SizedBox(height: 6),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                break;
+
+              case PdfExperienceStyle.boxedCard:
+                for (final edu in cv.educations) {
+                  final hasDates =
+                      edu.startDate.isNotEmpty || edu.endDate.isNotEmpty;
+                  final dateText = hasDates
+                      ? (edu.startDate.isNotEmpty && edu.endDate.isNotEmpty
+                          ? '${edu.startDate} - ${edu.endDate}'
+                          : '${edu.startDate}${edu.endDate}')
+                      : '';
+                  final degreeField = [
+                    if (edu.degree.isNotEmpty) edu.degree,
+                    if (edu.field.isNotEmpty) edu.field,
+                  ].join(', ');
+
+                  widgets.add(
+                    pw.Container(
+                      margin: const pw.EdgeInsets.only(bottom: 8),
+                      padding: const pw.EdgeInsets.all(8),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColor.fromHex('F8FAFC'),
+                        border: pw.Border(
+                          left: pw.BorderSide(color: primaryColor, width: 3),
+                          top: pw.BorderSide(
+                              color: PdfColor.fromHex('E2E8F0'), width: 0.5),
+                          right: pw.BorderSide(
+                              color: PdfColor.fromHex('E2E8F0'), width: 0.5),
+                          bottom: pw.BorderSide(
+                              color: PdfColor.fromHex('E2E8F0'), width: 0.5),
+                        ),
+                      ),
+                      child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Expanded(
-                            child: pw.Text(
-                              fullSchoolLine.isNotEmpty
-                                  ? fullSchoolLine
-                                  : edu.school,
-                              style: pw.TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: pw.FontWeight.bold,
-                                color: darkText,
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Expanded(
+                                child: pw.Text(
+                                  edu.school.isNotEmpty
+                                      ? edu.school
+                                      : degreeField,
+                                  style: pw.TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
                               ),
-                            ),
+                              if (dateText.isNotEmpty) ...[
+                                pw.SizedBox(width: 8),
+                                pw.Text(
+                                  dateText,
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          if (edu.startDate.isNotEmpty ||
-                              edu.endDate.isNotEmpty) ...[
-                            pw.SizedBox(width: 8),
+                          if (edu.school.isNotEmpty &&
+                              degreeField.isNotEmpty) ...[
+                            pw.SizedBox(height: 2),
                             pw.Text(
-                              '${edu.startDate} - ${edu.endDate}',
+                              degreeField,
                               style: pw.TextStyle(
                                 fontSize: 8.5,
                                 fontWeight: pw.FontWeight.bold,
-                                color: primaryColor,
+                                color: mutedText,
                               ),
+                            ),
+                          ],
+                          if (edu.gpa.isNotEmpty) ...[
+                            pw.SizedBox(height: 2.5),
+                            pw.Row(
+                              children: [
+                                pw.Text(
+                                  '${PdfCvLocaleHelper.getGpaLabel(activeLocale)}: ',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                pw.Text(
+                                  edu.gpa,
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ],
                       ),
-                      if (edu.gpa.isNotEmpty) ...[
-                        pw.SizedBox(height: 2),
-                        pw.Row(
-                          children: [
+                    ),
+                  );
+                }
+                break;
+
+              case PdfExperienceStyle.executiveClassic:
+                for (final edu in cv.educations) {
+                  final hasDates =
+                      edu.startDate.isNotEmpty || edu.endDate.isNotEmpty;
+                  final dateText = hasDates
+                      ? (edu.startDate.isNotEmpty && edu.endDate.isNotEmpty
+                          ? '${edu.startDate} - ${edu.endDate}'
+                          : '${edu.startDate}${edu.endDate}')
+                      : '';
+                  final degreeField = [
+                    if (edu.degree.isNotEmpty) edu.degree,
+                    if (edu.field.isNotEmpty) edu.field,
+                  ].join(', ');
+
+                  widgets.add(
+                    pw.Container(
+                      margin: const pw.EdgeInsets.only(bottom: 7),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Expanded(
+                                child: pw.Text(
+                                  (edu.school.isNotEmpty
+                                          ? edu.school
+                                          : degreeField)
+                                      .toUpperCase(),
+                                  style: pw.TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                              ),
+                              if (dateText.isNotEmpty) ...[
+                                pw.SizedBox(width: 8),
+                                pw.Text(
+                                  dateText,
+                                  style: pw.TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (edu.school.isNotEmpty &&
+                              degreeField.isNotEmpty) ...[
+                            pw.SizedBox(height: 1.5),
                             pw.Text(
-                              '${PdfCvLocaleHelper.getGpaLabel(activeLocale)}: ',
+                              degreeField,
                               style: pw.TextStyle(
                                 fontSize: 8.5,
-                                fontWeight: pw.FontWeight.bold,
+                                fontStyle: pw.FontStyle.italic,
                                 color: primaryColor,
                               ),
                             ),
+                          ],
+                          if (edu.gpa.isNotEmpty) ...[
+                            pw.SizedBox(height: 2),
+                            pw.Row(
+                              children: [
+                                pw.Text(
+                                  '${PdfCvLocaleHelper.getGpaLabel(activeLocale)}: ',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                pw.Text(
+                                  edu.gpa,
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                break;
+
+              case PdfExperienceStyle.standard:
+                for (final edu in cv.educations) {
+                  final hasDates =
+                      edu.startDate.isNotEmpty || edu.endDate.isNotEmpty;
+                  final dateText = hasDates
+                      ? (edu.startDate.isNotEmpty && edu.endDate.isNotEmpty
+                          ? '${edu.startDate} - ${edu.endDate}'
+                          : '${edu.startDate}${edu.endDate}')
+                      : '';
+                  final degreeField = [
+                    if (edu.degree.isNotEmpty) edu.degree,
+                    if (edu.field.isNotEmpty) edu.field,
+                  ].join(', ');
+
+                  widgets.add(
+                    pw.Container(
+                      margin: const pw.EdgeInsets.only(bottom: 7),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Row(
+                            mainAxisAlignment:
+                                pw.MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Expanded(
+                                child: pw.Text(
+                                  edu.school.isNotEmpty
+                                      ? edu.school
+                                      : degreeField,
+                                  style: pw.TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                              ),
+                              if (dateText.isNotEmpty) ...[
+                                pw.SizedBox(width: 8),
+                                pw.Text(
+                                  dateText,
+                                  style: pw.TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (edu.school.isNotEmpty &&
+                              degreeField.isNotEmpty) ...[
+                            pw.SizedBox(height: 1.5),
                             pw.Text(
-                              edu.gpa,
+                              degreeField,
                               style: pw.TextStyle(
                                 fontSize: 8.5,
                                 fontWeight: pw.FontWeight.bold,
-                                color: darkText,
+                                color: mutedText,
                               ),
                             ),
                           ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
+                          if (edu.gpa.isNotEmpty) ...[
+                            pw.SizedBox(height: 2),
+                            pw.Row(
+                              children: [
+                                pw.Text(
+                                  '${PdfCvLocaleHelper.getGpaLabel(activeLocale)}: ',
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                pw.Text(
+                                  edu.gpa,
+                                  style: pw.TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                break;
             }
+
             widgets.add(pw.SizedBox(height: 6));
           }
           break;
@@ -1665,7 +2007,7 @@ class PdfGeneratorService {
                                   ),
                                   if (proj.role.isNotEmpty) ...[
                                     pw.TextSpan(
-                                      text: '  —  ${proj.role}',
+                                      text: '  -  ${proj.role}',
                                       style: pw.TextStyle(
                                         fontSize: 8.5,
                                         fontWeight: pw.FontWeight.bold,
@@ -2157,7 +2499,7 @@ class PdfGeneratorService {
                           pw.Expanded(
                             child: pw.Text(
                               cleanIssuer.isNotEmpty
-                                  ? '$cleanCertName — $cleanIssuer'
+                                  ? '$cleanCertName - $cleanIssuer'
                                   : cleanCertName,
                               style: pw.TextStyle(
                                   fontSize: 8.5,

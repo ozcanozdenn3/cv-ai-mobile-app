@@ -11,6 +11,7 @@ import '../services/ai_cv_service.dart';
 import '../services/document_parser_service.dart';
 import '../widgets/ai_aurora_glow.dart';
 import '../widgets/voice_to_cv_sheet.dart';
+import '../services/auth_service.dart';
 import 'cv_preview_screen.dart';
 
 class CvBuilderScreen extends StatefulWidget {
@@ -176,6 +177,13 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     _aiPromptController.clear();
     _lastLocale = LocalizationService.currentLocale;
     _loadUserSavedCv();
+    AuthService.currentUserNotifier.addListener(_onAuthUserChanged);
+  }
+
+  void _onAuthUserChanged() {
+    if (mounted) {
+      _loadUserSavedCv();
+    }
   }
 
   Future<void> _loadUserSavedCv() async {
@@ -201,6 +209,21 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
           _githubController.text = _cv.github;
           _portfolioController.text = _cv.portfolioUrl;
           _summaryController.text = _cv.summary;
+        });
+      } else if (mounted) {
+        setState(() {
+          _cv = saved;
+          _cvLanguage =
+              saved.targetLanguage ?? LocalizationService.currentLocale;
+          _nameController.text = '';
+          _titleController.text = '';
+          _emailController.text = '';
+          _phoneController.text = '';
+          _locationController.text = '';
+          _linkedinController.text = '';
+          _githubController.text = '';
+          _portfolioController.text = '';
+          _summaryController.text = '';
         });
       }
     } catch (_) {}
@@ -238,6 +261,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
 
   @override
   void dispose() {
+    AuthService.currentUserNotifier.removeListener(_onAuthUserChanged);
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _nameController.dispose();
@@ -6213,7 +6237,6 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
           ),
           const SizedBox(height: 5),
           TextFormField(
-            key: ValueKey('$label-$initialValue'),
             initialValue: initialValue,
             maxLines: maxLines,
             minLines: minLines,

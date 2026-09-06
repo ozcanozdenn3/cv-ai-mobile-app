@@ -10,8 +10,26 @@ import 'supabase_service.dart';
 import 'localization_service.dart';
 
 class CvStorageService {
-  static const String _activeCvKey = 'cv_ai_active_cv_model';
+  static String get _activeCvKey {
+    final userId = SupabaseService.currentUserId;
+    if (userId != null && userId.isNotEmpty) {
+      return 'cv_ai_active_cv_model_$userId';
+    }
+    return 'cv_ai_active_cv_model_guest';
+  }
   static const String _documentsListKey = 'cv_ai_saved_documents_list';
+
+  /// Yerel aktif CV önbelleğini temizler (Çıkış yapıldığında veya hesap silindiğinde)
+  static Future<void> clearActiveCvCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_activeCvKey);
+      await prefs.remove('cv_ai_active_cv_model_guest');
+      await prefs.remove('cv_ai_active_cv_model');
+    } catch (e) {
+      debugPrint('CvStorageService clear error: $e');
+    }
+  }
 
   /// Aktif CV'yi hem SharedPreferences'a hem de bağlıysa Supabase bulutuna kaydeder
   static Future<void> saveActiveCv(CvModel cv, {Uint8List? pdfBytes, Uint8List? photoBytes}) async {
@@ -37,10 +55,22 @@ class CvStorageService {
       if (SupabaseService.isInitialized && SupabaseService.isAuthenticated) {
         final cloudCv = await SupabaseService.fetchActiveResume();
         if (cloudCv != null && !cloudCv.isSample) {
-          // Yerel önbelleği güncelle
+          // Yerel önbelleği kullanıcıya özel güncelle
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_activeCvKey, json.encode(_cvToMap(cloudCv)));
           return cloudCv;
+        } else {
+          // Giriş yapmış kullanıcının bulutta CV'si yoksa sadece kendi yerel önbelleğini kontrol et
+          final prefs = await SharedPreferences.getInstance();
+          final jsonStr = prefs.getString(_activeCvKey);
+          if (jsonStr != null && jsonStr.isNotEmpty) {
+            final map = json.decode(jsonStr) as Map<String, dynamic>;
+            final localCv = _cvFromMap(map);
+            if (!localCv.isSample) {
+              return localCv;
+            }
+          }
+          return CvModel.createEmpty(LocalizationService.currentLocale);
         }
       }
 
