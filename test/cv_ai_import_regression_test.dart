@@ -134,6 +134,7 @@ Mobil uygulamalar geliştirdim.
 
   test('PDF bytes and reference schema reach the model; contacts stay separate',
       () async {
+    var requestCount = 0;
     await http.runWithClient(() async {
       final result = await AiCvService.parseCvDocument(
           bytes: Uint8List.fromList([37, 80, 68, 70]),
@@ -141,6 +142,7 @@ Mobil uygulamalar geliştirdim.
           customApiKey: 'test-key');
       expect(result.email, isEmpty);
       expect(result.references.single.email, 'reference@example.com');
+      expect(result.experiences, hasLength(1));
     },
         () => MockClient((request) async {
               final payload = jsonDecode(request.body);
@@ -150,6 +152,30 @@ Mobil uygulamalar geliştirdim.
               expect(
                   payload['generationConfig']['response_schema']['properties'],
                   contains('references'));
+              requestCount++;
+              final response = requestCount == 1
+                  ? {
+                      'fullName': 'Ada Example',
+                      'email': 'reference@example.com',
+                      'references': [
+                        {
+                          'name': 'Reference Person',
+                          'email': 'reference@example.com'
+                        }
+                      ]
+                    }
+                  : {
+                      'experiences': [
+                        {
+                          'company': 'Example Company',
+                          'position': 'Mobile Developer',
+                          'startDate': '2024',
+                          'endDate': '',
+                          'isCurrent': true,
+                          'description': 'Built mobile applications.'
+                        }
+                      ]
+                    };
               return http.Response(
                   jsonEncode({
                     'candidates': [
@@ -157,18 +183,7 @@ Mobil uygulamalar geliştirdim.
                         'finishReason': 'STOP',
                         'content': {
                           'parts': [
-                            {
-                              'text': jsonEncode({
-                                'fullName': 'Ada Example',
-                                'email': 'reference@example.com',
-                                'references': [
-                                  {
-                                    'name': 'Reference Person',
-                                    'email': 'reference@example.com'
-                                  }
-                                ]
-                              })
-                            }
+                            {'text': jsonEncode(response)}
                           ]
                         }
                       }

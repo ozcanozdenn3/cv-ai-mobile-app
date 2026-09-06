@@ -241,7 +241,7 @@ class AiCvService {
       }
       return local;
     }
-    final result = await _callGeminiApi(
+    var result = await _callGeminiApi(
       prompt:
           'Scan this CV document/image and extract all information completely without any omissions. Read all pages, sidebars, and columns. Extract ALL work experiences with complete full descriptions and achievements, ALL educations, ALL projects, ALL languages with levels, ALL references, ALL skills, ALL personal traits/strengths, and ALL contact links.',
       locale: locale ?? LocalizationService.currentLocale,
@@ -251,6 +251,25 @@ class AiCvService {
         'inlineData': {'mimeType': mimeType, 'data': base64Encode(bytes)}
       },
     );
+    if (result != null && result.experiences.isEmpty) {
+      try {
+        final experienceOnly = await _callGeminiApi(
+          prompt:
+              'Read this same CV image carefully. Focus only on ALL work experiences, internships, freelance roles, and employment history. Return every role with company, title, dates, and complete description in the experiences array; keep all other fields valid but they may be empty.',
+          locale: locale ?? LocalizationService.currentLocale,
+          apiKey: apiKey,
+          isStrictExtraction: true,
+          documentPart: {
+            'inlineData': {'mimeType': mimeType, 'data': base64Encode(bytes)}
+          },
+        );
+        if (experienceOnly != null && experienceOnly.experiences.isNotEmpty) {
+          result = result.copyWith(experiences: experienceOnly.experiences);
+        }
+      } on AiCvException {
+        // Keep the complete first result if the focused retry is unavailable.
+      }
+    }
     if (result == null ||
         !result.isSuccess ||
         result.totalExtractedItems == 0) {

@@ -48,18 +48,22 @@ void main() {
       final handler = FlutterError.onError;
       FlutterError.onError = (details) {
         File('/tmp/layout-details-${screen.key}.log').writeAsStringSync(
-            '${LocalizationService.currentLocale}: ${details.toString()}\n', mode: FileMode.append);
-        failures.add('${LocalizationService.currentLocale}: ${details.exceptionAsString()} ${details.context}');
+            '${LocalizationService.currentLocale}: ${details.toString()}\n',
+            mode: FileMode.append);
+        failures.add(
+            '${LocalizationService.currentLocale}: ${details.exceptionAsString()} ${details.context}');
       };
       try {
         for (final lang in LocalizationService.supportedLanguages.where((l) =>
-            const String.fromEnvironment('LAYOUT_LOCALE').isEmpty || l.code == const String.fromEnvironment('LAYOUT_LOCALE'))) {
+            const String.fromEnvironment('LAYOUT_LOCALE').isEmpty ||
+            l.code == const String.fromEnvironment('LAYOUT_LOCALE'))) {
           LocalizationService.localeNotifier.value = lang.code;
           await tester.pumpWidget(MaterialApp(
-            builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.5)),
-              child: child!),
-            home: Scaffold(body: screen.value())));
+              builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(textScaler: const TextScaler.linear(1.5)),
+                  child: child!),
+              home: Scaffold(body: screen.value())));
           await tester.pump(const Duration(milliseconds: 400));
           final scrollables = find.byType(Scrollable);
           if (scrollables.evaluate().isNotEmpty) {
@@ -90,33 +94,59 @@ void main() {
     final handler = FlutterError.onError;
     FlutterError.onError = (d) {
       File('/tmp/layout-details-cv.log').writeAsStringSync(
-          '${LocalizationService.currentLocale} tab $activeTab: ${d.toString()}\n', mode: FileMode.append);
-      failures.add('${LocalizationService.currentLocale} tab $activeTab: ${d.exceptionAsString()} ${d.context}');
+          '${LocalizationService.currentLocale} tab $activeTab: ${d.toString()}\n',
+          mode: FileMode.append);
+      failures.add(
+          '${LocalizationService.currentLocale} tab $activeTab: ${d.exceptionAsString()} ${d.context}');
     };
     try {
       for (final lang in LocalizationService.supportedLanguages.where((l) =>
-          const String.fromEnvironment('LAYOUT_LOCALE').isEmpty || l.code == const String.fromEnvironment('LAYOUT_LOCALE'))) {
+          const String.fromEnvironment('LAYOUT_LOCALE').isEmpty ||
+          l.code == const String.fromEnvironment('LAYOUT_LOCALE'))) {
         LocalizationService.localeNotifier.value = lang.code;
         final cv = CvModel.createEmpty(lang.code)
           ..fullName = 'Alexandra Very Long Candidate Family Name'
-          ..summary = List.filled(15, 'Detailed professional experience and accomplishments.').join(' ')
+          ..summary = List.filled(
+                  15, 'Detailed professional experience and accomplishments.')
+              .join(' ')
           ..email = '${List.filled(5, 'longaddress').join()}@example.com';
         cv.references.first.name = 'Professor Very Long Reference Contact Name';
-        cv.experiences.first.company = 'International Research and Development Corporation';
-        cv.educations.first.school = 'International University of Science and Technology';
-        cv.projects.first.name = 'Large Distributed Mobile Application Development Project';
+        cv.experiences.first.company =
+            'International Research and Development Corporation';
+        cv.educations.first.school =
+            'International University of Science and Technology';
+        cv.projects.first.name =
+            'Large Distributed Mobile Application Development Project';
+        cv.projects.first.technologies =
+            List.filled(8, 'Cross-platform architecture').join(', ');
+        cv.projects.first.description = List.filled(12,
+                'Designed and delivered a reliable user-facing workflow with measurable outcomes.')
+            .join(' ');
+        cv.skills.add(SkillItem(
+            name: List.filled(
+                    8, 'Internationalized mobile application engineering')
+                .join(' '),
+            level: 85,
+            levelLabel: 'Advanced'));
+        cv.personalTraits.add(List.filled(
+                8, 'Collaborative communication and analytical problem solving')
+            .join(' '));
         await tester.pumpWidget(MaterialApp(
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.5)), child: child!),
-          home: CvBuilderScreen(initialCv: cv)));
+            builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: const TextScaler.linear(1.5)),
+                child: child!),
+            home: CvBuilderScreen(initialCv: cv)));
         await tester.pump(const Duration(milliseconds: 100));
-        final controller = tester.widget<TabBar>(find.byType(TabBar)).controller!;
+        final controller =
+            tester.widget<TabBar>(find.byType(TabBar)).controller!;
         for (activeTab = 0; activeTab < controller.length; activeTab++) {
           controller.index = activeTab;
           await tester.pump(const Duration(milliseconds: 400));
           final lists = find.byType(ListView).hitTestable();
           if (lists.evaluate().isEmpty) continue;
-          final scrollables = find.descendant(of: lists.first, matching: find.byType(Scrollable));
+          final scrollables = find.descendant(
+              of: lists.first, matching: find.byType(Scrollable));
           if (scrollables.evaluate().isNotEmpty) {
             for (var n = 0; n < 4; n++) {
               await tester.drag(scrollables.first, const Offset(0, -450));
@@ -127,7 +157,9 @@ void main() {
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump(const Duration(seconds: 5));
       }
-    } finally { FlutterError.onError = handler; }
+    } finally {
+      FlutterError.onError = handler;
+    }
     expect(failures.toSet(), isEmpty);
   });
 }

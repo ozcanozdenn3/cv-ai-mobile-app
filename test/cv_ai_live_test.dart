@@ -44,6 +44,7 @@ void main() {
         expect(result.references.single.email, 'myasinpak@gmail.com');
         expect(result.educations, hasLength(2));
         expect(result.projects.length, greaterThanOrEqualTo(4));
+        expect(result.experiences, isNotEmpty);
         if (entry.key == 'application/pdf') {
           expect(result.experiences, hasLength(3));
           expect(result.personalTraits.length, greaterThanOrEqualTo(4));

@@ -500,12 +500,19 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                                         : const Color(0xFF64748B))),
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            '${LocalizationService.tr('cv_ats_score')}: %$atsScore',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 100),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '${LocalizationService.tr('cv_ats_score')}: %$atsScore',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: textColor,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -2069,14 +2076,23 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text(skill.name,
+                              ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 210),
+                                child: Text(
+                                  skill.name,
+                                  softWrap: true,
                                   style: TextStyle(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w800,
-                                      color: textColor)),
+                                      color: textColor),
+                                ),
+                              ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
@@ -2488,66 +2504,73 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               if (_cv.personalTraits.isEmpty)
                 _buildEmptyState(_cvTr('cv_empty_traits'),
                     Icons.psychology_outlined, isDark, subColor),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _cv.personalTraits.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final trait = entry.value;
-                  return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1B2032)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF38415C)
-                            : const Color(0xFFCBD5E1),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                              color: AppColors.primary, shape: BoxShape.circle),
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            trait,
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w800,
-                                color: textColor),
+              LayoutBuilder(builder: (context, constraints) {
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _cv.personalTraits.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final trait = entry.value;
+                    return ConstrainedBox(
+                      constraints:
+                          BoxConstraints(maxWidth: constraints.maxWidth),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1B2032)
+                              : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF38415C)
+                                : const Color(0xFFCBD5E1),
+                            width: 1.2,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () =>
-                              setState(() => _cv.personalTraits.removeAt(idx)),
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color:
-                                  AppColors.accentRose.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle),
                             ),
-                            child: const Icon(Icons.close_rounded,
-                                size: 13, color: AppColors.accentRose),
-                          ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                trait,
+                                softWrap: true,
+                                style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: textColor),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => setState(
+                                  () => _cv.personalTraits.removeAt(idx)),
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accentRose
+                                      .withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close_rounded,
+                                    size: 13, color: AppColors.accentRose),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              }),
             ],
           ),
         ),
@@ -2640,37 +2663,43 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '🌐 #${index + 1}',
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.primary),
+                            ),
                           ),
-                          child: Text(
-                            '🌐 #${index + 1}',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.primary),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              lang.language.isNotEmpty
+                                  ? lang.language
+                                  : _cvTr('cv_new_language'),
+                              softWrap: true,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          lang.language.isNotEmpty
-                              ? lang.language
-                              : _cvTr('cv_new_language'),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: textColor,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline_rounded,
@@ -2842,38 +2871,44 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 4),
-                          decoration: BoxDecoration(
-                            color:
-                                AppColors.accentEmerald.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentEmerald
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '🚀 #${index + 1}',
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.accentEmerald),
+                            ),
                           ),
-                          child: Text(
-                            '🚀 #${index + 1}',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.accentEmerald),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              proj.name.isNotEmpty
+                                  ? proj.name
+                                  : _cvTr('cv_new_project'),
+                              softWrap: true,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          proj.name.isNotEmpty
-                              ? proj.name
-                              : _cvTr('cv_new_project'),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: textColor,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline_rounded,
@@ -2909,7 +2944,8 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   initialValue: proj.description,
                   icon: Icons.subject_rounded,
                   isDark: isDark,
-                  maxLines: 2,
+                  maxLines: null,
+                  minLines: 2,
                   hint: _cvTr('cv_hint_project_desc'),
                   onChanged: (val) => proj.description = val,
                 ),
@@ -5815,35 +5851,40 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              currentOption.name,
+                        LayoutBuilder(builder: (context, constraints) {
+                          final name = Text(currentOption.name,
+                              softWrap: true,
                               style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w800,
-                                color: textColor,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                _cvTr('cv_language_selected_badge'),
-                                style: const TextStyle(
-                                  fontSize: 9.5,
+                                  fontSize: 13.5,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                                  color: textColor));
+                          final badge = Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(6)),
+                            child: Text(_cvTr('cv_language_selected_badge'),
+                                style: const TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white)),
+                          );
+                          if (constraints.maxWidth < 180) {
+                            return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  name,
+                                  const SizedBox(height: 4),
+                                  badge
+                                ]);
+                          }
+                          return Row(children: [
+                            Expanded(child: name),
+                            const SizedBox(width: 8),
+                            badge
+                          ]);
+                        }),
                         const SizedBox(height: 2),
                         Text(
                           currentOption.nativeName,
@@ -6145,7 +6186,8 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     required IconData icon,
     required bool isDark,
     String? hint,
-    int maxLines = 1,
+    int? maxLines = 1,
+    int? minLines,
     required Function(String) onChanged,
   }) {
     final textColor =
@@ -6174,6 +6216,7 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             key: ValueKey('$label-$initialValue'),
             initialValue: initialValue,
             maxLines: maxLines,
+            minLines: minLines,
             scrollPadding: const EdgeInsets.only(bottom: 140),
             style: TextStyle(
                 color: textColor, fontSize: 13.5, fontWeight: FontWeight.w600),

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 class WorkExperience {
@@ -50,7 +51,8 @@ class SkillItem {
 
 class LanguageItem {
   String language;
-  String level; // Ana Dil, C2 - Uzman, C1 - İleri, B2 - Orta-İleri, B1 - Orta, A2, A1
+  String
+      level; // Ana Dil, C2 - Uzman, C1 - İleri, B2 - Orta-İleri, B1 - Orta, A2, A1
 
   LanguageItem({
     required this.language,
@@ -119,18 +121,18 @@ class CustomCvSection {
 }
 
 enum CvTemplate {
-  sidebarModern,   // Sol Sütunlu İki Renkli Modern (İstenen sol taraflı şablon)
-  modernTech,      // Modern ATS İki Sütunlu
-  executiveClassic,// Stanford & Klasik ATS Tek Sütunlu
-  creativeDesigner,// Görsel Renkli Başlık & Portfolyo Odaklı
-  minimalistPure,  // Sade İskandinav & Şık
+  sidebarModern, // Sol Sütunlu İki Renkli Modern (İstenen sol taraflı şablon)
+  modernTech, // Modern ATS İki Sütunlu
+  executiveClassic, // Stanford & Klasik ATS Tek Sütunlu
+  creativeDesigner, // Görsel Renkli Başlık & Portfolyo Odaklı
+  minimalistPure, // Sade İskandinav & Şık
   harvardAcademic, // Harvard & Oxford Akademik
-  compactGrid,     // Kompakt ATS Çift Kolonlu
-  infographicModern,// İnfografik Modern & Metrik Odaklı
-  corporateGold,   // Kurumsal Lüks Gold & Çerçeveli Yönetici
-  cleanNordic,     // Nordik Minimalist & Geometrik Başlıklı
-  eliteExecutive,  // Elit Yönetici & Asimetrik Prestij Bölünmüş
-  siliconTech,     // Silikon Vadisi & Modern Tech Mühendis
+  compactGrid, // Kompakt ATS Çift Kolonlu
+  infographicModern, // İnfografik Modern & Metrik Odaklı
+  corporateGold, // Kurumsal Lüks Gold & Çerçeveli Yönetici
+  cleanNordic, // Nordik Minimalist & Geometrik Başlıklı
+  eliteExecutive, // Elit Yönetici & Asimetrik Prestij Bölünmüş
+  siliconTech, // Silikon Vadisi & Modern Tech Mühendis
 }
 
 enum CvSectionType {
@@ -147,6 +149,26 @@ enum CvSectionType {
 }
 
 class CvModel {
+  static final Random _uuidRandom = Random.secure();
+  static final RegExp _uuidPattern = RegExp(
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+      caseSensitive: false);
+
+  static String newUuid() {
+    final bytes = List<int>.generate(16, (_) => _uuidRandom.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final hex =
+        bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
+  }
+
+  static bool isUuid(String value) => _uuidPattern.hasMatch(value);
+
+  void ensureUuid() {
+    if (!isUuid(id)) id = newUuid();
+  }
+
   String id;
   String fullName;
   String jobTitle;
@@ -208,18 +230,19 @@ class CvModel {
         projects = projects ?? [],
         certificates = certificates ?? [],
         customSections = customSections ?? [],
-        sectionOrder = sectionOrder ?? [
-          CvSectionType.summary,
-          CvSectionType.experiences,
-          CvSectionType.educations,
-          CvSectionType.projects,
-          CvSectionType.skills,
-          CvSectionType.personalTraits,
-          CvSectionType.languages,
-          CvSectionType.certificates,
-          CvSectionType.references,
-          CvSectionType.customSections,
-        ];
+        sectionOrder = sectionOrder ??
+            [
+              CvSectionType.summary,
+              CvSectionType.experiences,
+              CvSectionType.educations,
+              CvSectionType.projects,
+              CvSectionType.skills,
+              CvSectionType.personalTraits,
+              CvSectionType.languages,
+              CvSectionType.certificates,
+              CvSectionType.references,
+              CvSectionType.customSections,
+            ];
 
   bool get isSample {
     final name = fullName.toLowerCase().trim();
@@ -253,9 +276,11 @@ class CvModel {
     if (summaryTrim.length >= 80) score += 5;
 
     // 3. Work Experiences (Max 25 pts)
-    final filledExperiences = experiences.where(
-      (e) => e.company.trim().isNotEmpty || e.position.trim().isNotEmpty,
-    ).toList();
+    final filledExperiences = experiences
+        .where(
+          (e) => e.company.trim().isNotEmpty || e.position.trim().isNotEmpty,
+        )
+        .toList();
     if (filledExperiences.isNotEmpty) score += 15;
     if (filledExperiences.any((e) => e.description.trim().length >= 25)) {
       score += 5;
@@ -263,9 +288,11 @@ class CvModel {
     if (filledExperiences.length >= 2) score += 5;
 
     // 4. Educations (Max 15 pts)
-    final filledEducations = educations.where(
-      (e) => e.school.trim().isNotEmpty || e.field.trim().isNotEmpty,
-    ).toList();
+    final filledEducations = educations
+        .where(
+          (e) => e.school.trim().isNotEmpty || e.field.trim().isNotEmpty,
+        )
+        .toList();
     if (filledEducations.isNotEmpty) score += 15;
 
     // 5. Skills (Max 10 pts)
@@ -291,7 +318,7 @@ class CvModel {
   /// Creates a clean, empty CV with exactly 1 empty card in each dynamic section
   static CvModel createEmpty([String? locale]) {
     return CvModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: newUuid(),
       fullName: '',
       jobTitle: '',
       email: '',
@@ -413,12 +440,17 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Uzman (%95)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Uzman (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'İleri (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'İleri (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Uzman (%90)'),
-          SkillItem(name: 'CI/CD & App Store', level: 85, levelLabel: 'İleri (%85)'),
-          SkillItem(name: 'UI/UX Design', level: 75, levelLabel: 'Orta-İleri (%75)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: 'İleri (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Uzman (%90)'),
+          SkillItem(
+              name: 'CI/CD & App Store', level: 85, levelLabel: 'İleri (%85)'),
+          SkillItem(
+              name: 'UI/UX Design', level: 75, levelLabel: 'Orta-İleri (%75)'),
         ],
         personalTraits: [
           'Analitik Düşünme & Problem Çözme',
@@ -448,7 +480,8 @@ class CvModel {
             role: 'Baş Mimar',
             link: 'github.com/canberk/cv-ai',
             date: '2025 - 2026',
-            description: 'Yapay zeka destekli yerel PDF motoru ve akıllı CV oluşturma uygulaması.',
+            description:
+                'Yapay zeka destekli yerel PDF motoru ve akıllı CV oluşturma uygulaması.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -514,11 +547,22 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Experte (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Fortgeschritten (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Fortgeschritten (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Experte (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Fortgeschritten (%85)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Experte (%95)'),
+          SkillItem(
+              name: 'iOS & Swift',
+              level: 85,
+              levelLabel: 'Fortgeschritten (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Fortgeschritten (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Experte (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps',
+              level: 85,
+              levelLabel: 'Fortgeschritten (%85)'),
           SkillItem(name: 'UI/UX Design', level: 75, levelLabel: 'Gut (%75)'),
         ],
         personalTraits: [
@@ -549,7 +593,8 @@ class CvModel {
             role: 'Lead Architect',
             link: 'github.com/max/cv-ai',
             date: '2025 - 2026',
-            description: 'On-Device PDF-Engine und KI-gestützte Lebenslauf-Erstellungs-App.',
+            description:
+                'On-Device PDF-Engine und KI-gestützte Lebenslauf-Erstellungs-App.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -615,12 +660,17 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Expert (%95)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Expert (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Avancé (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Avancé (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Expert (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avancé (%85)'),
-          SkillItem(name: 'Design UI/UX', level: 75, levelLabel: 'Compétent (%75)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: 'Avancé (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Expert (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avancé (%85)'),
+          SkillItem(
+              name: 'Design UI/UX', level: 75, levelLabel: 'Compétent (%75)'),
         ],
         personalTraits: [
           'Résolution de problèmes & Analyse',
@@ -632,7 +682,8 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Français', level: 'Langue maternelle'),
-          LanguageItem(language: 'Anglais', level: 'C1 - Courant / Professionnel'),
+          LanguageItem(
+              language: 'Anglais', level: 'C1 - Courant / Professionnel'),
           LanguageItem(language: 'Espagnol', level: 'B1 - Intermédiaire'),
         ],
         references: [
@@ -650,7 +701,8 @@ class CvModel {
             role: 'Architecte Principal',
             link: 'github.com/julien/cv-ai',
             date: '2025 - 2026',
-            description: 'Moteur PDF autonome et générateur de CV intelligent avec IA locale.',
+            description:
+                'Moteur PDF autonome et générateur de CV intelligent avec IA locale.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -716,12 +768,20 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Experto (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Avanzado (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Avanzado (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Experto (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avanzado (%85)'),
-          SkillItem(name: 'Diseño UI/UX', level: 75, levelLabel: 'Competente (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Experto (%95)'),
+          SkillItem(
+              name: 'iOS & Swift', level: 85, levelLabel: 'Avanzado (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Avanzado (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Experto (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avanzado (%85)'),
+          SkillItem(
+              name: 'Diseño UI/UX', level: 75, levelLabel: 'Competente (%75)'),
         ],
         personalTraits: [
           'Resolución de problemas & Análisis',
@@ -733,7 +793,8 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Español', level: 'Nativo'),
-          LanguageItem(language: 'Inglés', level: 'C1 - Avanzado / Profesional'),
+          LanguageItem(
+              language: 'Inglés', level: 'C1 - Avanzado / Profesional'),
           LanguageItem(language: 'Francés', level: 'B1 - Intermedio'),
         ],
         references: [
@@ -751,7 +812,8 @@ class CvModel {
             role: 'Arquitecto Principal',
             link: 'github.com/carlos/cv-ai',
             date: '2025 - 2026',
-            description: 'Motor PDF offline y aplicación generadora de currículums con IA en el dispositivo.',
+            description:
+                'Motor PDF offline y aplicación generadora de currículums con IA en el dispositivo.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -817,12 +879,24 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Especialista (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Avançado (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Avançado (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Especialista (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avançado (%85)'),
-          SkillItem(name: 'Design UI/UX', level: 75, levelLabel: 'Competente (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart',
+              level: 95,
+              levelLabel: 'Especialista (%95)'),
+          SkillItem(
+              name: 'iOS & Swift', level: 85, levelLabel: 'Avançado (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Avançado (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL',
+              level: 90,
+              levelLabel: 'Especialista (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avançado (%85)'),
+          SkillItem(
+              name: 'Design UI/UX', level: 75, levelLabel: 'Competente (%75)'),
         ],
         personalTraits: [
           'Resolução de Problemas & Análise',
@@ -852,7 +926,8 @@ class CvModel {
             role: 'Arquiteto Principal',
             link: 'github.com/lucas/cv-ai',
             date: '2025 - 2026',
-            description: 'Motor PDF offline e criador inteligente de currículos com IA no dispositivo.',
+            description:
+                'Motor PDF offline e criador inteligente de currículos com IA no dispositivo.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -918,12 +993,20 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Esperto (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Avanzato (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Avanzato (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Esperto (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avanzato (%85)'),
-          SkillItem(name: 'Design UI/UX', level: 75, levelLabel: 'Competente (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Esperto (%95)'),
+          SkillItem(
+              name: 'iOS & Swift', level: 85, levelLabel: 'Avanzato (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Avanzato (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Esperto (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'Avanzato (%85)'),
+          SkillItem(
+              name: 'Design UI/UX', level: 75, levelLabel: 'Competente (%75)'),
         ],
         personalTraits: [
           'Problem Solving & Pensiero Analitico',
@@ -935,7 +1018,8 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Italiano', level: 'Madrelingua'),
-          LanguageItem(language: 'Inglese', level: 'C1 - Fluente / Professionale'),
+          LanguageItem(
+              language: 'Inglese', level: 'C1 - Fluente / Professionale'),
           LanguageItem(language: 'Francese', level: 'B1 - Intermedio'),
         ],
         references: [
@@ -953,7 +1037,8 @@ class CvModel {
             role: 'Architetto Principale',
             link: 'github.com/marco/cv-ai',
             date: '2025 - 2026',
-            description: 'Motore PDF offline e generatore di curriculum con IA on-device.',
+            description:
+                'Motore PDF offline e generatore di curriculum con IA on-device.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -1019,12 +1104,20 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Expert (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Gevorderd (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Gevorderd (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Expert (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Gevorderd (%85)'),
-          SkillItem(name: 'UI/UX Design', level: 75, levelLabel: 'Vaardig (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Expert (%95)'),
+          SkillItem(
+              name: 'iOS & Swift', level: 85, levelLabel: 'Gevorderd (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Gevorderd (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Expert (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'Gevorderd (%85)'),
+          SkillItem(
+              name: 'UI/UX Design', level: 75, levelLabel: 'Vaardig (%75)'),
         ],
         personalTraits: [
           'Probleemoplossend Vermogen & Analyse',
@@ -1036,7 +1129,8 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Nederlands', level: 'Moedertaal'),
-          LanguageItem(language: 'Engels', level: 'C1 - Vloeiend / Professioneel'),
+          LanguageItem(
+              language: 'Engels', level: 'C1 - Vloeiend / Professioneel'),
           LanguageItem(language: 'Duits', level: 'B2 - Goed'),
         ],
         references: [
@@ -1120,12 +1214,24 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Ekspert (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Zaawansowany (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Zaawansowany (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Ekspert (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Zaawansowany (%85)'),
-          SkillItem(name: 'Projektowanie UI/UX', level: 75, levelLabel: 'Średnio-zaawansowany (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Ekspert (%95)'),
+          SkillItem(
+              name: 'iOS & Swift', level: 85, levelLabel: 'Zaawansowany (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Zaawansowany (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Ekspert (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps',
+              level: 85,
+              levelLabel: 'Zaawansowany (%85)'),
+          SkillItem(
+              name: 'Projektowanie UI/UX',
+              level: 75,
+              levelLabel: 'Średnio-zaawansowany (%75)'),
         ],
         personalTraits: [
           'Rozwiązywanie Problemów & Analityka',
@@ -1137,8 +1243,10 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Polski', level: 'Ojczysty'),
-          LanguageItem(language: 'Angielski', level: 'C1 - Zaawansowany / Płynny'),
-          LanguageItem(language: 'Niemiecki', level: 'B1 - Średniozaawansowany'),
+          LanguageItem(
+              language: 'Angielski', level: 'C1 - Zaawansowany / Płynny'),
+          LanguageItem(
+              language: 'Niemiecki', level: 'B1 - Średniozaawansowany'),
         ],
         references: [
           ReferenceItem(
@@ -1155,7 +1263,8 @@ class CvModel {
             role: 'Główny Architekt',
             link: 'github.com/jakub/cv-ai',
             date: '2025 - 2026',
-            description: 'Lokalny silnik PDF i inteligentny kreator CV z wbudowaną sztuczną inteligencją.',
+            description:
+                'Lokalny silnik PDF i inteligentny kreator CV z wbudowaną sztuczną inteligencją.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -1221,12 +1330,22 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Эксперт (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Продвинутый (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Продвинутый (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Эксперт (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Продвинутый (%85)'),
-          SkillItem(name: 'UI/UX Дизайн', level: 75, levelLabel: 'Хороший (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Эксперт (%95)'),
+          SkillItem(
+              name: 'iOS & Swift', level: 85, levelLabel: 'Продвинутый (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Продвинутый (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Эксперт (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps',
+              level: 85,
+              levelLabel: 'Продвинутый (%85)'),
+          SkillItem(
+              name: 'UI/UX Дизайн', level: 75, levelLabel: 'Хороший (%75)'),
         ],
         personalTraits: [
           'Аналитическое мышление и решение задач',
@@ -1238,7 +1357,9 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Русский', level: 'Родной язык'),
-          LanguageItem(language: 'Английский', level: 'C1 - Свободный / Профессиональный'),
+          LanguageItem(
+              language: 'Английский',
+              level: 'C1 - Свободный / Профессиональный'),
           LanguageItem(language: 'Немецкий', level: 'B1 - Средний'),
         ],
         references: [
@@ -1256,7 +1377,8 @@ class CvModel {
             role: 'Главный архитектор',
             link: 'github.com/alex/cv-ai',
             date: '2025 - 2026',
-            description: 'Автономный генератор резюме и локальный PDF-движок со встроенным искусственным интеллектом.',
+            description:
+                'Автономный генератор резюме и локальный PDF-движок со встроенным искусственным интеллектом.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -1322,11 +1444,15 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'خبير (%95)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'خبير (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'متقدم (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'متقدم (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'خبير (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'متقدم (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: 'متقدم (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'خبير (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'متقدم (%85)'),
           SkillItem(name: 'تصميم UI/UX', level: 75, levelLabel: 'كفء (%75)'),
         ],
         personalTraits: [
@@ -1357,7 +1483,8 @@ class CvModel {
             role: 'كبير المهندسين المعماريين',
             link: 'github.com/ahmed/cv-ai',
             date: '2025 - 2026',
-            description: 'محرك PDF وتطبيق ذكي لإنشاء السير الذاتية بالذكاء الاصطناعي على الجهاز.',
+            description:
+                'محرك PDF وتطبيق ذكي لإنشاء السير الذاتية بالذكاء الاصطناعي على الجهاز.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -1423,11 +1550,15 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'विशेषज्ञ (%95)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'विशेषज्ञ (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'उन्नत (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'उन्नत (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'विशेषज्ञ (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'उन्नत (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: 'उन्नत (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'विशेषज्ञ (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps', level: 85, levelLabel: 'उन्नत (%85)'),
           SkillItem(name: 'UI/UX Design', level: 75, levelLabel: 'कुशल (%75)'),
         ],
         personalTraits: [
@@ -1440,7 +1571,8 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'हिन्दी', level: 'मातृभाषा'),
-          LanguageItem(language: 'अंग्रेजी', level: 'C1 - धाराप्रवाह / व्यावसायिक'),
+          LanguageItem(
+              language: 'अंग्रेजी', level: 'C1 - धाराप्रवाह / व्यावसायिक'),
           LanguageItem(language: 'जर्मन', level: 'B1 - मध्यम'),
         ],
         references: [
@@ -1458,7 +1590,8 @@ class CvModel {
             role: 'प्रमुख आर्किटेक्ट',
             link: 'github.com/rahul/cv-ai',
             date: '2025 - 2026',
-            description: 'डिवाइस पर आधारित पीडीएफ इंजन और एआई संचालित सीवी जनरेटर ऐप।',
+            description:
+                'डिवाइस पर आधारित पीडीएफ इंजन और एआई संचालित सीवी जनरेटर ऐप।',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -1526,7 +1659,8 @@ class CvModel {
         skills: [
           SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: '精通 (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: '高级 (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: '高级 (%80)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: '高级 (%80)'),
           SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: '精通 (%90)'),
           SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: '高级 (%85)'),
           SkillItem(name: 'UI/UX 设计', level: 75, levelLabel: '熟练 (%75)'),
@@ -1625,10 +1759,13 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'エキスパート (%95)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'エキスパート (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: '上級 (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: '上級 (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'エキスパート (%90)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: '上級 (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'エキスパート (%90)'),
           SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: '上級 (%85)'),
           SkillItem(name: 'UI/UX デザイン', level: 75, levelLabel: '実務レベル (%75)'),
         ],
@@ -1728,7 +1865,8 @@ class CvModel {
         skills: [
           SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: '전문가 (%95)'),
           SkillItem(name: 'iOS & Swift', level: 85, levelLabel: '고급 (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: '고급 (%80)'),
+          SkillItem(
+              name: 'Android & Kotlin', level: 80, levelLabel: '고급 (%80)'),
           SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: '전문가 (%90)'),
           SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: '고급 (%85)'),
           SkillItem(name: 'UI/UX 디자인', level: 75, levelLabel: '능숙 (%75)'),
@@ -1827,12 +1965,24 @@ class CvModel {
           ),
         ],
         skills: [
-          SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Pakar (%95)'),
-          SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Tingkat Lanjut (%85)'),
-          SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Tingkat Lanjut (%80)'),
-          SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Pakar (%90)'),
-          SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Tingkat Lanjut (%85)'),
-          SkillItem(name: 'Desain UI/UX', level: 75, levelLabel: 'Terampil (%75)'),
+          SkillItem(
+              name: 'Flutter & Dart', level: 95, levelLabel: 'Pakar (%95)'),
+          SkillItem(
+              name: 'iOS & Swift',
+              level: 85,
+              levelLabel: 'Tingkat Lanjut (%85)'),
+          SkillItem(
+              name: 'Android & Kotlin',
+              level: 80,
+              levelLabel: 'Tingkat Lanjut (%80)'),
+          SkillItem(
+              name: 'REST & GraphQL', level: 90, levelLabel: 'Pakar (%90)'),
+          SkillItem(
+              name: 'CI/CD & DevOps',
+              level: 85,
+              levelLabel: 'Tingkat Lanjut (%85)'),
+          SkillItem(
+              name: 'Desain UI/UX', level: 75, levelLabel: 'Terampil (%75)'),
         ],
         personalTraits: [
           'Pemecahan Masalah & Berpikir Analitis',
@@ -1844,7 +1994,8 @@ class CvModel {
         ],
         languages: [
           LanguageItem(language: 'Bahasa Indonesia', level: 'Bahasa Ibu'),
-          LanguageItem(language: 'Bahasa Inggris', level: 'C1 - Fasih / Profesional'),
+          LanguageItem(
+              language: 'Bahasa Inggris', level: 'C1 - Fasih / Profesional'),
           LanguageItem(language: 'Bahasa Mandarin', level: 'B1 - Menengah'),
         ],
         references: [
@@ -1862,7 +2013,8 @@ class CvModel {
             role: 'Lead Architect',
             link: 'github.com/budi/cv-ai',
             date: '2025 - 2026',
-            description: 'Mesin PDF mandiri dan pembuat CV cerdas berbasis AI pada perangkat.',
+            description:
+                'Mesin PDF mandiri dan pembuat CV cerdas berbasis AI pada perangkat.',
             technologies: 'Flutter, Dart, CorePDF, On-Device AI',
           ),
         ],
@@ -1927,12 +2079,17 @@ class CvModel {
         ),
       ],
       skills: [
-        SkillItem(name: 'Flutter & Dart', level: 95, levelLabel: 'Expert (%95)'),
+        SkillItem(
+            name: 'Flutter & Dart', level: 95, levelLabel: 'Expert (%95)'),
         SkillItem(name: 'iOS & Swift', level: 85, levelLabel: 'Advanced (%85)'),
-        SkillItem(name: 'Android & Kotlin', level: 80, levelLabel: 'Advanced (%80)'),
-        SkillItem(name: 'REST & GraphQL', level: 90, levelLabel: 'Expert (%90)'),
-        SkillItem(name: 'CI/CD & DevOps', level: 85, levelLabel: 'Advanced (%85)'),
-        SkillItem(name: 'UI/UX Design', level: 75, levelLabel: 'Proficient (%75)'),
+        SkillItem(
+            name: 'Android & Kotlin', level: 80, levelLabel: 'Advanced (%80)'),
+        SkillItem(
+            name: 'REST & GraphQL', level: 90, levelLabel: 'Expert (%90)'),
+        SkillItem(
+            name: 'CI/CD & DevOps', level: 85, levelLabel: 'Advanced (%85)'),
+        SkillItem(
+            name: 'UI/UX Design', level: 75, levelLabel: 'Proficient (%75)'),
       ],
       personalTraits: [
         'Analytical Thinking & Problem Solving',
@@ -1962,7 +2119,8 @@ class CvModel {
           role: 'Lead Architect',
           link: 'github.com/alex/cv-ai',
           date: '2025 - 2026',
-          description: 'On-device PDF engine and AI-assisted professional CV generator mobile application.',
+          description:
+              'On-device PDF engine and AI-assisted professional CV generator mobile application.',
           technologies: 'Flutter, Dart, CorePDF, On-Device AI',
         ),
       ],

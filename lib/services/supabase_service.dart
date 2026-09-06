@@ -99,7 +99,8 @@ class SupabaseService {
   /// Supabase Client Başlatma (Güvenli ve Hata Korumalı)
   static Future<void> init() async {
     if (!SupabaseConfig.isConfigured) {
-      debugPrint('ℹ️ SupabaseConfig henüz yapılandırılmamış. Yerel SharedPreferences modu aktif.');
+      debugPrint(
+          'ℹ️ SupabaseConfig henüz yapılandırılmamış. Yerel SharedPreferences modu aktif.');
       return;
     }
 
@@ -115,7 +116,8 @@ class SupabaseService {
       _isInitialized = true;
       debugPrint('✅ Supabase başarıyla başlatıldı ve bağlandı.');
     } catch (e) {
-      debugPrint('⚠️ Supabase başlatma hatası: $e. Çevrimdışı mod kullanılacak.');
+      debugPrint(
+          '⚠️ Supabase başlatma hatası: $e. Çevrimdışı mod kullanılacak.');
       _isInitialized = false;
     }
   }
@@ -131,7 +133,8 @@ class SupabaseService {
     required String fullName,
   }) async {
     if (!_isInitialized || client == null) {
-      return EmailSignUpResult.failure('Supabase bağlantısı henüz hazır değil.');
+      return EmailSignUpResult.failure(
+          'Supabase bağlantısı henüz hazır değil.');
     }
     try {
       final response = await client!.auth.signUp(
@@ -166,11 +169,16 @@ class SupabaseService {
       );
     } catch (e) {
       debugPrint('Supabase signUp error: $e');
-      final rawMsg = e.toString().replaceAll('Exception: ', '').replaceAll('AuthException: ', '');
+      final rawMsg = e
+          .toString()
+          .replaceAll('Exception: ', '')
+          .replaceAll('AuthException: ', '');
       String userMsg = rawMsg;
-      if (rawMsg.contains('over_email_send_rate_limit') || rawMsg.contains('rate limit')) {
+      if (rawMsg.contains('over_email_send_rate_limit') ||
+          rawMsg.contains('rate limit')) {
         userMsg = LocalizationService.tr('auth_err_rate_limit');
-      } else if (rawMsg.contains('User already registered') || rawMsg.contains('already registered')) {
+      } else if (rawMsg.contains('User already registered') ||
+          rawMsg.contains('already registered')) {
         userMsg = LocalizationService.tr('auth_err_already_registered');
       } else {
         userMsg = LocalizationService.tr('auth_err_generic');
@@ -181,7 +189,9 @@ class SupabaseService {
 
   /// E-posta Doğrulama Linkini Tekrar Gönder (Hata mesajı varsa döner, başarılıysa null döner)
   static Future<String?> resendVerificationEmail(String email) async {
-    if (!_isInitialized || client == null) return LocalizationService.tr('auth_err_generic');
+    if (!_isInitialized || client == null) {
+      return LocalizationService.tr('auth_err_generic');
+    }
     try {
       await client!.auth.resend(
         type: OtpType.signup,
@@ -193,7 +203,8 @@ class SupabaseService {
     } catch (e) {
       debugPrint('⚠️ Supabase resendVerificationEmail hatası: $e');
       final raw = e.toString();
-      if (raw.contains('over_email_send_rate_limit') || raw.contains('rate limit')) {
+      if (raw.contains('over_email_send_rate_limit') ||
+          raw.contains('rate limit')) {
         return LocalizationService.tr('auth_err_rate_limit');
       }
       return LocalizationService.tr('auth_err_generic');
@@ -261,7 +272,8 @@ class SupabaseService {
             });
           }
         } catch (supaErr) {
-          debugPrint('Supabase Google signInWithIdToken uyarısı: $supaErr (Yerel oturumla devam edilecek)');
+          debugPrint(
+              'Supabase Google signInWithIdToken uyarısı: $supaErr (Yerel oturumla devam edilecek)');
         }
       }
 
@@ -290,7 +302,8 @@ class SupabaseService {
     try {
       final isAvailable = await SignInWithApple.isAvailable();
       if (!isAvailable) {
-        return OAuthSignInResult.failure('Apple ile Giriş bu cihazda desteklenmiyor.');
+        return OAuthSignInResult.failure(
+            'Apple ile Giriş bu cihazda desteklenmiyor.');
       }
 
       // Supabase & Apple Güvenlik Standardı: Kriptografik Nonce Üretimi
@@ -313,15 +326,20 @@ class SupabaseService {
         nonce: hashedNonce,
       );
 
-      final appleUserId = credential.userIdentifier ?? 'apple_${DateTime.now().millisecondsSinceEpoch}';
+      final appleUserId = credential.userIdentifier ??
+          'apple_${DateTime.now().millisecondsSinceEpoch}';
       final nameParts = [credential.givenName, credential.familyName]
           .where((s) => s != null && s.isNotEmpty)
           .join(' ');
-      final displayName = nameParts.isNotEmpty ? nameParts : 'Apple Kullanıcısı';
-      final email = credential.email ?? '${appleUserId.substring(0, min(8, appleUserId.length))}@privaterelay.appleid.com';
+      final displayName =
+          nameParts.isNotEmpty ? nameParts : 'Apple Kullanıcısı';
+      final email = credential.email ??
+          '${appleUserId.substring(0, min(8, appleUserId.length))}@privaterelay.appleid.com';
 
       AuthResponse? response;
-      if (_isInitialized && client != null && credential.identityToken != null) {
+      if (_isInitialized &&
+          client != null &&
+          credential.identityToken != null) {
         try {
           response = await client!.auth.signInWithIdToken(
             provider: OAuthProvider.apple,
@@ -338,7 +356,8 @@ class SupabaseService {
             });
           }
         } catch (supaErr) {
-          debugPrint('Supabase Apple signInWithIdToken uyarısı: $supaErr (Yerel oturumla devam edilecek)');
+          debugPrint(
+              'Supabase Apple signInWithIdToken uyarısı: $supaErr (Yerel oturumla devam edilecek)');
         }
       }
 
@@ -353,7 +372,8 @@ class SupabaseService {
         debugPrint('Apple Sign-In kullanıcı tarafından iptal edildi.');
         return OAuthSignInResult.cancelled();
       }
-      debugPrint('Apple Sign-In authorization hatası: ${e.message} (${e.code})');
+      debugPrint(
+          'Apple Sign-In authorization hatası: ${e.message} (${e.code})');
       return OAuthSignInResult.failure(e.message);
     } catch (e) {
       debugPrint('Apple Sign-In hatası: $e');
@@ -420,11 +440,8 @@ class SupabaseService {
     if (uid == null) return null;
 
     try {
-      final data = await client!
-          .from('profiles')
-          .select()
-          .eq('id', uid)
-          .maybeSingle();
+      final data =
+          await client!.from('profiles').select().eq('id', uid).maybeSingle();
       return data;
     } catch (e) {
       debugPrint('Supabase getProfile error: $e');
@@ -450,22 +467,26 @@ class SupabaseService {
   }
 
   /// Profil Fotoğrafı Yükle & URL Güncelle
-  static Future<String?> uploadAvatar(Uint8List imageBytes, {String? userId}) async {
+  static Future<String?> uploadAvatar(Uint8List imageBytes,
+      {String? userId}) async {
     if (!_isInitialized || client == null) return null;
     final uid = userId ?? currentUserId;
     if (uid == null) return null;
 
     try {
-      final fileName = 'avatar_${uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'avatar_${uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final path = '$uid/$fileName';
 
       await client!.storage.from(SupabaseConfig.bucketAvatars).uploadBinary(
             path,
             imageBytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+            fileOptions:
+                const FileOptions(contentType: 'image/jpeg', upsert: true),
           );
 
-      final publicUrl = client!.storage.from(SupabaseConfig.bucketAvatars).getPublicUrl(path);
+      final publicUrl =
+          client!.storage.from(SupabaseConfig.bucketAvatars).getPublicUrl(path);
       await upsertProfile({'id': uid, 'avatar_url': publicUrl});
       return publicUrl;
     } catch (e) {
@@ -556,10 +577,13 @@ class SupabaseService {
   }
 
   /// CV'yi Supabase Veritabanına Kaydet / Güncelle
-  static Future<void> saveResume(CvModel cv, {Uint8List? pdfBytes, Uint8List? photoBytes}) async {
+  static Future<void> saveResume(CvModel cv,
+      {Uint8List? pdfBytes, Uint8List? photoBytes}) async {
     if (!_isInitialized || client == null) return;
     final uid = currentUserId;
     if (uid == null) return;
+    // Older local CVs used timestamp IDs. The resumes table uses PostgreSQL UUID.
+    cv.ensureUuid();
 
     try {
       String? uploadedPdfUrl;
@@ -568,13 +592,17 @@ class SupabaseService {
       // PDF Dosyasını Storage'a yükle
       if (pdfBytes != null) {
         try {
-          final pdfPath = '$uid/resumes/${cv.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+          final pdfPath =
+              '$uid/resumes/${cv.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
           await client!.storage.from(SupabaseConfig.bucketResumes).uploadBinary(
                 pdfPath,
                 pdfBytes,
-                fileOptions: const FileOptions(contentType: 'application/pdf', upsert: true),
+                fileOptions: const FileOptions(
+                    contentType: 'application/pdf', upsert: true),
               );
-          uploadedPdfUrl = client!.storage.from(SupabaseConfig.bucketResumes).getPublicUrl(pdfPath);
+          uploadedPdfUrl = client!.storage
+              .from(SupabaseConfig.bucketResumes)
+              .getPublicUrl(pdfPath);
         } catch (err) {
           debugPrint('Resume PDF storage upload error: $err');
         }
@@ -586,19 +614,25 @@ class SupabaseService {
         if (bytes != null) {
           try {
             final photoPath = '$uid/photos/${cv.id}_photo.jpg';
-            await client!.storage.from(SupabaseConfig.bucketResumes).uploadBinary(
+            await client!.storage
+                .from(SupabaseConfig.bucketResumes)
+                .uploadBinary(
                   photoPath,
                   bytes,
-                  fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+                  fileOptions: const FileOptions(
+                      contentType: 'image/jpeg', upsert: true),
                 );
-            uploadedPhotoUrl = client!.storage.from(SupabaseConfig.bucketResumes).getPublicUrl(photoPath);
+            uploadedPhotoUrl = client!.storage
+                .from(SupabaseConfig.bucketResumes)
+                .getPublicUrl(photoPath);
           } catch (err) {
             debugPrint('Resume photo storage upload error: $err');
           }
         }
       }
 
-      final payload = _cvModelToRow(cv, uid, pdfUrl: uploadedPdfUrl, photoUrl: uploadedPhotoUrl);
+      final payload = _cvModelToRow(cv, uid,
+          pdfUrl: uploadedPdfUrl, photoUrl: uploadedPhotoUrl);
       await client!.from('resumes').upsert(payload);
       await incrementMetric('cv_count');
       debugPrint('✅ CV başarıyla Supabase bulutuna kaydedildi: ${cv.fullName}');
@@ -642,7 +676,8 @@ class SupabaseService {
   }
 
   /// Belgeyi Supabase'e Kaydet
-  static Future<void> saveDocument(DocumentModel doc, {Uint8List? fileBytes}) async {
+  static Future<void> saveDocument(DocumentModel doc,
+      {Uint8List? fileBytes}) async {
     if (!_isInitialized || client == null) return;
     final uid = currentUserId;
     if (uid == null) return;
@@ -656,11 +691,15 @@ class SupabaseService {
               storagePath,
               fileBytes,
               fileOptions: FileOptions(
-                contentType: ext == 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf',
+                contentType: ext == 'docx'
+                    ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    : 'application/pdf',
                 upsert: true,
               ),
             );
-        fileUrl = client!.storage.from(SupabaseConfig.bucketDocuments).getPublicUrl(storagePath);
+        fileUrl = client!.storage
+            .from(SupabaseConfig.bucketDocuments)
+            .getPublicUrl(storagePath);
       }
 
       final payload = {
@@ -739,9 +778,11 @@ class SupabaseService {
         await client!.storage.from(SupabaseConfig.bucketScans).uploadBinary(
               path,
               pdfBytes,
-              fileOptions: const FileOptions(contentType: 'application/pdf', upsert: true),
+              fileOptions: const FileOptions(
+                  contentType: 'application/pdf', upsert: true),
             );
-        pdfUrl = client!.storage.from(SupabaseConfig.bucketScans).getPublicUrl(path);
+        pdfUrl =
+            client!.storage.from(SupabaseConfig.bucketScans).getPublicUrl(path);
       }
 
       final payload = {
@@ -770,7 +811,8 @@ class SupabaseService {
   // ===========================================================================
 
   /// OCR Geçmişini Getir
-  static Future<List<Map<String, dynamic>>> fetchOcrHistory([String? userId]) async {
+  static Future<List<Map<String, dynamic>>> fetchOcrHistory(
+      [String? userId]) async {
     if (!_isInitialized || client == null) return [];
     final uid = userId ?? currentUserId;
     if (uid == null) return [];
@@ -800,7 +842,8 @@ class SupabaseService {
     if (uid == null) return;
 
     try {
-      final words = text.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
+      final words =
+          text.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
       final payload = {
         'user_id': uid,
         'source_filename': sourceFilename ?? 'Belge Fotoğrafı',
@@ -849,11 +892,14 @@ class SupabaseService {
   // 🔄 HELPER SERIALIZERS (CV & DOCUMENT MODEL DÖNÜŞTÜRÜCÜLER)
   // ===========================================================================
 
-  static Map<String, dynamic> _cvModelToRow(CvModel cv, String userId, {String? pdfUrl, String? photoUrl}) {
+  static Map<String, dynamic> _cvModelToRow(CvModel cv, String userId,
+      {String? pdfUrl, String? photoUrl}) {
     return {
       'id': cv.id,
       'user_id': userId,
-      'title': cv.fullName.isNotEmpty ? '${cv.fullName} - ${cv.jobTitle}' : 'Özgeçmişim',
+      'title': cv.fullName.isNotEmpty
+          ? '${cv.fullName} - ${cv.jobTitle}'
+          : 'Özgeçmişim',
       'full_name': cv.fullName,
       'job_title': cv.jobTitle,
       'email': cv.email,
@@ -957,12 +1003,16 @@ class SupabaseService {
       portfolioUrl: row['portfolio_url'] as String? ?? '',
       hasPhoto: row['has_photo'] as bool? ?? true,
       profilePhotoBytes: photoBytes,
-      primaryColorHex: (row['primary_color_hex'] as num?)?.toInt() ?? 0xFF2563EB,
+      primaryColorHex:
+          (row['primary_color_hex'] as num?)?.toInt() ?? 0xFF2563EB,
       template: CvTemplate.values.firstWhere(
         (t) => t.name == row['template_name'],
         orElse: () => CvTemplate.sidebarModern,
       ),
-      personalTraits: (row['personal_traits'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      personalTraits: (row['personal_traits'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       experiences: (row['experiences'] as List<dynamic>?)
               ?.map((e) => WorkExperience(
                     company: e['company'] as String? ?? '',
@@ -1028,9 +1078,9 @@ class SupabaseService {
                     date: c['date'] as String? ?? '',
                     credentialUrl: c['credentialUrl'] as String? ?? '',
                   ))
-              .where((c) =>
-                  !(c.name.contains('Google Certified Associate Android Developer') ||
-                    c.credentialUrl.contains('verify.google.com/cert/12345')))
+              .where((c) => !(c.name.contains(
+                      'Google Certified Associate Android Developer') ||
+                  c.credentialUrl.contains('verify.google.com/cert/12345')))
               .toList() ??
           [],
     );
