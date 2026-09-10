@@ -1,6 +1,6 @@
 import 'dart:convert';
 import '../widgets/scrollable_sheet_body.dart';
- 
+
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -368,7 +368,6 @@ class _PdfConverterScreenState extends State<PdfConverterScreen> {
                         isDark: isDark,
                       ),
                       const SizedBox(height: 10),
-
                     ] else if (_activeDirection == 1) ...[
                       // OFFICE ➔ OFFICE CROSS CONVERTERS
                       // 1. Word to Excel (DOCX ➔ XLSX)
@@ -614,7 +613,8 @@ class _ImageToPdfSheetState extends State<ImageToPdfSheet> {
   bool _isGenerating = false;
 
   Future<void> _pickImagesFromGallery() async {
-    final hasPerm = await AppPermissionService.requestGalleryPermission(context);
+    final hasPerm =
+        await AppPermissionService.requestGalleryPermission(context);
     if (!hasPerm) return;
     try {
       final picker = ImagePicker();
@@ -993,8 +993,10 @@ class _DocToPdfSheetState extends State<DocToPdfSheet> {
 
     Uint8List pdfBytes;
     try {
-      final sourceBytes = _selectedDocBytes ?? Uint8List.fromList(utf8.encode(_contentController.text.trim()));
-      final sourceName = _selectedDocFileName ?? '${_titleController.text.trim()}.docx';
+      final sourceBytes = _selectedDocBytes ??
+          Uint8List.fromList(utf8.encode(_contentController.text.trim()));
+      final sourceName =
+          _selectedDocFileName ?? '${_titleController.text.trim()}.docx';
       final converted = await RealDocumentPipelineService.convertWordToPdfBytes(
         sourceBytes,
         fileName: sourceName,
@@ -1815,23 +1817,26 @@ class _PptxToPdfSheetState extends State<PptxToPdfSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${LocalizationService.tr('slides')} (${_slides.length})',
-                style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: textColor),
-              ),
-              TextButton.icon(
-                onPressed: _addSlide,
-                icon: const Icon(Icons.add_rounded, size: 16),
-                label: _compactButtonLabel(
-                  LocalizationService.tr('converter_btn_add_slide'),
-                  style: const TextStyle(
-                      fontSize: 11.5, fontWeight: FontWeight.w700),
+              Expanded(
+                child: Text(
+                  '${LocalizationService.tr('slides')} (${_slides.length})',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: textColor),
                 ),
-                style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFEA580C)),
+              ),
+              IconButton(
+                onPressed: _addSlide,
+                tooltip: LocalizationService.tr('converter_btn_add_slide'),
+                icon: const Icon(Icons.add_rounded, size: 20),
+                style: IconButton.styleFrom(
+                  foregroundColor: const Color(0xFFEA580C),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  minimumSize: const Size(32, 32),
+                ),
               ),
             ],
           ),
@@ -1997,7 +2002,8 @@ class _OcrToTxtSheetState extends State<OcrToTxtSheet> {
   }
 
   Future<void> _pickFromGallery() async {
-    final hasPerm = await AppPermissionService.requestGalleryPermission(context);
+    final hasPerm =
+        await AppPermissionService.requestGalleryPermission(context);
     if (!hasPerm) return;
     try {
       final picker = ImagePicker();
@@ -2051,14 +2057,16 @@ class _OcrToTxtSheetState extends State<OcrToTxtSheet> {
     // Eğer yerel on-device ML Kit metin bulamadıysa (örneğin Latin dışı alfabeler: Arapça, Rusça, Çince, Japonca, Korece, Hintçe vb.)
     if (finalText.trim().isEmpty) {
       try {
-        final cloudRes = await RealDocumentPipelineService.extractTextFromImageBytes(
+        final cloudRes =
+            await RealDocumentPipelineService.extractTextFromImageBytes(
           bytes,
           sourceName: title,
         );
         final cloudText = (cloudRes['text'] as String?)?.trim() ?? '';
         if (cloudText.isNotEmpty) {
           finalText = cloudText;
-          recognizedLines = cloudText.split('\n').where((l) => l.trim().isNotEmpty).length;
+          recognizedLines =
+              cloudText.split('\n').where((l) => l.trim().isNotEmpty).length;
         }
       } catch (e) {
         debugPrint('Fallback OCR error: $e');
@@ -2068,7 +2076,9 @@ class _OcrToTxtSheetState extends State<OcrToTxtSheet> {
     if (mounted) {
       setState(() {
         _isProcessingOcr = false;
-        _recognizedBlocks = ocrResult.blockCount > 0 ? ocrResult.blockCount : (recognizedLines > 0 ? 1 : 0);
+        _recognizedBlocks = ocrResult.blockCount > 0
+            ? ocrResult.blockCount
+            : (recognizedLines > 0 ? 1 : 0);
         _recognizedLines = recognizedLines;
 
         if (finalText.isNotEmpty) {

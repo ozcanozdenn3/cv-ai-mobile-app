@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/ai_constants.dart';
 import '../models/cv_model.dart';
 import 'localization_service.dart';
+import 'supabase_service.dart';
 import 'real_document_pipeline_service.dart';
 import 'package:image/image.dart' as img;
 
@@ -137,6 +138,28 @@ class AiCvException implements Exception {
 class AiCvService {
   static Future<http.Response> _request(
       Map<String, dynamic> payload, String apiKey) async {
+    if (AiConstants.useSupabaseProxy) {
+      final client = SupabaseService.client;
+      if (client == null) {
+        throw const AiCvException('cv_ai_configuration_error');
+      }
+      try {
+        final result = await client.functions
+            .invoke('cv-ai', body: payload)
+            .timeout(const Duration(seconds: 65));
+        if (result.status != 200) {
+          throw AiCvException('cv_ai_request_failed',
+              statusCode: result.status);
+        }
+        return http.Response(jsonEncode(result.data), 200,
+            headers: {'content-type': 'application/json; charset=utf-8'});
+      } on AiCvException {
+        rethrow;
+      } catch (e) {
+        debugPrint('❌ Supabase edge function hatası: $e');
+        throw const AiCvException('cv_ai_request_failed');
+      }
+    }
     if (apiKey.isEmpty) throw const AiCvException('cv_ai_not_configured');
     final endpoint = Uri.parse(
         '${AiConstants.geminiBaseUrl}/${AiConstants.defaultModel}:generateContent');
@@ -216,7 +239,7 @@ class AiCvService {
       throw const AiCvException('cv_ai_file_invalid');
     }
     final apiKey = await getApiKey(overrideKey: customApiKey);
-    if (apiKey.isEmpty) {
+    if (apiKey.isEmpty && !AiConstants.useSupabaseProxy) {
       var ocrBytes = bytes;
       final isPdf = mimeType == 'application/pdf';
       if (!isPdf) {
@@ -357,7 +380,7 @@ class AiCvService {
     final apiKey = await getApiKey(overrideKey: customApiKey);
 
     // 1. If an API key is present, attempt live Google Gemini Flash parsing
-    if (apiKey.isNotEmpty) {
+    if (apiKey.isNotEmpty || AiConstants.useSupabaseProxy) {
       try {
         final result = await _callGeminiApi(
           prompt: cleanPrompt,
@@ -426,7 +449,9 @@ class AiCvService {
 
     final targetLocale = locale ?? LocalizationService.currentLocale;
     final apiKey = await getApiKey(overrideKey: customApiKey);
-    if (apiKey.isEmpty) throw const AiCvException('cv_ai_not_configured');
+    if (apiKey.isEmpty && !AiConstants.useSupabaseProxy) {
+      throw const AiCvException('cv_ai_not_configured');
+    }
 
     try {
       final payload = {
@@ -920,6 +945,42 @@ class AiCvService {
 
     // 8. Extract structured sections without inventing missing values.
     final educations = _extractEducationsFromText(text);
+    for (final education in educations) {
+      final rawDegree = education.degree.trim();
+      if (rawDegree.isEmpty ||
+          RegExp(r'\b(with a )?degree\b', caseSensitive: false)
+              .hasMatch(rawDegree)) {
+        education.degree = _getDegreeForLocale(detectedLang);
+      }
+      if (education.field.trim().isEmpty) {
+        education.field = _getFieldForLocale(detectedLang);
+      }
+    }
+    if (educations.isEmpty &&
+        RegExp(
+          r'(university|universitesi|üniversitesi|college|school|lise|fakülte|faculty|institute|enstitü|bachelor|master|degree|lisans|yüksek lisans|phd|doctorate|mezun|graduat|университет|колледж|бакалавр|магистр|विद्यालय|विश्वविद्यालय)',
+          caseSensitive: false,
+        ).hasMatch(text)) {
+      final schoolMatch = RegExp(
+        r'([A-ZÇĞİÖŞÜА-ЯЁ][\p{L}\s.-]{2,}?(?:University|Üniversitesi|Universitesi|College|School|Institute|Enstitüsü|Enstitusu|Техник|Университет))',
+        caseSensitive: false,
+        unicode: true,
+      ).firstMatch(text);
+      final graduateSchoolMatch = RegExp(
+        r'([A-ZÇĞİÖŞÜА-ЯЁ][\p{L}\s.-]{2,}?)\s+(?:mezun(?:uyum|um)?|graduated)',
+        caseSensitive: false,
+        unicode: true,
+      ).firstMatch(text);
+      educations.add(Education(
+        school: schoolMatch?.group(1)?.trim() ??
+            graduateSchoolMatch?.group(1)?.trim() ??
+            '',
+        degree: _getDegreeForLocale(detectedLang),
+        field: _getFieldForLocale(detectedLang),
+        startDate: '',
+        endDate: '',
+      ));
+    }
     final experiences =
         _extractExperiencesFromText(text, fallbackJobTitle: jobTitle);
 
@@ -990,6 +1051,9 @@ class AiCvService {
 
     final certificates = _extractCertificatesFromText(text);
     final languages = _extractLanguagesFromText(text);
+    if (languages.isEmpty) {
+      languages.addAll(_getDefaultLanguagesForLocale(detectedLang));
+    }
     final projects = _extractProjectsFromText(text);
     final extractedSummary = _extractSummaryFromText(text);
     // A spoken note normally has no "Summary" heading. Keep the original

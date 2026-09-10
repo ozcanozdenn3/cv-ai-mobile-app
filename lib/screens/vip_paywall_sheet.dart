@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
- 
+
 import '../constants/legal_constants.dart';
 import '../constants/theme_constants.dart';
 import '../models/subscription_model.dart';
 import '../services/auth_service.dart';
+import '../services/in_app_purchase_service.dart';
 import '../services/localization_service.dart';
 import '../widgets/dynamic_ambient_canvas.dart';
 
@@ -29,10 +32,15 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
   late AnimationController _shimmerController;
   late AnimationController _pulseController;
   bool _isLoading = false;
+  Timer? _purchaseWatchdog;
 
   @override
   void initState() {
     super.initState();
+    InAppPurchaseService.loadProducts();
+    InAppPurchaseService.purchaseStatusMessageNotifier
+        .addListener(_onPurchaseStatusChanged);
+
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
@@ -46,28 +54,31 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
 
   @override
   void dispose() {
+    _purchaseWatchdog?.cancel();
+    InAppPurchaseService.purchaseStatusMessageNotifier
+        .removeListener(_onPurchaseStatusChanged);
     _shimmerController.dispose();
     _pulseController.dispose();
     super.dispose();
   }
 
-  Future<void> _handlePurchase() async {
-    setState(() => _isLoading = true);
-    final nav = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+  void _onPurchaseStatusChanged() {
+    if (!mounted) return;
+    final status = InAppPurchaseService.purchaseStatusMessageNotifier.value;
+    if (status == null) return;
 
-    try {
-      await AuthService.upgradeToPro(tier: _selectedTier);
-
-      if (nav.canPop()) {
-        nav.pop();
+    if (status == 'purchase_success' || status == 'restore_success') {
+      setState(() => _isLoading = false);
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
       }
 
-      messenger.showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: AppColors.accentEmerald,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           content: Row(
             children: [
               Container(
@@ -76,7 +87,8 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                   color: Colors.white24,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.verified_rounded, color: Colors.white, size: 20),
+                child: const Icon(Icons.verified_rounded,
+                    color: Colors.white, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -86,11 +98,15 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                   children: [
                     Text(
                       LocalizationService.tr('profile_pro_active'),
-                      style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 13.5),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          fontSize: 13.5),
                     ),
                     Text(
                       LocalizationService.tr('paywall_guarantee'),
-                      style: const TextStyle(color: Colors.white70, fontSize: 11),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -99,8 +115,81 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
           ),
         ),
       );
+    } else if (status == 'canceled') {
+      setState(() => _isLoading = false);
+    } else if (status.startsWith('error') ||
+        status.startsWith('purchase_failed')) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.accentRose,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          content: Text(
+            status
+                .replaceFirst('error: ', '')
+                .replaceFirst('purchase_failed: ', ''),
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
+    }
+
+    // Reset to null so an identical repeat status (e.g. the same error
+    // twice in a row) still notifies listeners next time, and stop the
+    // stuck-loading watchdog now that a real update has arrived.
+    _purchaseWatchdog?.cancel();
+    InAppPurchaseService.purchaseStatusMessageNotifier.value = null;
+  }
+
+  Future<void> _handlePurchase() async {
+    setState(() => _isLoading = true);
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final started = await InAppPurchaseService.buySubscription(_selectedTier);
+      if (started && mounted) {
+        _purchaseWatchdog?.cancel();
+        _purchaseWatchdog = Timer(const Duration(seconds: 45), () {
+          if (!mounted || !_isLoading) return;
+          setState(() => _isLoading = false);
+          InAppPurchaseService.isProcessingNotifier.value = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppColors.accentAmber,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              content: const Text(
+                'Mağazadan yanıt alınamadı. Lütfen tekrar deneyin.',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          );
+        });
+      }
+      if (!started && mounted) {
+        setState(() => _isLoading = false);
+        final status = InAppPurchaseService.purchaseStatusMessageNotifier.value;
+        if (status == 'product_not_found') {
+          messenger.showSnackBar(
+            SnackBar(
+              backgroundColor: AppColors.accentRose,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              content: const Text(
+                'Ürün bilgisi henüz yüklenemedi. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
+        setState(() => _isLoading = false);
         messenger.showSnackBar(
           SnackBar(
             backgroundColor: AppColors.accentRose,
@@ -108,40 +197,62 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _handleRestorePurchases() async {
     setState(() => _isLoading = true);
     final messenger = ScaffoldMessenger.of(context);
-    await Future.delayed(const Duration(milliseconds: 800));
-    final isValid = await AuthService.checkSubscriptionExpiry();
-    if (mounted) {
-      setState(() => _isLoading = false);
-      messenger.showSnackBar(
-        SnackBar(
-          backgroundColor: isValid ? AppColors.accentEmerald : AppColors.accentAmber,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          content: Text(
-            isValid
-                ? LocalizationService.tr('profile_pro_active')
-                : LocalizationService.tr('paywall_no_active_sub'),
-            style: const TextStyle(fontWeight: FontWeight.w800),
+
+    try {
+      await InAppPurchaseService.restorePurchases();
+      await Future.delayed(const Duration(milliseconds: 1200));
+      final isValid = await AuthService.checkSubscriptionExpiry();
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (isValid && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+
+        messenger.showSnackBar(
+          SnackBar(
+            backgroundColor:
+                isValid ? AppColors.accentEmerald : AppColors.accentAmber,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            content: Text(
+              isValid
+                  ? LocalizationService.tr('profile_pro_active')
+                  : LocalizationService.tr('paywall_no_active_sub'),
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        messenger.showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.accentRose,
+            content: Text('Geri yükleme hatası: $e'),
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final subColor = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final borderColor = isDark ? const Color(0xFF272A3D) : const Color(0xFFE2E8F0);
+    final textColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final subColor =
+        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final borderColor =
+        isDark ? const Color(0xFF272A3D) : const Color(0xFFE2E8F0);
     final pricing = LocalizationService.currentPricing;
 
     return ValueListenableBuilder<String>(
@@ -152,7 +263,10 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF07090F) : const Color(0xFFF8FAFC),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-            border: Border.all(color: isDark ? const Color(0xFF2A3048) : const Color(0xFFE2E8F0), width: 1.2),
+            border: Border.all(
+                color:
+                    isDark ? const Color(0xFF2A3048) : const Color(0xFFE2E8F0),
+                width: 1.2),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.75),
@@ -183,7 +297,9 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                         width: 42,
                         height: 4.5,
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF3B415C) : const Color(0xFFCBD5E1),
+                          color: isDark
+                              ? const Color(0xFF3B415C)
+                              : const Color(0xFFCBD5E1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -207,7 +323,8 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35 - (pulse * 0.2)),
+                                    color: const Color(0xFFF59E0B).withValues(
+                                        alpha: 0.35 - (pulse * 0.2)),
                                     width: 2.0,
                                   ),
                                 ),
@@ -218,14 +335,19 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                                 height: 64,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFFFFDF00), Color(0xFFF59E0B), Color(0xFFD97706)],
+                                    colors: [
+                                      Color(0xFFFFDF00),
+                                      Color(0xFFF59E0B),
+                                      Color(0xFFD97706)
+                                    ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFF59E0B).withValues(alpha: 0.55),
+                                      color: const Color(0xFFF59E0B)
+                                          .withValues(alpha: 0.55),
                                       blurRadius: 22,
                                       spreadRadius: 3,
                                       offset: const Offset(0, 6),
@@ -252,8 +374,9 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                     Center(
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 'CV AI STUDIO',
@@ -266,15 +389,20 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                                    colors: [
+                                      Color(0xFFFFD700),
+                                      Color(0xFFF59E0B)
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                      color: const Color(0xFFF59E0B)
+                                          .withValues(alpha: 0.4),
                                       blurRadius: 8,
                                     ),
                                   ],
@@ -309,24 +437,29 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
 
                     // Clean Guarantee & Discount Banner
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.18 : 0.12),
-                            const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.16 : 0.08),
+                            const Color(0xFFF59E0B)
+                                .withValues(alpha: isDark ? 0.18 : 0.12),
+                            const Color(0xFF8B5CF6)
+                                .withValues(alpha: isDark ? 0.16 : 0.08),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                          color:
+                              const Color(0xFFF59E0B).withValues(alpha: 0.35),
                           width: 1,
                         ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.verified_user_rounded, color: Color(0xFFF59E0B), size: 16),
+                          const Icon(Icons.verified_user_rounded,
+                              color: Color(0xFFF59E0B), size: 16),
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
@@ -334,7 +467,9 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
-                                color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFB45309),
+                                color: isDark
+                                    ? const Color(0xFFFDE68A)
+                                    : const Color(0xFFB45309),
                               ),
                             ),
                           ),
@@ -346,7 +481,8 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
 
                     // Feature Matrix Checklist
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF111422).withValues(alpha: 0.85)
@@ -355,72 +491,91 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                         border: Border.all(color: borderColor),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                            color: Colors.black
+                                .withValues(alpha: isDark ? 0.3 : 0.04),
                             blurRadius: 16,
                           ),
                         ],
                       ),
                       child: Column(
                         children: [
-                          _buildFeatureItem(Icons.auto_awesome_rounded, LocalizationService.tr('paywall_feat_1'), isDark),
-                          _buildFeatureItem(Icons.article_rounded, LocalizationService.tr('paywall_feat_2'), isDark),
-                          _buildFeatureItem(Icons.document_scanner_rounded, LocalizationService.tr('paywall_feat_3'), isDark),
-                          _buildFeatureItem(Icons.transform_rounded, LocalizationService.tr('paywall_feat_office'), isDark),
-                          _buildFeatureItem(Icons.draw_rounded, LocalizationService.tr('paywall_feat_4'), isDark),
-                          _buildFeatureItem(Icons.cloud_sync_rounded, LocalizationService.tr('paywall_feat_cloud'), isDark),
+                          _buildFeatureItem(Icons.auto_awesome_rounded,
+                              LocalizationService.tr('paywall_feat_1'), isDark),
+                          _buildFeatureItem(Icons.article_rounded,
+                              LocalizationService.tr('paywall_feat_2'), isDark),
+                          _buildFeatureItem(Icons.document_scanner_rounded,
+                              LocalizationService.tr('paywall_feat_3'), isDark),
+                          _buildFeatureItem(
+                              Icons.transform_rounded,
+                              LocalizationService.tr('paywall_feat_office'),
+                              isDark),
+                          _buildFeatureItem(Icons.draw_rounded,
+                              LocalizationService.tr('paywall_feat_4'), isDark),
+                          _buildFeatureItem(
+                              Icons.cloud_sync_rounded,
+                              LocalizationService.tr('paywall_feat_cloud'),
+                              isDark),
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 14),
 
-                    // SUBSCRIPTION TIERS
+                    // SUBSCRIPTION TIERS (Dinamik StoreKit / Google Play Fiyatları)
+                    ValueListenableBuilder(
+                      valueListenable: InAppPurchaseService.productsNotifier,
+                      builder: (context, products, _) {
+                        // Direct pricing from localization service (USD fixed prices)
+                        final weeklyPrice = pricing.weeklyPrice;
+                        final monthlyPrice = pricing.monthlyPrice;
+                        final yearlyPrice = pricing.yearlyPrice;
 
-                    // 1. HAFTALIK PLAN
-                    _buildTierCard(
-                      tier: SubscriptionTier.weekly,
-                      title: LocalizationService.tr('paywall_plan_weekly'),
-                      badge: pricing.currencySymbol,
-                      price: '${pricing.weeklyPrice} / ${pricing.weeklyPeriod}',
-                      subPrice: LocalizationService.tr('paywall_weekly_flexible'),
-                      isDark: isDark,
-                    ),
+                        return Column(
+                          children: [
+                            // 1. HAFTALIK PLAN
+                            _buildTierCard(
+                              tier: SubscriptionTier.weekly,
+                              title:
+                                  LocalizationService.tr('paywall_plan_weekly'),
+                              badge: pricing.currencySymbol,
+                              price: '$weeklyPrice / ${pricing.weeklyPeriod}',
+                              subPrice: LocalizationService.tr(
+                                  'paywall_weekly_flexible'),
+                              isDark: isDark,
+                            ),
 
-                    const SizedBox(height: 8),
+                            const SizedBox(height: 8),
 
-                    // 2. AYLIK PLAN
-                    _buildTierCard(
-                      tier: SubscriptionTier.monthly,
-                      title: LocalizationService.tr('paywall_plan_monthly'),
-                      badge: pricing.currencySymbol,
-                      price: '${pricing.monthlyPrice} / ${pricing.monthlyPeriod}',
-                      subPrice: LocalizationService.tr('paywall_monthly_renewal'),
-                      isDark: isDark,
-                    ),
+                            // 2. AYLIK PLAN
+                            _buildTierCard(
+                              tier: SubscriptionTier.monthly,
+                              title: LocalizationService.tr(
+                                  'paywall_plan_monthly'),
+                              badge: pricing.currencySymbol,
+                              price: '$monthlyPrice / ${pricing.monthlyPeriod}',
+                              subPrice: LocalizationService.tr(
+                                  'paywall_monthly_renewal'),
+                              isDark: isDark,
+                            ),
 
-                    const SizedBox(height: 8),
+                            const SizedBox(height: 8),
 
-                    // 3. YILLIK PLAN (EN POPÜLER - %70 İNDİRİM)
-                    _buildTierCard(
-                      tier: SubscriptionTier.yearly,
-                      title: LocalizationService.tr('paywall_plan_yearly'),
-                      badge: "${LocalizationService.tr('paywall_yearly_badge')} (${pricing.saveBadge})",
-                      price: "${pricing.yearlyPrice} / ${pricing.yearlyPeriod}",
-                      subPrice: "${LocalizationService.tr('paywall_yearly_saving')} ${pricing.yearlyMonthlyEquivalent} • %70",
-                      isHighlighted: true,
-                      isDark: isDark,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // 4. ÖMÜR BOYU / SINIRSIZ VIP
-                    _buildTierCard(
-                      tier: SubscriptionTier.unlimited,
-                      title: LocalizationService.tr('paywall_plan_lifetime'),
-                      badge: LocalizationService.tr('paywall_lifetime_badge'),
-                      price: '${pricing.lifetimePrice} ${pricing.lifetimePeriod}',
-                      subPrice: LocalizationService.tr('paywall_lifetime_unlimited'),
-                      isDark: isDark,
+                            // 3. YILLIK PLAN (EN POPÜLER)
+                            _buildTierCard(
+                              tier: SubscriptionTier.yearly,
+                              title:
+                                  LocalizationService.tr('paywall_plan_yearly'),
+                              badge:
+                                  "${LocalizationService.tr('paywall_yearly_badge')} (${pricing.saveBadge})",
+                              price: "$yearlyPrice / ${pricing.yearlyPeriod}",
+                              subPrice:
+                                  "${LocalizationService.tr('paywall_yearly_saving')} ${pricing.yearlyMonthlyEquivalent}",
+                              isHighlighted: true,
+                              isDark: isDark,
+                            ),
+                          ],
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 16),
@@ -446,7 +601,8 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                                  color: const Color(0xFFF59E0B)
+                                      .withValues(alpha: 0.5),
                                   blurRadius: 20,
                                   offset: const Offset(0, 6),
                                 ),
@@ -459,7 +615,8 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(18),
                                     child: CustomPaint(
-                                      painter: _ShimmerSweepPainter(progress: _shimmerController.value),
+                                      painter: _ShimmerSweepPainter(
+                                          progress: _shimmerController.value),
                                     ),
                                   ),
                                 ),
@@ -475,19 +632,24 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                                           ),
                                         )
                                       : Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            const Icon(Icons.flash_on_rounded, color: Colors.black, size: 22),
+                                            const Icon(Icons.flash_on_rounded,
+                                                color: Colors.black, size: 22),
                                             const SizedBox(width: 8),
-                                            Text(
-                                              LocalizationService.tr('paywall_cta'),
+                                            Flexible(
+                                                child: Text(
+                                              LocalizationService.tr(
+                                                  'paywall_cta'),
+                                              textAlign: TextAlign.center,
                                               style: const TextStyle(
                                                 fontSize: 14.5,
                                                 fontWeight: FontWeight.w900,
                                                 color: Colors.black,
                                                 letterSpacing: 0.5,
                                               ),
-                                            ),
+                                            )),
                                           ],
                                         ),
                                 ),
@@ -509,34 +671,48 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.lock_outline_rounded, size: 13, color: Color(0xFF10B981)),
+                            const Icon(Icons.lock_outline_rounded,
+                                size: 13, color: Color(0xFF10B981)),
                             const SizedBox(width: 4),
                             Text(
                               '256-Bit SSL',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: subColor),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: subColor),
                             ),
                           ],
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.event_repeat_rounded, size: 13, color: Color(0xFF3B82F6)),
+                            const Icon(Icons.event_repeat_rounded,
+                                size: 13, color: Color(0xFF3B82F6)),
                             const SizedBox(width: 4),
-                            Text(
+                            Flexible(
+                                child: Text(
                               LocalizationService.tr('paywall_cancel_anytime'),
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: subColor),
-                            ),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: subColor),
+                            )),
                           ],
                         ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.verified_user_outlined, size: 13, color: Color(0xFFF59E0B)),
+                            const Icon(Icons.verified_user_outlined,
+                                size: 13, color: Color(0xFFF59E0B)),
                             const SizedBox(width: 4),
-                            Text(
+                            Flexible(
+                                child: Text(
                               LocalizationService.tr('paywall_money_back'),
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: subColor),
-                            ),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: subColor),
+                            )),
                           ],
                         ),
                       ],
@@ -556,21 +732,26 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                             LocalizationService.tr('paywall_restore'),
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF2563EB),
+                              color: isDark
+                                  ? const Color(0xFF93C5FD)
+                                  : const Color(0xFF2563EB),
                               fontWeight: FontWeight.w800,
                               decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
-                        Text('•', style: TextStyle(fontSize: 11, color: subColor)),
+                        Text('•',
+                            style: TextStyle(fontSize: 11, color: subColor)),
                         GestureDetector(
                           onTap: () async {
-                            final opened = await LegalConstants.openTermsOfUse();
+                            final opened =
+                                await LegalConstants.openTermsOfUse();
                             if (!opened && context.mounted) {
                               _showLegalModal(
                                 context,
                                 title: LocalizationService.tr('paywall_terms'),
-                                content: LocalizationService.tr('paywall_terms_detail'),
+                                content: LocalizationService.tr(
+                                    'paywall_terms_detail'),
                               );
                             }
                           },
@@ -583,15 +764,19 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                             ),
                           ),
                         ),
-                        Text('•', style: TextStyle(fontSize: 11, color: subColor)),
+                        Text('•',
+                            style: TextStyle(fontSize: 11, color: subColor)),
                         GestureDetector(
                           onTap: () async {
-                            final opened = await LegalConstants.openPrivacyPolicy();
+                            final opened =
+                                await LegalConstants.openPrivacyPolicy();
                             if (!opened && context.mounted) {
                               _showLegalModal(
                                 context,
-                                title: LocalizationService.tr('paywall_privacy_title'),
-                                content: LocalizationService.tr('paywall_privacy_detail'),
+                                title: LocalizationService.tr(
+                                    'paywall_privacy_title'),
+                                content: LocalizationService.tr(
+                                    'paywall_privacy_detail'),
                               );
                             }
                           },
@@ -626,7 +811,9 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1C2134) : const Color(0xFFE2E8F0),
+                          color: isDark
+                              ? const Color(0xFF1C2134)
+                              : const Color(0xFFE2E8F0),
                           shape: BoxShape.circle,
                           border: Border.all(color: borderColor),
                         ),
@@ -649,18 +836,22 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
     );
   }
 
-  void _showLegalModal(BuildContext context, {required String title, required String content}) {
+  void _showLegalModal(BuildContext context,
+      {required String title, required String content}) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: SingleChildScrollView(
-          child: Text(content, style: const TextStyle(fontSize: 13, height: 1.4)),
+          child:
+              Text(content, style: const TextStyle(fontSize: 13, height: 1.4)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(LocalizationService.tr('cancel'), style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(LocalizationService.tr('cancel'),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -678,7 +869,8 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
               color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_rounded, color: Color(0xFFF59E0B), size: 13),
+            child: const Icon(Icons.check_rounded,
+                color: Color(0xFFF59E0B), size: 13),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -687,7 +879,9 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.lightTextPrimary,
               ),
             ),
           ),
@@ -707,9 +901,12 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
   }) {
     final isSelected = _selectedTier == tier;
     final cardBg = isDark
-        ? (isSelected ? const Color(0xFF1B2035) : const Color(0xFF101320).withValues(alpha: 0.9))
+        ? (isSelected
+            ? const Color(0xFF1B2035)
+            : const Color(0xFF101320).withValues(alpha: 0.9))
         : (isSelected ? const Color(0xFFEFF6FF) : Colors.white);
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final textColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedTier = tier),
@@ -721,14 +918,19 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isSelected
-                ? (isHighlighted ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6))
+                ? (isHighlighted
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFF3B82F6))
                 : (isDark ? const Color(0xFF242940) : const Color(0xFFE2E8F0)),
             width: isSelected ? 2.0 : 1.0,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: (isHighlighted ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6)).withValues(alpha: 0.28),
+                    color: (isHighlighted
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFF3B82F6))
+                        .withValues(alpha: 0.28),
                     blurRadius: 14,
                     offset: const Offset(0, 4),
                   ),
@@ -743,17 +945,22 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? (isHighlighted ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6))
+                    ? (isHighlighted
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFF3B82F6))
                     : Colors.transparent,
                 border: Border.all(
                   color: isSelected
                       ? Colors.transparent
-                      : (isDark ? const Color(0xFF4B5563) : const Color(0xFFCBD5E1)),
+                      : (isDark
+                          ? const Color(0xFF4B5563)
+                          : const Color(0xFFCBD5E1)),
                   width: 2.0,
                 ),
               ),
               child: isSelected
-                  ? const Center(child: Icon(Icons.check, size: 13, color: Colors.black))
+                  ? const Center(
+                      child: Icon(Icons.check, size: 13, color: Colors.black))
                   : null,
             ),
             const SizedBox(width: 12),
@@ -761,18 +968,16 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
                     children: [
-                      Flexible(
-                        child: Text(
-                          title,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w900,
-                            color: textColor,
-                          ),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w900,
+                          color: textColor,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -781,18 +986,26 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w900,
-                          color: isHighlighted ? const Color(0xFFF59E0B) : textColor,
+                          color: isHighlighted
+                              ? const Color(0xFFF59E0B)
+                              : textColor,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 3),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: (isHighlighted ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6)).withValues(alpha: 0.18),
+                          color: (isHighlighted
+                                  ? const Color(0xFFF59E0B)
+                                  : const Color(0xFF3B82F6))
+                              .withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -800,20 +1013,20 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                           style: TextStyle(
                             fontSize: 8.5,
                             fontWeight: FontWeight.w900,
-                            color: isHighlighted ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6),
+                            color: isHighlighted
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFF3B82F6),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          subPrice,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                          ),
+                      Text(
+                        subPrice,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary,
                         ),
                       ),
                     ],

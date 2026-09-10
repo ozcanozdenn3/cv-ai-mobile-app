@@ -3,6 +3,10 @@
 // ==============================================================================
 
 class AiConstants {
+  /// Enable after deploying the authenticated cv-ai Edge Function.
+  static const bool useSupabaseProxy =
+      bool.fromEnvironment('AI_USE_SUPABASE', defaultValue: true);
+
   /// Google Gemini Base REST Endpoint
   static const String geminiBaseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models';
@@ -13,7 +17,7 @@ class AiConstants {
 
   /// Default API Key placeholder (can be overridden dynamically at runtime or via SharedPreferences)
   static const String defaultGeminiApiKey =
-      String.fromEnvironment('GEMINI_API_KEY');
+      String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
 
   /// Shared Preferences key for runtime custom API Key
   static const String prefsGeminiApiKey = 'cv_ai_custom_gemini_api_key';
