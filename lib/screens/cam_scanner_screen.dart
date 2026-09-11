@@ -14,6 +14,7 @@ import '../services/localization_service.dart';
 import '../services/ocr_engine_service.dart';
 import '../services/real_document_pipeline_service.dart';
 import '../services/app_permission_service.dart';
+import '../widgets/scrollable_sheet_body.dart';
 import 'vip_paywall_sheet.dart';
 
 class ScannedDocPage {
@@ -66,66 +67,66 @@ class _CamScannerScreenState extends State<CamScannerScreen>
   final List<ScannedDocPage> _scannedPages = [];
 
   List<Map<String, dynamic>> _getDocModes() => [
-    {
-      'title': LocalizationService.tr('scanner_mode_doc'),
-      'icon': Icons.description_rounded,
-      'ratio': 1.38,
-      'badge': 'A4 / DOC',
-      'desc': 'Document / Report',
-    },
-    {
-      'title': LocalizationService.tr('scanner_mode_id'),
-      'icon': Icons.badge_rounded,
-      'ratio': 0.68,
-      'badge': 'ID / DUAL',
-      'desc': 'ID Card / Passport',
-    },
-    {
-      'title': LocalizationService.tr('scanner_mode_receipt'),
-      'icon': Icons.receipt_long_rounded,
-      'ratio': 1.60,
-      'badge': 'RECEIPT',
-      'desc': 'Invoice / Receipt',
-    },
-    {
-      'title': LocalizationService.tr('scanner_mode_ocr'),
-      'icon': Icons.contact_page_rounded,
-      'ratio': 0.60,
-      'badge': 'MICRO',
-      'desc': 'Business Card / Notes',
-    },
-  ];
+        {
+          'title': LocalizationService.tr('scanner_mode_doc'),
+          'icon': Icons.description_rounded,
+          'ratio': 1.38,
+          'badge': 'A4 / DOC',
+          'desc': 'Document / Report',
+        },
+        {
+          'title': LocalizationService.tr('scanner_mode_id'),
+          'icon': Icons.badge_rounded,
+          'ratio': 0.68,
+          'badge': 'ID / DUAL',
+          'desc': 'ID Card / Passport',
+        },
+        {
+          'title': LocalizationService.tr('scanner_mode_receipt'),
+          'icon': Icons.receipt_long_rounded,
+          'ratio': 1.60,
+          'badge': 'RECEIPT',
+          'desc': 'Invoice / Receipt',
+        },
+        {
+          'title': LocalizationService.tr('scanner_mode_ocr'),
+          'icon': Icons.contact_page_rounded,
+          'ratio': 0.60,
+          'badge': 'MICRO',
+          'desc': 'Business Card / Notes',
+        },
+      ];
 
   List<Map<String, dynamic>> _getFilters() => [
-    {
-      'name': 'Magic AI',
-      'label': LocalizationService.tr('scanner_filter_magic'),
-      'icon': Icons.auto_awesome_rounded,
-      'color': const Color(0xFF3B82F6),
-      'desc': 'High Contrast & AI Boost',
-    },
-    {
-      'name': 'Siyah-Beyaz',
-      'label': LocalizationService.tr('scanner_filter_bw'),
-      'icon': Icons.contrast_rounded,
-      'color': const Color(0xFF10B981),
-      'desc': 'B&W Sharp Text',
-    },
-    {
-      'name': 'Gri Tonlama',
-      'label': LocalizationService.tr('scanner_filter_grayscale'),
-      'icon': Icons.filter_b_and_w_rounded,
-      'color': const Color(0xFF8B5CF6),
-      'desc': 'Copy / Archive',
-    },
-    {
-      'name': 'Orijinal HD',
-      'label': LocalizationService.tr('scanner_filter_original'),
-      'icon': Icons.photo_size_select_actual_rounded,
-      'color': const Color(0xFFF59E0B),
-      'desc': 'Raw Original',
-    },
-  ];
+        {
+          'name': 'Magic AI',
+          'label': LocalizationService.tr('scanner_filter_magic'),
+          'icon': Icons.auto_awesome_rounded,
+          'color': const Color(0xFF3B82F6),
+          'desc': 'High Contrast & AI Boost',
+        },
+        {
+          'name': 'Siyah-Beyaz',
+          'label': LocalizationService.tr('scanner_filter_bw'),
+          'icon': Icons.contrast_rounded,
+          'color': const Color(0xFF10B981),
+          'desc': 'B&W Sharp Text',
+        },
+        {
+          'name': 'Gri Tonlama',
+          'label': LocalizationService.tr('scanner_filter_grayscale'),
+          'icon': Icons.filter_b_and_w_rounded,
+          'color': const Color(0xFF8B5CF6),
+          'desc': 'Copy / Archive',
+        },
+        {
+          'name': 'Orijinal HD',
+          'label': LocalizationService.tr('scanner_filter_original'),
+          'icon': Icons.photo_size_select_actual_rounded,
+          'color': const Color(0xFFF59E0B),
+          'desc': 'Raw Original',
+        },
+      ];
 
   @override
   void initState() {
@@ -147,7 +148,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
     super.dispose();
   }
 
-  Future<void> _processCapturedImageBytes(Uint8List bytes, String sourceName) async {
+  Future<void> _processCapturedImageBytes(
+      Uint8List bytes, String sourceName) async {
     setState(() => _isProcessing = true);
     final docModes = _getDocModes();
     final filters = _getFilters();
@@ -160,7 +162,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
       Uint8List effectiveBytes = Uint8List.fromList(bytes);
 
       try {
-        final pipelineResult = await RealDocumentPipelineService.runDocumentEnhancement(
+        final pipelineResult =
+            await RealDocumentPipelineService.runDocumentEnhancement(
           imageBytes: bytes,
           sourceName: '${mode['title']}_$pageNum',
           mode: (mode['title'] as String).toLowerCase(),
@@ -218,15 +221,20 @@ class _CamScannerScreenState extends State<CamScannerScreen>
           SnackBar(
             backgroundColor: AppColors.accentEmerald,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     '#$pageNum ($sourceName) • ${LocalizationService.tr('scanner_enhanced_badge')}!',
-                    style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        fontSize: 13),
                   ),
                 ),
               ],
@@ -270,7 +278,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
       }
     } catch (e) {
       debugPrint('Native smart document scanner fallback: $e');
-      if (e is! CunningDocumentScannerException || e.code != 'permission_denied') {
+      if (e is! CunningDocumentScannerException ||
+          e.code != 'permission_denied') {
         _captureWithCameraFallback();
       }
     }
@@ -299,7 +308,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
   void _showSourceSelectionSheet() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF161A28) : Colors.white;
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final textColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
 
     showModalBottomSheet(
       context: context,
@@ -307,76 +317,83 @@ class _CamScannerScreenState extends State<CamScannerScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.emeraldGradient,
-                        borderRadius: BorderRadius.circular(10),
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: ScrollableSheetBody(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.emeraldGradient,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.document_scanner_rounded,
+                            color: Colors.white, size: 18),
                       ),
-                      child: const Icon(Icons.document_scanner_rounded, color: Colors.white, size: 18),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      LocalizationService.tr('card_camscanner'),
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textColor),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildImportOption(
-              icon: Icons.document_scanner_rounded,
-              title: LocalizationService.tr('scanner_native_auto'),
-              subtitle: LocalizationService.tr('scanner_native_auto_desc'),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await _startSmartDocumentScan();
-              },
-            ),
-            const SizedBox(height: 10),
-            _buildImportOption(
-              icon: Icons.camera_enhance_rounded,
-              title: LocalizationService.tr('scanner_manual_cam'),
-              subtitle: LocalizationService.tr('scanner_manual_cam_desc'),
-              onTap: () async {
-                Navigator.pop(ctx);
-                await _captureWithCameraFallback();
-              },
-            ),
-            const SizedBox(height: 10),
-            _buildImportOption(
-              icon: Icons.photo_library_rounded,
-              title: LocalizationService.tr('cv_photo_pick'),
-              subtitle: LocalizationService.tr('scanner_gallery_desc'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickRealImagesFromDeviceGallery();
-              },
-            ),
-          ],
+                      const SizedBox(width: 10),
+                      Text(
+                        LocalizationService.tr('card_camscanner'),
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: textColor),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildImportOption(
+                icon: Icons.document_scanner_rounded,
+                title: LocalizationService.tr('scanner_native_auto'),
+                subtitle: LocalizationService.tr('scanner_native_auto_desc'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await _startSmartDocumentScan();
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildImportOption(
+                icon: Icons.camera_enhance_rounded,
+                title: LocalizationService.tr('scanner_manual_cam'),
+                subtitle: LocalizationService.tr('scanner_manual_cam_desc'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await _captureWithCameraFallback();
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildImportOption(
+                icon: Icons.photo_library_rounded,
+                title: LocalizationService.tr('cv_photo_pick'),
+                subtitle: LocalizationService.tr('scanner_gallery_desc'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickRealImagesFromDeviceGallery();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Future<void> _pickRealImagesFromDeviceGallery() async {
-    final hasPerm = await AppPermissionService.requestGalleryPermission(context);
+    final hasPerm =
+        await AppPermissionService.requestGalleryPermission(context);
     if (!hasPerm) return;
     try {
       final picker = ImagePicker();
@@ -421,7 +438,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E2235) : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
         ),
         child: Row(
           children: [
@@ -438,13 +456,17 @@ class _CamScannerScreenState extends State<CamScannerScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 13)),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(subtitle,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: Colors.grey),
           ],
         ),
       ),
@@ -455,7 +477,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
     final page = _scannedPages[index];
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF161A28) : Colors.white;
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final textColor =
+        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
 
     bool isFiltering = false;
 
@@ -518,9 +541,11 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                         height: 320,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                          color:
+                              isDark ? const Color(0xFF0F172A) : Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.accentEmerald, width: 2),
+                          border: Border.all(
+                              color: AppColors.accentEmerald, width: 2),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.25),
@@ -535,7 +560,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                   color: AppColors.accentEmerald,
                                 ),
                               )
-                            : (page.imageBytes != null && page.imageBytes!.isNotEmpty
+                            : (page.imageBytes != null &&
+                                    page.imageBytes!.isNotEmpty
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.memory(
@@ -544,10 +570,12 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                     ),
                                   )
                                 : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(
                                             child: Text(
@@ -555,7 +583,9 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.w900,
-                                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                                color: isDark
+                                                    ? Colors.white
+                                                    : const Color(0xFF0F172A),
                                               ),
                                             ),
                                           ),
@@ -584,8 +614,10 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                           icon: Icons.auto_awesome_rounded,
                           isSelected: page.filter == 'Magic AI',
                           page: page,
-                          onStartFilter: () => setModalState(() => isFiltering = true),
-                          onEndFilter: () => setModalState(() => isFiltering = false),
+                          onStartFilter: () =>
+                              setModalState(() => isFiltering = true),
+                          onEndFilter: () =>
+                              setModalState(() => isFiltering = false),
                         ),
                         const SizedBox(width: 8),
                         _buildModalFilterChip(
@@ -594,28 +626,36 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                           icon: Icons.contrast_rounded,
                           isSelected: page.filter == 'Siyah-Beyaz',
                           page: page,
-                          onStartFilter: () => setModalState(() => isFiltering = true),
-                          onEndFilter: () => setModalState(() => isFiltering = false),
+                          onStartFilter: () =>
+                              setModalState(() => isFiltering = true),
+                          onEndFilter: () =>
+                              setModalState(() => isFiltering = false),
                         ),
                         const SizedBox(width: 8),
                         _buildModalFilterChip(
-                          title: LocalizationService.tr('scanner_filter_grayscale'),
+                          title: LocalizationService.tr(
+                              'scanner_filter_grayscale'),
                           filterName: 'Gri Tonlama',
                           icon: Icons.filter_b_and_w_rounded,
                           isSelected: page.filter == 'Gri Tonlama',
                           page: page,
-                          onStartFilter: () => setModalState(() => isFiltering = true),
-                          onEndFilter: () => setModalState(() => isFiltering = false),
+                          onStartFilter: () =>
+                              setModalState(() => isFiltering = true),
+                          onEndFilter: () =>
+                              setModalState(() => isFiltering = false),
                         ),
                         const SizedBox(width: 8),
                         _buildModalFilterChip(
-                          title: LocalizationService.tr('scanner_filter_original'),
+                          title:
+                              LocalizationService.tr('scanner_filter_original'),
                           filterName: 'Orijinal HD',
                           icon: Icons.high_quality_rounded,
                           isSelected: page.filter == 'Orijinal HD',
                           page: page,
-                          onStartFilter: () => setModalState(() => isFiltering = true),
-                          onEndFilter: () => setModalState(() => isFiltering = false),
+                          onStartFilter: () =>
+                              setModalState(() => isFiltering = true),
+                          onEndFilter: () =>
+                              setModalState(() => isFiltering = false),
                         ),
                       ],
                     ),
@@ -635,39 +675,49 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                           setModalState(() {});
                         },
                         icon: const Icon(Icons.rotate_right_rounded, size: 16),
-                        label: Text(LocalizationService.tr('scanner_rotate'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
+                        label: Text(LocalizationService.tr('scanner_rotate'),
+                            style: const TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.w800)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: textColor,
-                          side: BorderSide(color: AppColors.accentEmerald.withValues(alpha: 0.5)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          side: BorderSide(
+                              color: AppColors.accentEmerald
+                                  .withValues(alpha: 0.5)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
                           _showOcrResultDialog(page);
                         },
                         icon: const Icon(Icons.text_snippet_rounded, size: 16),
-                        label: Text(LocalizationService.tr('scanner_ocr_extract'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
+                        label: Text(
+                            LocalizationService.tr('scanner_ocr_extract'),
+                            style: const TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.w800)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-
                     IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, color: AppColors.accentRose),
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          color: AppColors.accentRose),
                       onPressed: () {
                         setState(() {
                           _scannedPages.removeAt(index);
                           if (_activePageIndex >= _scannedPages.length) {
-                            _activePageIndex = _scannedPages.isEmpty ? 0 : _scannedPages.length - 1;
+                            _activePageIndex = _scannedPages.isEmpty
+                                ? 0
+                                : _scannedPages.length - 1;
                           }
                         });
                         Navigator.pop(ctx);
@@ -686,7 +736,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                         VipPaywallSheet.show(context);
                         return;
                       }
-                      final pdfBytes = await PdfGeneratorService.generateScannedDocPdf(
+                      final pdfBytes =
+                          await PdfGeneratorService.generateScannedDocPdf(
                         pages: [
                           {
                             'name': page.name,
@@ -704,12 +755,15 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                       );
                     },
                     icon: const Icon(Icons.share_rounded, size: 16),
-                    label: Text(LocalizationService.tr('docs_action_share'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                    label: Text(LocalizationService.tr('docs_action_share'),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 13)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -754,10 +808,14 @@ class _CamScannerScreenState extends State<CamScannerScreen>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.08),
+          color: isSelected
+              ? AppColors.primary
+              : AppColors.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.25),
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.primary.withValues(alpha: 0.25),
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -796,11 +854,15 @@ class _CamScannerScreenState extends State<CamScannerScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.auto_awesome_rounded, color: AppColors.accentEmerald, size: 20),
+            const Icon(Icons.auto_awesome_rounded,
+                color: AppColors.accentEmerald, size: 20),
             Expanded(
               child: Text(
                 LocalizationService.tr('card_ocr_text'),
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textColor),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: textColor),
               ),
             ),
           ],
@@ -812,7 +874,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
           child: SingleChildScrollView(
             child: SelectableText(
@@ -839,16 +902,19 @@ class _CamScannerScreenState extends State<CamScannerScreen>
               );
             },
             icon: const Icon(Icons.copy_rounded, size: 16),
-            label: Text(LocalizationService.tr('copy'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            label: Text(LocalizationService.tr('copy'),
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accentEmerald,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
-            child: Text(LocalizationService.tr('ok'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            child: Text(LocalizationService.tr('ok'),
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -873,13 +939,15 @@ class _CamScannerScreenState extends State<CamScannerScreen>
 
     final docTitle = 'CamScanner_HD_${_scannedPages.length}';
     final pdfBytes = await PdfGeneratorService.generateScannedDocPdf(
-      pages: _scannedPages.map((p) => {
-        'name': p.name,
-        'docType': p.docType,
-        'imageBytes': p.imageBytes,
-        'ocrText': p.ocrText,
-        'rotation': p.rotation,
-      }).toList(),
+      pages: _scannedPages
+          .map((p) => {
+                'name': p.name,
+                'docType': p.docType,
+                'imageBytes': p.imageBytes,
+                'ocrText': p.ocrText,
+                'rotation': p.rotation,
+              })
+          .toList(),
       docTitle: docTitle,
     );
 
@@ -909,10 +977,13 @@ class _CamScannerScreenState extends State<CamScannerScreen>
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final bg = isDark ? AppColors.darkBg : AppColors.lightBg;
         final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-        final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-        final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+        final textColor =
+            isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+        final borderColor =
+            isDark ? AppColors.darkBorder : AppColors.lightBorder;
         final docModes = _getDocModes();
-        final activeDocMode = docModes[_selectedDocModeIndex.clamp(0, docModes.length - 1)];
+        final activeDocMode =
+            docModes[_selectedDocModeIndex.clamp(0, docModes.length - 1)];
 
         return Scaffold(
           backgroundColor: bg,
@@ -924,7 +995,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
                   child: Row(
                     children: [
-                      if (Navigator.of(context).canPop() || widget.onReturnHome != null) ...[
+                      if (Navigator.of(context).canPop() ||
+                          widget.onReturnHome != null) ...[
                         IconButton(
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -932,11 +1004,14 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                             padding: const EdgeInsets.all(7),
                             margin: const EdgeInsets.only(right: 10),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1B2032) : const Color(0xFFF1F5F9),
+                              color: isDark
+                                  ? const Color(0xFF1B2032)
+                                  : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: borderColor),
                             ),
-                            child: Icon(Icons.arrow_back_ios_new_rounded, size: 15, color: textColor),
+                            child: Icon(Icons.arrow_back_ios_new_rounded,
+                                size: 15, color: textColor),
                           ),
                           onPressed: () {
                             if (Navigator.of(context).canPop()) {
@@ -953,7 +1028,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                           gradient: AppColors.emeraldGradient,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.document_scanner_rounded, color: Colors.white, size: 17),
+                        child: const Icon(Icons.document_scanner_rounded,
+                            color: Colors.white, size: 17),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -976,14 +1052,19 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                 ),
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1.5),
                                   decoration: BoxDecoration(
-                                    color: AppColors.accentEmerald.withValues(alpha: 0.15),
+                                    color: AppColors.accentEmerald
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Text(
                                     'OCR 600 DPI',
-                                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: AppColors.accentEmerald),
+                                    style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.accentEmerald),
                                   ),
                                 ),
                               ],
@@ -993,7 +1074,9 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary,
                               ),
                             ),
                           ],
@@ -1003,10 +1086,10 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                     ],
                   ),
                 ),
-
                 Container(
                   height: 36,
-                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: docModes.length,
@@ -1015,22 +1098,27 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                       final isSelected = _selectedDocModeIndex == index;
 
                       return GestureDetector(
-                        onTap: () => setState(() => _selectedDocModeIndex = index),
+                        onTap: () =>
+                            setState(() => _selectedDocModeIndex = index),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           margin: const EdgeInsets.only(right: 6),
-                          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 11, vertical: 5),
                           decoration: BoxDecoration(
-                            gradient: isSelected ? AppColors.emeraldGradient : null,
+                            gradient:
+                                isSelected ? AppColors.emeraldGradient : null,
                             color: isSelected ? null : cardBg,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: isSelected ? Colors.transparent : borderColor,
+                              color:
+                                  isSelected ? Colors.transparent : borderColor,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: AppColors.accentEmerald.withValues(alpha: 0.35),
+                                      color: AppColors.accentEmerald
+                                          .withValues(alpha: 0.35),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     ),
@@ -1043,14 +1131,18 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                               Icon(
                                 mode['icon'] as IconData,
                                 size: 13,
-                                color: isSelected ? Colors.white : AppColors.accentEmerald,
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.accentEmerald,
                               ),
                               const SizedBox(width: 5),
                               Text(
                                 mode['title'] as String,
                                 style: TextStyle(
                                   fontSize: 11,
-                                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w900
+                                      : FontWeight.w700,
                                   color: isSelected ? Colors.white : textColor,
                                 ),
                               ),
@@ -1061,12 +1153,11 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                     },
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
                 Expanded(
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(22),
@@ -1109,15 +1200,19 @@ class _CamScannerScreenState extends State<CamScannerScreen>
 
                               // Merkez Cam Scanner Kartı
                               Center(
-                                child: _buildDocumentViewfinderCard(activeDocMode, isDark),
+                                child: _buildDocumentViewfinderCard(
+                                    activeDocMode, isDark),
                               ),
 
                               // Yukarı Aşağı Gidip Gelen Lazer Animasyonu
                               AnimatedBuilder(
                                 animation: _laserAnimation,
                                 builder: (context, child) {
-                                  final travelHeight = (constraints.maxHeight - 40).clamp(50.0, 600.0);
-                                  final laserTop = 15 + travelHeight * _laserAnimation.value;
+                                  final travelHeight =
+                                      (constraints.maxHeight - 40)
+                                          .clamp(50.0, 600.0);
+                                  final laserTop =
+                                      15 + travelHeight * _laserAnimation.value;
 
                                   return Positioned(
                                     top: laserTop,
@@ -1129,7 +1224,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                         Container(
                                           height: 3,
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(2),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                             gradient: const LinearGradient(
                                               colors: [
                                                 Colors.transparent,
@@ -1141,12 +1237,14 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: AppColors.accentEmerald.withValues(alpha: 0.95),
+                                                color: AppColors.accentEmerald
+                                                    .withValues(alpha: 0.95),
                                                 blurRadius: 14,
                                                 spreadRadius: 3,
                                               ),
                                               BoxShadow(
-                                                color: Colors.white.withValues(alpha: 0.7),
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.7),
                                                 blurRadius: 6,
                                                 spreadRadius: 1,
                                               ),
@@ -1160,7 +1258,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                               begin: Alignment.topCenter,
                                               end: Alignment.bottomCenter,
                                               colors: [
-                                                AppColors.accentEmerald.withValues(alpha: 0.25),
+                                                AppColors.accentEmerald
+                                                    .withValues(alpha: 0.25),
                                                 Colors.transparent,
                                               ],
                                             ),
@@ -1178,33 +1277,47 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                 left: 12,
                                 right: 12,
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 9, vertical: 5),
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.75),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.75),
                                         borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(color: AppColors.accentEmerald.withValues(alpha: 0.5)),
+                                        border: Border.all(
+                                            color: AppColors.accentEmerald
+                                                .withValues(alpha: 0.5)),
                                       ),
                                       child: const Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.auto_awesome_rounded, size: 12, color: AppColors.accentEmerald),
+                                          Icon(Icons.auto_awesome_rounded,
+                                              size: 12,
+                                              color: AppColors.accentEmerald),
                                           SizedBox(width: 5),
                                           Text(
                                             'AI HD',
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.white),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.75),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.75),
                                         borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(color: AppColors.accentEmerald.withValues(alpha: 0.6)),
+                                        border: Border.all(
+                                            color: AppColors.accentEmerald
+                                                .withValues(alpha: 0.6)),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -1220,7 +1333,10 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                           const SizedBox(width: 6),
                                           Text(
                                             activeDocMode['title'] as String,
-                                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white),
+                                            style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.white),
                                           ),
                                         ],
                                       ),
@@ -1228,7 +1344,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                     _buildCameraToolIcon(
                                       icon: Icons.grid_3x3_rounded,
                                       isActive: _isGridOn,
-                                      onTap: () => setState(() => _isGridOn = !_isGridOn),
+                                      onTap: () => setState(
+                                          () => _isGridOn = !_isGridOn),
                                     ),
                                   ],
                                 ),
@@ -1246,21 +1363,22 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 6),
-
                 if (_scannedPages.isNotEmpty)
                   Container(
                     height: 42,
-                    margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF141826) : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: borderColor),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.2 : 0.03),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -1273,7 +1391,9 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
-                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -1290,27 +1410,39 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(right: 6),
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? AppColors.accentEmerald.withValues(alpha: 0.2)
-                                        : (isDark ? const Color(0xFF1E2438) : const Color(0xFFF1F5F9)),
+                                        ? AppColors.accentEmerald
+                                            .withValues(alpha: 0.2)
+                                        : (isDark
+                                            ? const Color(0xFF1E2438)
+                                            : const Color(0xFFF1F5F9)),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: isSelected ? AppColors.accentEmerald : borderColor,
+                                      color: isSelected
+                                          ? AppColors.accentEmerald
+                                          : borderColor,
                                       width: 1.5,
                                     ),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.description_rounded, size: 12, color: AppColors.accentEmerald),
+                                      const Icon(Icons.description_rounded,
+                                          size: 12,
+                                          color: AppColors.accentEmerald),
                                       const SizedBox(width: 4),
                                       Text(
                                         '${idx + 1}',
-                                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w900, color: textColor),
+                                        style: TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w900,
+                                            color: textColor),
                                       ),
                                       const SizedBox(width: 4),
-                                      const Icon(Icons.touch_app_rounded, size: 10, color: Colors.grey),
+                                      const Icon(Icons.touch_app_rounded,
+                                          size: 10, color: Colors.grey),
                                     ],
                                   ),
                                 ),
@@ -1321,9 +1453,7 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                       ],
                     ),
                   ),
-
                 const SizedBox(height: 4),
-
                 Container(
                   height: 76,
                   margin: const EdgeInsets.only(bottom: 96),
@@ -1356,13 +1486,17 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.photo_library_rounded, color: textColor, size: 18),
+                                  Icon(Icons.photo_library_rounded,
+                                      color: textColor, size: 18),
                                   const SizedBox(height: 2),
                                   Text(
                                     LocalizationService.tr('gallery'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w800, color: textColor),
+                                    style: TextStyle(
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: textColor),
                                   ),
                                 ],
                               ),
@@ -1382,7 +1516,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.accentEmerald.withValues(alpha: 0.5),
+                                color: AppColors.accentEmerald
+                                    .withValues(alpha: 0.5),
                                 blurRadius: 18,
                                 spreadRadius: 2,
                                 offset: const Offset(0, 4),
@@ -1395,9 +1530,11 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                 ? const SizedBox(
                                     width: 26,
                                     height: 26,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white, strokeWidth: 2.5),
                                   )
-                                : const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 28),
+                                : const Icon(Icons.camera_alt_rounded,
+                                    color: Colors.white, size: 28),
                           ),
                         ),
                       ),
@@ -1410,13 +1547,15 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                           child: GestureDetector(
                             onTap: _exportAllPagesToPdf,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
                               decoration: BoxDecoration(
                                 gradient: AppColors.blueGradient,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withValues(alpha: 0.35),
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.35),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),
@@ -1427,19 +1566,28 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(3.5),
-                                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                    decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle),
                                     child: Text(
                                       '${_scannedPages.length}',
-                                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.primary),
+                                      style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.primary),
                                     ),
                                   ),
                                   const SizedBox(width: 5),
                                   Flexible(
                                     child: Text(
-                                      LocalizationService.tr('scanner_export_pdf'),
+                                      LocalizationService.tr(
+                                          'scanner_export_pdf'),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: Colors.white),
+                                      style: const TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white),
                                     ),
                                   ),
                                 ],
@@ -1470,16 +1618,22 @@ class _CamScannerScreenState extends State<CamScannerScreen>
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: isActive ? AppColors.accentEmerald : Colors.black.withValues(alpha: 0.6),
+          color: isActive
+              ? AppColors.accentEmerald
+              : Colors.black.withValues(alpha: 0.6),
           shape: BoxShape.circle,
-          border: Border.all(color: isActive ? Colors.transparent : Colors.white.withValues(alpha: 0.2)),
+          border: Border.all(
+              color: isActive
+                  ? Colors.transparent
+                  : Colors.white.withValues(alpha: 0.2)),
         ),
         child: Icon(icon, color: Colors.white, size: 16),
       ),
     );
   }
 
-  Widget _buildDocumentViewfinderCard(Map<String, dynamic> docMode, bool isDark) {
+  Widget _buildDocumentViewfinderCard(
+      Map<String, dynamic> docMode, bool isDark) {
     final width = MediaQuery.of(context).size.width * 0.65;
     final height = width * (docMode['ratio'] as double);
 
@@ -1510,7 +1664,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (activePage.imageBytes != null && activePage.imageBytes!.isNotEmpty)
+                if (activePage.imageBytes != null &&
+                    activePage.imageBytes!.isNotEmpty)
                   RotatedBox(
                     quarterTurns: activePage.rotation ~/ 90,
                     child: Image.memory(
@@ -1525,24 +1680,29 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(activePage.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                        Text(activePage.name,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11)),
                         const Divider(color: Colors.grey),
                         Expanded(
                           child: Text(
                             activePage.ocrText,
-                            style: const TextStyle(color: Colors.white70, fontSize: 9),
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 9),
                             overflow: TextOverflow.fade,
                           ),
                         ),
                       ],
                     ),
                   ),
-
                 Positioned(
                   top: 6,
                   right: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(6),
@@ -1550,7 +1710,10 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                     ),
                     child: Text(
                       '#${_activePageIndex + 1}',
-                      style: const TextStyle(fontSize: 8.5, fontWeight: FontWeight.w900, color: AppColors.accentEmerald),
+                      style: const TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.accentEmerald),
                     ),
                   ),
                 ),
@@ -1617,7 +1780,8 @@ class _CamScannerScreenState extends State<CamScannerScreen>
                 ],
               ),
               child: const Center(
-                child: Icon(Icons.document_scanner_rounded, color: AppColors.accentEmerald, size: 30),
+                child: Icon(Icons.document_scanner_rounded,
+                    color: AppColors.accentEmerald, size: 30),
               ),
             ),
             const SizedBox(height: 14),
@@ -1649,20 +1813,26 @@ class _CamScannerScreenState extends State<CamScannerScreen>
             ),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5.5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 5.5),
               decoration: BoxDecoration(
                 color: AppColors.accentEmerald.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.accentEmerald.withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: AppColors.accentEmerald.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.touch_app_rounded, color: AppColors.accentEmerald, size: 12),
+                  const Icon(Icons.touch_app_rounded,
+                      color: AppColors.accentEmerald, size: 12),
                   const SizedBox(width: 5),
                   Text(
                     LocalizationService.tr('scanner_tap_to_scan'),
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.accentEmerald),
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.accentEmerald),
                   ),
                 ],
               ),
@@ -1682,16 +1852,20 @@ class _CamScannerScreenState extends State<CamScannerScreen>
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           border: Border(
-            top: alignment == Alignment.topLeft || alignment == Alignment.topRight
+            top: alignment == Alignment.topLeft ||
+                    alignment == Alignment.topRight
                 ? const BorderSide(color: AppColors.accentEmerald, width: 3)
                 : BorderSide.none,
-            bottom: alignment == Alignment.bottomLeft || alignment == Alignment.bottomRight
+            bottom: alignment == Alignment.bottomLeft ||
+                    alignment == Alignment.bottomRight
                 ? const BorderSide(color: AppColors.accentEmerald, width: 3)
                 : BorderSide.none,
-            left: alignment == Alignment.topLeft || alignment == Alignment.bottomLeft
+            left: alignment == Alignment.topLeft ||
+                    alignment == Alignment.bottomLeft
                 ? const BorderSide(color: AppColors.accentEmerald, width: 3)
                 : BorderSide.none,
-            right: alignment == Alignment.topRight || alignment == Alignment.bottomRight
+            right: alignment == Alignment.topRight ||
+                    alignment == Alignment.bottomRight
                 ? const BorderSide(color: AppColors.accentEmerald, width: 3)
                 : BorderSide.none,
           ),

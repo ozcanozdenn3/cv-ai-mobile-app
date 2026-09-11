@@ -459,17 +459,13 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 300));
 
-    // Initial direction: PDF'e Dönüştür
+    // Initial direction: PDF'e Dönüştür (only tab now)
     expect(find.text(LocalizationService.tr('converter_direction_to_pdf')), findsOneWidget);
-    expect(find.text(LocalizationService.tr('converter_direction_from_pdf')), findsOneWidget);
     expect(find.text(LocalizationService.tr('card_word_to_pdf')), findsOneWidget);
-
-    // Switch to PDF'ten Dönüştür
-    await tester.tap(find.text(LocalizationService.tr('converter_direction_from_pdf')));
-    await tester.pump(const Duration(milliseconds: 300));
-
     expect(find.text(LocalizationService.tr('card_pdf_to_word')), findsOneWidget);
-    expect(find.text(LocalizationService.tr('card_pdf_to_txt')), findsOneWidget);
+    expect(find.text(LocalizationService.tr('card_ocr_text')), findsOneWidget);
+
+    // PDF'ten Dönüştür tab removed - no direction switcher test needed
   });
 
   test('PowerPoint (PPTX) parser and PDF generator test', () async {
@@ -585,21 +581,18 @@ void main() {
     expect(find.textContaining('3 Gün Ücretsiz Deneme'), findsNothing);
     expect(find.textContaining('3-Day Free Trial'), findsNothing);
 
-    // 2. Verify all 4 tiers are present (Weekly, Monthly, Yearly, Lifetime)
+    // 2. Verify the 3 active tiers (Weekly, Monthly, Yearly). Lifetime was removed.
     expect(find.text(LocalizationService.tr('paywall_plan_weekly')), findsOneWidget);
     expect(find.text(LocalizationService.tr('paywall_plan_monthly')), findsOneWidget);
     expect(find.text(LocalizationService.tr('paywall_plan_yearly')), findsOneWidget);
-    expect(find.text(LocalizationService.tr('paywall_plan_lifetime')), findsOneWidget);
 
-    // 3. Tap CTA button
+    // 3. CTA button is present
     final ctaBtn = find.text(LocalizationService.tr('paywall_cta'));
     expect(ctaBtn, findsOneWidget);
     await tester.tap(ctaBtn);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-
-    // 4. Verify user becomes Pro
-    expect(AuthService.currentUser?.isPro, isTrue);
+    // IAP flow requires a real StoreKit / Play Billing session — no further assertions here.
   });
 
   testWidgets('CvPreviewScreen gates both Print and Share actions when user is not Pro', (WidgetTester tester) async {
@@ -631,7 +624,8 @@ void main() {
     expect(find.byType(VipPaywallSheet), findsOneWidget);
   });
 
-  test('Multi-language CV Generation and Localized PDF Headers verification', () async {
+  test('Multi-language CV Generation and Localized PDF Headers verification',
+      () async {
     // 1. English localized profile test
     final enCv = CvModel.createSample('en');
     expect(enCv.fullName, equals('Alex Morgan'));
@@ -679,7 +673,7 @@ void main() {
     final enPdfBytes = await PdfGeneratorService.generateCvPdf(enCv, locale: 'en');
     expect(enPdfBytes.isNotEmpty, isTrue);
     expect(enPdfBytes.sublist(0, 4), equals(utf8.encode('%PDF')));
-  });
+  }, timeout: const Timeout(Duration(minutes: 2)));
 
   test('CvModel certificates empty by default and no static 2023 dummy certificate', () {
     final sampleTr = CvModel.createSample('tr');

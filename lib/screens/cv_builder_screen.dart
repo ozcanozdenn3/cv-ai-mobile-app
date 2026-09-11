@@ -4766,18 +4766,25 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
   Widget _buildAiGeneratorTab(bool isDark, Color cardBg, Color borderColor,
       Color textColor, Color subColor) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 120),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 120),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         // File Import Card
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 22),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDark ? const Color(0xFF2A3147) : const Color(0xFFE2E8F0),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -4785,12 +4792,12 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               Text(
                 _cvTr('cv_tab_file'),
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: textColor,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               _buildMultiModalAiBar(
                 isDark: isDark,
                 textColor: textColor,
@@ -5683,18 +5690,18 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     required Color borderColor,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
             const Icon(Icons.auto_awesome_rounded,
-                size: 13, color: AppColors.primaryLight),
-            const SizedBox(width: 6),
+                size: 15, color: AppColors.primaryLight),
+            const SizedBox(width: 7),
             Expanded(
               child: Text(
                 LocalizationService.tr('cv_ai_import_title'),
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                   color: subColor,
                 ),
@@ -5702,44 +5709,47 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _buildImportChip(
-                icon: Icons.upload_file_rounded,
-                label: LocalizationService.tr('cv_ai_btn_upload_file'),
-                color: const Color(0xFF0284C7),
-                isDark: isDark,
-                borderColor: borderColor,
-                onTap: _isAiGenerating ? null : _handlePickDocumentForCv,
+        const SizedBox(height: 14),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildImportChip(
+                  icon: Icons.upload_file_rounded,
+                  label: LocalizationService.tr('cv_ai_btn_upload_file'),
+                  color: const Color(0xFF0284C7),
+                  isDark: isDark,
+                  borderColor: borderColor,
+                  onTap: _isAiGenerating ? null : _handlePickDocumentForCv,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildImportChip(
-                icon: Icons.camera_alt_rounded,
-                label: LocalizationService.tr('cv_ai_btn_camera_scan'),
-                color: const Color(0xFF10B981),
-                isDark: isDark,
-                borderColor: borderColor,
-                onTap: _isAiGenerating ? null : _handleCapturePhotoForCv,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildImportChip(
+                  icon: Icons.camera_alt_rounded,
+                  label: LocalizationService.tr('cv_ai_btn_camera_scan'),
+                  color: const Color(0xFF10B981),
+                  isDark: isDark,
+                  borderColor: borderColor,
+                  onTap: _isAiGenerating ? null : _handleCapturePhotoForCv,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildImportChip(
-                icon: Icons.link_rounded,
-                label: LocalizationService.tr('cv_ai_btn_link_import'),
-                color: const Color(0xFF8B5CF6),
-                isDark: isDark,
-                borderColor: borderColor,
-                onTap: _isAiGenerating ? null : _handleImportLinkForCv,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildImportChip(
+                  icon: Icons.link_rounded,
+                  label: LocalizationService.tr('cv_ai_btn_link_import'),
+                  color: const Color(0xFF8B5CF6),
+                  isDark: isDark,
+                  borderColor: borderColor,
+                  onTap: _isAiGenerating ? null : _handleImportLinkForCv,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         _buildCvLanguageSelector(
           isDark: isDark,
           textColor: textColor,
@@ -5760,30 +5770,51 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 6),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: isDark ? 0.12 : 0.08),
-          borderRadius: BorderRadius.circular(12),
+          color: color.withValues(alpha: isDark ? 0.14 : 0.08),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: color.withValues(alpha: isDark ? 0.35 : 0.25),
+            color: color.withValues(alpha: isDark ? 0.38 : 0.28),
+            width: 1.3,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: isDark ? 0.16 : 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(height: 5),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: color,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: isDark ? 0.22 : 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 24, color: color),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 32,
+              child: Center(
+                child: Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                    height: 1.2,
+                  ),
+                ),
               ),
             ),
           ],
@@ -5801,14 +5832,22 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
     final currentOption = LocalizationService.getLanguageOption(_cvLanguage);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 26),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1B2032) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.22),
-          width: 1.2,
+          color: AppColors.primary.withValues(alpha: isDark ? 0.40 : 0.28),
+          width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5816,15 +5855,15 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.primary.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.translate_rounded,
-                    size: 16, color: AppColors.primaryLight),
+                    size: 23, color: AppColors.primaryLight),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -5832,18 +5871,19 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                     Text(
                       LocalizationService.tr('cv_language_prompt'),
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 16.5,
                         fontWeight: FontWeight.w800,
                         color: textColor,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       LocalizationService.tr('cv_language_subtitle'),
                       style: TextStyle(
-                        fontSize: 10.5,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: subColor,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -5851,30 +5891,30 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           // Active Selected Language Banner (tappable to open full sheet)
           InkWell(
             onTap: () =>
                 _showCvLanguageSheet(isDark, textColor, subColor, borderColor),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               decoration: BoxDecoration(
                 color:
-                    AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.08),
-                borderRadius: BorderRadius.circular(12),
+                    AppColors.primary.withValues(alpha: isDark ? 0.20 : 0.09),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  width: 1.2,
+                  color: AppColors.primary.withValues(alpha: 0.45),
+                  width: 1.3,
                 ),
               ),
               child: Row(
                 children: [
                   Text(
                     currentOption.flag,
-                    style: const TextStyle(fontSize: 22),
+                    style: const TextStyle(fontSize: 30),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -5883,18 +5923,18 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                           final name = Text(currentOption.name,
                               softWrap: true,
                               style: TextStyle(
-                                  fontSize: 13.5,
+                                  fontSize: 16.5,
                                   fontWeight: FontWeight.w800,
                                   color: textColor));
                           final badge = Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                                horizontal: 9, vertical: 4),
                             decoration: BoxDecoration(
                                 color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(6)),
+                                borderRadius: BorderRadius.circular(8)),
                             child: Text(_cvTr('cv_language_selected_badge'),
                                 style: const TextStyle(
-                                    fontSize: 9.5,
+                                    fontSize: 10.5,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.white)),
                           );
@@ -5913,11 +5953,11 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                             badge
                           ]);
                         }),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
                           currentOption.nativeName,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12.5,
                             color: subColor,
                           ),
                         ),
@@ -5926,14 +5966,14 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
                   ),
                   const Icon(
                     Icons.unfold_more_rounded,
-                    size: 20,
+                    size: 24,
                     color: AppColors.primary,
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           // Horizontal scroll of all 19 language chips for instant 1-tap switching
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -5941,21 +5981,21 @@ class _CvBuilderScreenState extends State<CvBuilderScreen>
               children: LocalizationService.supportedLanguages.map((lang) {
                 final isSelected = lang.code == _cvLanguage;
                 return Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.only(right: 8),
                   child: InkWell(
                     onTap: () => _onCvLanguageSelected(lang.code),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(22),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                          horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.primary
                             : (isDark
                                 ? const Color(0xFF22283E)
                                 : const Color(0xFFEBF1F8)),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(22),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary

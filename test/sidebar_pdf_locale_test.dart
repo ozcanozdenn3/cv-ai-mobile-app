@@ -4,6 +4,8 @@ import 'package:mobile_app/services/localization_service.dart';
 import 'package:mobile_app/services/pdf_generator_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   for (final locale in LocalizationService.supportedLanguages) {
     test('sidebar modern PDF renders ${locale.code}', () async {
       final cv = CvModel.createSample(locale.code)

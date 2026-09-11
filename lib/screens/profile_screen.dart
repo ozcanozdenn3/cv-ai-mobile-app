@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
- 
+
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/legal_constants.dart';
@@ -63,7 +63,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 LocalizationService.tr('profile_logout'),
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w900, color: textColor),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: textColor),
               ),
             ),
           ],
@@ -738,7 +740,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: const Icon(Icons.open_in_new_rounded, size: 16),
               label: Text(
                 LocalizationService.tr('paywall_privacy_title'),
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
               ),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 42),
@@ -755,7 +758,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: const Icon(Icons.description_outlined, size: 16),
               label: Text(
                 LocalizationService.tr('paywall_terms'),
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
               ),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 42),
@@ -769,9 +773,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF1F5F9),
+                backgroundColor:
+                    isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                 foregroundColor: textColor,
                 elevation: 0,
                 minimumSize: const Size(double.infinity, 42),
@@ -992,65 +995,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 12),
 
                     // PRO MEMBERSHIP BADGE
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: _isPro
-                            ? const LinearGradient(
-                                colors: [
-                                  Color(0xFFFEF3C7),
-                                  Color(0xFFFDE68A),
-                                  Color(0xFFFCD34D)
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : LinearGradient(
-                                colors: [
-                                  Colors.grey.shade300,
-                                  Colors.grey.shade400
-                                ],
-                              ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: _isPro
-                            ? [
-                                BoxShadow(
-                                  color: const Color(0xFFF59E0B)
-                                      .withValues(alpha: 0.4),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: _isPro
+                              ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFEF3C7),
+                                    Color(0xFFFDE68A),
+                                    Color(0xFFFCD34D)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : LinearGradient(
+                                  colors: [
+                                    Colors.grey.shade300,
+                                    Colors.grey.shade400
+                                  ],
                                 ),
-                              ]
-                            : null,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isPro
-                                ? Icons.verified_rounded
-                                : Icons.star_border_rounded,
-                            size: 15,
-                            color: _isPro
-                                ? const Color(0xFF78350F)
-                                : Colors.grey.shade700,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isPro
-                                ? LocalizationService.tr('profile_pro_active')
-                                : LocalizationService.tr('profile_free_plan'),
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w900,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: _isPro
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFF59E0B)
+                                        .withValues(alpha: 0.4),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isPro
+                                  ? Icons.verified_rounded
+                                  : Icons.star_border_rounded,
+                              size: 15,
                               color: _isPro
                                   ? const Color(0xFF78350F)
-                                  : Colors.grey.shade800,
-                              letterSpacing: 0.3,
+                                  : Colors.grey.shade700,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            Text(
+                              _isPro
+                                  ? LocalizationService.tr('profile_pro_active')
+                                  : LocalizationService.tr('profile_free_plan'),
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w900,
+                                color: _isPro
+                                    ? const Color(0xFF78350F)
+                                    : Colors.grey.shade800,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1061,7 +1067,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // PRO MEMBERSHIP CARD
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(
+                    left: 14, top: 14, bottom: 14, right: 10),
                 decoration: BoxDecoration(
                   gradient: isDark
                       ? const LinearGradient(
@@ -1092,7 +1099,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: const Icon(Icons.diamond_rounded,
                           color: Color(0xFF451A03), size: 24),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1117,6 +1124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
                         if (_isPro) {
@@ -1138,6 +1146,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _isPro
                             ? LocalizationService.tr('profile_btn_manage')
                             : LocalizationService.tr('profile_btn_upgrade'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontWeight: FontWeight.w900, fontSize: 12),
                       ),

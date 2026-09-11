@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,8 @@ import 'screens/documents_library_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/supabase_service.dart';
 
+import 'services/in_app_purchase_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -28,6 +31,10 @@ void main() async {
   await LocalizationService.init();
   await AuthService.init();
   runApp(const CvAiApp());
+
+  // Google Play may not have an account or a reachable billing service during
+  // startup. It must never prevent the app from rendering.
+  unawaited(InAppPurchaseService.init());
 }
 
 class CvAiApp extends StatefulWidget {
@@ -101,8 +108,7 @@ class _CvAiAppState extends State<CvAiApp> with WidgetsBindingObserver {
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor:
-            isDark ? AppColors.darkBg : AppColors.lightBg,
+        systemNavigationBarColor: isDark ? AppColors.darkBg : AppColors.lightBg,
         systemNavigationBarIconBrightness:
             isDark ? Brightness.light : Brightness.dark,
       ),
@@ -230,8 +236,10 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             }
 
             final isDark = widget.isDark;
-            final navBarBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-            final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+            final navBarBg =
+                isDark ? AppColors.darkSurface : AppColors.lightSurface;
+            final borderColor =
+                isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
             final List<Widget> screens = [
               HomeScreen(
@@ -239,10 +247,14 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                 isDark: widget.isDark,
                 onNavigateTab: (index) => setState(() => _currentIndex = index),
               ),
-              CvBuilderScreen(onReturnHome: () => setState(() => _currentIndex = 0)),
-              CamScannerScreen(onReturnHome: () => setState(() => _currentIndex = 0)),
-              PdfConverterScreen(onReturnHome: () => setState(() => _currentIndex = 0)),
-              DocumentsLibraryScreen(onReturnHome: () => setState(() => _currentIndex = 0)),
+              CvBuilderScreen(
+                  onReturnHome: () => setState(() => _currentIndex = 0)),
+              CamScannerScreen(
+                  onReturnHome: () => setState(() => _currentIndex = 0)),
+              PdfConverterScreen(
+                  onReturnHome: () => setState(() => _currentIndex = 0)),
+              DocumentsLibraryScreen(
+                  onReturnHome: () => setState(() => _currentIndex = 0)),
             ];
 
             final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
@@ -260,96 +272,103 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                 resizeToAvoidBottomInset: false,
                 backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
                 body: IndexedStack(
-                  key: ValueKey('main_tabs_${LocalizationService.currentLocale}'),
+                  key: ValueKey(
+                      'main_tabs_${LocalizationService.currentLocale}'),
                   index: _currentIndex,
                   children: screens,
                 ),
                 bottomNavigationBar: isKeyboardOpen
                     ? null
                     : Container(
-                  margin: const EdgeInsets.fromLTRB(14, 0, 14, 22),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: navBarBg,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: borderColor, width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? Colors.black.withValues(alpha: 0.45)
-                            : const Color(0xFFF43F5E).withValues(alpha: 0.08),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: navItems.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final item = entry.value;
-                      final isSelected = _currentIndex == index;
-
-                      return GestureDetector(
-                        onTap: () => setState(() => _currentIndex = index),
-                        behavior: HitTestBehavior.opaque,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOutCubic,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isSelected ? 12 : 8,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: isSelected ? item.gradient : null,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: item.glowColor.withValues(alpha: 0.4),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isSelected ? item.selectedIcon : item.icon,
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark
-                                        ? const Color(0xFF94A3B8)
-                                        : const Color(0xFF64748B)),
-                                size: isSelected ? 20 : 21,
-                              ),
-                              if (isSelected) ...[
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      item.label,
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        letterSpacing: -0.2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                        margin: const EdgeInsets.fromLTRB(14, 0, 14, 22),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: navBarBg,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: borderColor, width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isDark
+                                  ? Colors.black.withValues(alpha: 0.45)
+                                  : const Color(0xFFF43F5E)
+                                      .withValues(alpha: 0.08),
+                              blurRadius: 24,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: navItems.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final item = entry.value;
+                            final isSelected = _currentIndex == index;
+
+                            return GestureDetector(
+                              onTap: () =>
+                                  setState(() => _currentIndex = index),
+                              behavior: HitTestBehavior.opaque,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOutCubic,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isSelected ? 12 : 8,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: isSelected ? item.gradient : null,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: item.glowColor
+                                                .withValues(alpha: 0.4),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isSelected
+                                          ? item.selectedIcon
+                                          : item.icon,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : (isDark
+                                              ? const Color(0xFF94A3B8)
+                                              : const Color(0xFF64748B)),
+                                      size: isSelected ? 20 : 21,
+                                    ),
+                                    if (isSelected) ...[
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            item.label,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.white,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
               ),
             );
           },
@@ -374,4 +393,3 @@ class NavItem {
     required this.glowColor,
   });
 }
-

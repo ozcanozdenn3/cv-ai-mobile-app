@@ -33,3 +33,10 @@ migrate_working_dir/
 
 # Local env files
 .env.ai.local
+
+# Generated test artifacts
+/*.pdf
+/*.pdf.png
+
+# Supabase CLI temp files
+supabase/.temp/

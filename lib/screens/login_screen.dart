@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
- 
+
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme_constants.dart';
 import '../services/auth_service.dart';
@@ -67,8 +67,10 @@ class _LoginScreenState extends State<LoginScreen>
     if (_isSocialSigningIn || _hasNavigated) return;
     if (AuthService.isLoggedIn && mounted) {
       _hasNavigated = true;
-      debugPrint('🎉 E-posta doğrulaması deep link ile tamamlandı, ana ekrana yönlendiriliyor.');
-      _showToast('🎉 ${LocalizationService.tr('auth_email_confirmed_welcome')}');
+      debugPrint(
+          '🎉 E-posta doğrulaması deep link ile tamamlandı, ana ekrana yönlendiriliyor.');
+      _showToast(
+          '🎉 ${LocalizationService.tr('auth_email_confirmed_welcome')}');
       _navigateOnSuccess();
     }
   }
@@ -102,7 +104,8 @@ class _LoginScreenState extends State<LoginScreen>
     final pass = _passwordController.text.trim();
 
     if (email.isEmpty || pass.isEmpty) {
-      _showToast(LocalizationService.tr('auth_err_empty_credentials'), isError: true);
+      _showToast(LocalizationService.tr('auth_err_empty_credentials'),
+          isError: true);
       return;
     }
 
@@ -241,464 +244,479 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
 
-              // 2. MAIN SCROLLABLE CONTENT
-              SafeArea(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 22, vertical: 16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // HERO BRAND SECTION
-                          Hero(
-                            tag: 'app_brand_logo',
-                            child: Container(
-                              width: 135,
-                              height: 135,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(32),
-                                border: Border.all(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF1D4ED8)
-                                        .withValues(alpha: 0.45),
-                                    blurRadius: 32,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                  BoxShadow(
+                // 2. MAIN SCROLLABLE CONTENT
+                SafeArea(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 22, vertical: 16),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // HERO BRAND SECTION
+                            Hero(
+                              tag: 'app_brand_logo',
+                              child: Container(
+                                width: 135,
+                                height: 135,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(32),
+                                  border: Border.all(
                                     color: const Color(0xFFF59E0B)
-                                        .withValues(alpha: 0.25),
-                                    blurRadius: 18,
+                                        .withValues(alpha: 0.35),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF1D4ED8)
+                                          .withValues(alpha: 0.45),
+                                      blurRadius: 32,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                    BoxShadow(
+                                      color: const Color(0xFFF59E0B)
+                                          .withValues(alpha: 0.25),
+                                      blurRadius: 18,
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Image.asset(
+                                    'assets/images/app_logo.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Brand Name & Tagline
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    LocalizationService.tr('app_title'),
+                                    style: TextStyle(
+                                      fontSize: 27,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.5,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3.5),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF2563EB),
+                                          Color(0xFF7C3AED)
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF4F46E5)
+                                              .withValues(alpha: 0.4),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Text(
+                                      'STUDIO',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
-                                child: Image.asset(
-                                  'assets/images/app_logo.png',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 5),
+                            Text(
+                              LocalizationService.tr('app_subtitle'),
+                              style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: subColor),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 14),
 
-                          // Brand Name & Tagline
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                LocalizationService.tr('app_title'),
-                                style: TextStyle(
-                                  fontSize: 27,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                  color: textColor,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3.5),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF2563EB),
-                                      Color(0xFF7C3AED)
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF4F46E5)
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  'STUDIO',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.0,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            LocalizationService.tr('app_subtitle'),
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: subColor),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 14),
-
-                          // TRUST CHIPS
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              _buildPillChip(
-                                  '⚡ ${LocalizationService.tr('login_pill_ai')}',
-                                  isDark),
-                              _buildPillChip(
-                                  '📄 ${LocalizationService.tr('login_pill_templates')}',
-                                  isDark),
-                              _buildPillChip(
-                                  '🔒 ${LocalizationService.tr('login_pill_ssl')}',
-                                  isDark),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-
-                          // AUTH CARD
-                          Container(
-                            padding: const EdgeInsets.all(22),
-                            decoration: BoxDecoration(
-                              color: cardBg.withValues(
-                                  alpha: isDark ? 0.90 : 0.95),
-                              borderRadius: BorderRadius.circular(26),
-                              border:
-                                  Border.all(color: borderColor, width: 1.2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black
-                                      .withValues(alpha: isDark ? 0.45 : 0.07),
-                                  blurRadius: 26,
-                                  offset: const Offset(0, 8),
-                                ),
+                            // TRUST CHIPS
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                _buildPillChip(
+                                    '⚡ ${LocalizationService.tr('login_pill_ai')}',
+                                    isDark),
+                                _buildPillChip(
+                                    '📄 ${LocalizationService.tr('login_pill_templates')}',
+                                    isDark),
+                                _buildPillChip(
+                                    '🔒 ${LocalizationService.tr('login_pill_ssl')}',
+                                    isDark),
                               ],
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      LocalizationService.tr('auth_btn_login'),
-                                      style: TextStyle(
-                                          fontSize: 18.5,
-                                          fontWeight: FontWeight.w900,
-                                          color: textColor),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF10B981)
-                                            .withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.shield_outlined,
-                                              color: Color(0xFF10B981),
-                                              size: 12),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            LocalizationService.tr(
-                                                'login_badge_cloud'),
-                                            style: const TextStyle(
-                                              fontSize: 9.0,
-                                              fontWeight: FontWeight.w900,
-                                              color: Color(0xFF10B981),
+                            const SizedBox(height: 18),
+
+                            // AUTH CARD
+                            Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: cardBg.withValues(
+                                    alpha: isDark ? 0.90 : 0.95),
+                                borderRadius: BorderRadius.circular(26),
+                                border:
+                                    Border.all(color: borderColor, width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(
+                                        alpha: isDark ? 0.45 : 0.07),
+                                    blurRadius: 26,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                          child: Text(
+                                        LocalizationService.tr(
+                                            'auth_btn_login'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 18.5,
+                                            fontWeight: FontWeight.w900,
+                                            color: textColor),
+                                      )),
+                                      Flexible(
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerRight,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981)
+                                                  .withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                    Icons.shield_outlined,
+                                                    color: Color(0xFF10B981),
+                                                    size: 12),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  LocalizationService.tr(
+                                                      'login_badge_cloud'),
+                                                  style: const TextStyle(
+                                                    fontSize: 9.0,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: Color(0xFF10B981),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Email Input
-                                _buildInputLabel(
-                                    LocalizationService.tr('auth_email'),
-                                    subColor),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  autocorrect: false,
-                                  textCapitalization: TextCapitalization.none,
-                                  style: TextStyle(
-                                      fontSize: 13.5,
-                                      color: textColor,
-                                      fontWeight: FontWeight.w600),
-                                  decoration: _buildInputDecoration(
-                                    hint: LocalizationService.tr(
-                                        'auth_email_hint'),
-                                    icon: Icons.alternate_email_rounded,
-                                    isDark: isDark,
-                                    inputBg: inputBg,
-                                    borderColor: borderColor,
-                                    subColor: subColor,
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-
-                                // Password Input
-                                _buildInputLabel(
-                                    LocalizationService.tr('auth_password'),
-                                    subColor),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  style: TextStyle(
-                                      fontSize: 13.5,
-                                      color: textColor,
-                                      fontWeight: FontWeight.w600),
-                                  decoration: _buildInputDecoration(
-                                    hint: '••••••••',
-                                    icon: Icons.lock_outline_rounded,
-                                    isDark: isDark,
-                                    inputBg: inputBg,
-                                    borderColor: borderColor,
-                                    subColor: subColor,
-                                    suffix: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? Icons.visibility_off_rounded
-                                            : Icons.visibility_rounded,
-                                        color: subColor,
-                                        size: 19,
-                                      ),
-                                      onPressed: () => setState(() =>
-                                          _obscurePassword = !_obscurePassword),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-
-                                // Remember Me Row (Forgot Password Removed)
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: Checkbox(
-                                        value: _rememberMe,
-                                        activeColor:
-                                            const Color(0xFF2563EB),
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(6)),
-                                        onChanged: (val) => setState(() =>
-                                            _rememberMe = val ?? true),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 7),
-                                    Text(
-                                      LocalizationService.tr(
-                                          'auth_remember_me'),
-                                      style: TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: subColor),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 18),
-
-                                // Primary Login Button
-                                Container(
-                                  width: double.infinity,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF2563EB),
-                                        Color(0xFF4F46E5)
-                                      ],
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF2563EB)
-                                            .withValues(alpha: 0.4),
-                                        blurRadius: 16,
-                                        offset: const Offset(0, 6),
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _handleLogin,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.transparent,
-                                      shadowColor: Colors.transparent,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16)),
+                                  const SizedBox(height: 16),
+
+                                  // Email Input
+                                  _buildInputLabel(
+                                      LocalizationService.tr('auth_email'),
+                                      subColor),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    autocorrect: false,
+                                    textCapitalization: TextCapitalization.none,
+                                    style: TextStyle(
+                                        fontSize: 13.5,
+                                        color: textColor,
+                                        fontWeight: FontWeight.w600),
+                                    decoration: _buildInputDecoration(
+                                      hint: LocalizationService.tr(
+                                          'auth_email_hint'),
+                                      icon: Icons.alternate_email_rounded,
+                                      isDark: isDark,
+                                      inputBg: inputBg,
+                                      borderColor: borderColor,
+                                      subColor: subColor,
                                     ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2.5),
-                                          )
-                                        : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                LocalizationService.tr(
-                                                    'auth_btn_login'),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w900,
-                                                    color: Colors.white),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              const Icon(
-                                                  Icons.arrow_forward_rounded,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // Password Input
+                                  _buildInputLabel(
+                                      LocalizationService.tr('auth_password'),
+                                      subColor),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    style: TextStyle(
+                                        fontSize: 13.5,
+                                        color: textColor,
+                                        fontWeight: FontWeight.w600),
+                                    decoration: _buildInputDecoration(
+                                      hint: '••••••••',
+                                      icon: Icons.lock_outline_rounded,
+                                      isDark: isDark,
+                                      inputBg: inputBg,
+                                      borderColor: borderColor,
+                                      subColor: subColor,
+                                      suffix: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off_rounded
+                                              : Icons.visibility_rounded,
+                                          color: subColor,
+                                          size: 19,
+                                        ),
+                                        onPressed: () => setState(() =>
+                                            _obscurePassword =
+                                                !_obscurePassword),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  // Remember Me Row (Forgot Password Removed)
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: Checkbox(
+                                          value: _rememberMe,
+                                          activeColor: const Color(0xFF2563EB),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(6)),
+                                          onChanged: (val) => setState(
+                                              () => _rememberMe = val ?? true),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 7),
+                                      Expanded(
+                                          child: Text(
+                                        LocalizationService.tr(
+                                            'auth_remember_me'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: subColor),
+                                      )),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 18),
+
+                                  // Primary Login Button
+                                  Container(
+                                    width: double.infinity,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF2563EB),
+                                          Color(0xFF4F46E5)
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF2563EB)
+                                              .withValues(alpha: 0.4),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed:
+                                          _isLoading ? null : _handleLogin,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16)),
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              width: 22,
+                                              height: 22,
+                                              child: CircularProgressIndicator(
                                                   color: Colors.white,
-                                                  size: 18),
-                                            ],
-                                          ),
+                                                  strokeWidth: 2.5),
+                                            )
+                                          : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Flexible(
+                                                    child: Text(
+                                                  LocalizationService.tr(
+                                                      'auth_btn_login'),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color: Colors.white),
+                                                )),
+                                                const SizedBox(width: 8),
+                                                const Icon(
+                                                    Icons.arrow_forward_rounded,
+                                                    color: Colors.white,
+                                                    size: 18),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+
+                            // SOCIAL / GUEST DIVIDER
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Divider(
+                                        color: borderColor, thickness: 1)),
+                                Flexible(
+                                  flex: 2,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14),
+                                    child: Text(
+                                      LocalizationService.tr(
+                                          'login_or_continue'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: subColor,
+                                          letterSpacing: 0.5),
+                                    ),
                                   ),
                                 ),
+                                Expanded(
+                                    child: Divider(
+                                        color: borderColor, thickness: 1)),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 18),
+                            const SizedBox(height: 14),
 
-                          // SOCIAL / GUEST DIVIDER
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: Divider(
-                                      color: borderColor, thickness: 1)),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 14),
-                                child: Text(
-                                  LocalizationService.tr('login_or_continue'),
-                                  style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: subColor,
-                                      letterSpacing: 0.5),
-                                ),
-                              ),
-                              Expanded(
-                                  child: Divider(
-                                      color: borderColor, thickness: 1)),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-
-                          // GOOGLE SIGN IN
-                          _buildSocialButton(
-                            title: LocalizationService.tr('auth_google'),
-                            iconWidget: _buildGoogleBadge(),
-                            onTap: _handleGoogleSignIn,
-                            isDark: isDark,
-                            borderColor: borderColor,
-                            textColor: textColor,
-                          ),
-                          const SizedBox(height: 10),
-
-                          // APPLE SIGN IN (Sadece iOS / macOS üzerinde gösterilir)
-                          if (Theme.of(context).platform == TargetPlatform.iOS ||
-                              Theme.of(context).platform == TargetPlatform.macOS) ...[
+                            // GOOGLE SIGN IN
                             _buildSocialButton(
-                              title: LocalizationService.tr('auth_apple'),
-                              iconWidget: Icon(
-                                Icons.apple_rounded,
-                                color: isDark ? Colors.white : Colors.black,
-                                size: 24,
-                              ),
-                              onTap: _handleAppleSignIn,
+                              title: LocalizationService.tr('auth_google'),
+                              iconWidget: _buildGoogleBadge(),
+                              onTap: _handleGoogleSignIn,
                               isDark: isDark,
                               borderColor: borderColor,
                               textColor: textColor,
                             ),
-                            const SizedBox(height: 10),
-                          ],
-                          const SizedBox(height: 20),
-
-                          // REGISTER NAVIGATION FOOTER
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: cardBg.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: borderColor),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    LocalizationService.tr('auth_no_account'),
-                                    style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: subColor),
-                                  ),
+                            // APPLE SIGN IN (Sadece iOS / macOS üzerinde gösterilir)
+                            if (Theme.of(context).platform ==
+                                    TargetPlatform.iOS ||
+                                Theme.of(context).platform ==
+                                    TargetPlatform.macOS) ...[
+                              const SizedBox(height: 10),
+                              _buildSocialButton(
+                                title: LocalizationService.tr('auth_apple'),
+                                iconWidget: Icon(
+                                  Icons.apple_rounded,
+                                  color: isDark ? Colors.white : Colors.black,
+                                  size: 24,
                                 ),
-                                const SizedBox(width: 6),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => RegisterScreen(
-                                          onRegisterSuccess:
-                                              widget.onLoginSuccess,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    LocalizationService.tr('auth_btn_register'),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF2563EB),
+                                onTap: _handleAppleSignIn,
+                                isDark: isDark,
+                                borderColor: borderColor,
+                                textColor: textColor,
+                              ),
+                            ],
+                            const SizedBox(height: 2),
+
+                            Text(
+                              LocalizationService.tr('auth_no_account'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: subColor,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            _buildSocialButton(
+                              title:
+                                  LocalizationService.tr('auth_btn_register'),
+                              iconWidget: const Icon(
+                                Icons.person_add_alt_1_rounded,
+                                color: Color(0xFF2563EB),
+                                size: 21,
+                              ),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => RegisterScreen(
+                                      onRegisterSuccess: widget.onLoginSuccess,
                                     ),
                                   ),
-                                ),
-                              ],
+                                );
+                              },
+                              isDark: isDark,
+                              borderColor: borderColor,
+                              textColor: textColor,
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   Widget _buildPillChip(String text, bool isDark) {
     return Container(

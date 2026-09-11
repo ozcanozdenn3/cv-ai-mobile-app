@@ -6,6 +6,13 @@ import 'package:mobile_app/services/localization_service.dart';
 import 'package:mobile_app/widgets/ai_aurora_glow.dart';
 
 void main() {
+  // ── Live Gemini API tests ──────────────────────────────────────────────────
+  // These tests call the real Gemini REST endpoint and require a valid API key
+  // passed via --dart-define=GEMINI_API_KEY=<key> or a Supabase Edge Function.
+  // Skip them in offline / CI environments; run explicitly with:
+  //   flutter test test/ai_cv_service_test.dart --tags live \
+  //     --dart-define=GEMINI_API_KEY=<key>
+  // ───────────────────────────────────────────────────────────────────────────
   group('AiCvService Multilingual & Smart Auto-Fill Tests', () {
     test(
         'Russian prompt extracts all CV sections and synthesizes Russian executive summary',
@@ -49,7 +56,7 @@ void main() {
       // Personal Traits
       expect(result.personalTraits.isNotEmpty, isTrue);
       expect(result.personalTraits, contains('Аналитическое мышление'));
-    });
+    }, skip: 'Requires live Gemini API key: flutter test --dart-define=GEMINI_API_KEY=<key>');
 
     test(
         'Turkish prompt extracts all CV sections and synthesizes Turkish executive summary',
@@ -92,7 +99,7 @@ void main() {
       // Personal Traits
       expect(result.personalTraits.isNotEmpty, isTrue);
       expect(result.personalTraits, contains('Problem Çözme'));
-    });
+    }, skip: 'Requires live Gemini API key: flutter test --dart-define=GEMINI_API_KEY=<key>');
 
     test(
         'English prompt extracts all sections and synthesizes English executive summary',
@@ -130,7 +137,7 @@ void main() {
       expect(result.certificates.isNotEmpty, isTrue);
       expect(result.certificates.first.name,
           contains('AWS Certified Solutions Architect'));
-    });
+    }, skip: 'Requires live Gemini API key: flutter test --dart-define=GEMINI_API_KEY=<key>');
 
     test('Smart merging into CvModel does not create duplicates', () {
       final cv = CvModel.createSample('tr');

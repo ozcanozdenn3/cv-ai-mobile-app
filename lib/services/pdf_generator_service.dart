@@ -1,7 +1,7 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import '../models/cv_model.dart';
 import 'document_parser_service.dart';
 import 'localization_service.dart';
@@ -336,66 +336,175 @@ class _CvPdfFontSet {
   final pw.Font regular;
   final pw.Font bold;
   final pw.Font italic;
+  final List<pw.Font> fallbacks;
 
   const _CvPdfFontSet({
     required this.regular,
     required this.bold,
     required this.italic,
+    required this.fallbacks,
+  });
+}
+
+class _CvPdfFontAssets {
+  // Latin: statik TTF (Regular/Bold/Italic ayrı) – Android variable-font sorununu önler
+  final pw.Font latinRegular;
+  final pw.Font latinBold;
+  final pw.Font latinItalic;
+  // Diğer script'ler (tek weight dosyası, fallback olarak kullanılır)
+  final pw.Font arabic;
+  final pw.Font devanagari;
+  final pw.Font chinese;
+  final pw.Font japanese;
+  final pw.Font korean;
+
+  const _CvPdfFontAssets({
+    required this.latinRegular,
+    required this.latinBold,
+    required this.latinItalic,
+    required this.arabic,
+    required this.devanagari,
+    required this.chinese,
+    required this.japanese,
+    required this.korean,
   });
 }
 
 class PdfGeneratorService {
+  static final Future<_CvPdfFontAssets> _cvPdfFontAssets =
+      _loadCvPdfFontAssets();
+
+  static Future<pw.Font> _loadFontAsset(String assetPath) async {
+    return pw.Font.ttf(await rootBundle.load(assetPath));
+  }
+
+  static Future<_CvPdfFontAssets> _loadCvPdfFontAssets() async {
+    // Latin için Inter statik TTF dosyaları yükleniyor.
+    // Variable fontlar Android PDF görüntüleyicide karakter kodlama sorununa
+    // yol açar (yazılar sembol olarak görünür). Inter statik TTF kullanmak zorunludur.
+    // Inter: Latin, Latin Extended (Türkçe/Lehçe), Cyrillic (Rusça), Greek destekler.
+    final fonts = await Future.wait([
+      _loadFontAsset('assets/fonts/Inter-Regular.ttf'),
+      _loadFontAsset('assets/fonts/Inter-Bold.ttf'),
+      _loadFontAsset('assets/fonts/Inter-Italic.ttf'),
+      _loadFontAsset('assets/fonts/NotoSansArabic-Regular.ttf'),
+      _loadFontAsset('assets/fonts/NotoSansDevanagari-Variable.ttf'),
+      _loadFontAsset('assets/fonts/NotoSansSC-Variable.ttf'),
+      _loadFontAsset('assets/fonts/NotoSansJP-Variable.ttf'),
+      _loadFontAsset('assets/fonts/NotoSansKR-Variable.ttf'),
+    ]);
+
+    return _CvPdfFontAssets(
+      latinRegular: fonts[0],
+      latinBold: fonts[1],
+      latinItalic: fonts[2],
+      arabic: fonts[3],
+      devanagari: fonts[4],
+      chinese: fonts[5],
+      japanese: fonts[6],
+      korean: fonts[7],
+    );
+  }
+
   static Future<_CvPdfFontSet> _loadCvPdfFonts(String locale) async {
     final lang = locale.toLowerCase().replaceAll('-', '_');
+    final fonts = await _cvPdfFontAssets;
+
+    // Tüm fallback fontlar (Latin dahil tüm weight'ler)
+    final allFallbacks = <pw.Font>[
+      fonts.latinRegular,
+      fonts.latinBold,
+      fonts.latinItalic,
+      fonts.arabic,
+      fonts.devanagari,
+      fonts.chinese,
+      fonts.japanese,
+      fonts.korean,
+    ];
+
     if (lang.startsWith('hi')) {
-      final regular = await PdfGoogleFonts.notoSansDevanagariRegular();
-      final bold = await PdfGoogleFonts.notoSansDevanagariBold();
-      return _CvPdfFontSet(regular: regular, bold: bold, italic: regular);
-    }
-    if (lang.startsWith('ar')) {
-      final regular = await PdfGoogleFonts.notoSansArabicRegular();
-      final bold = await PdfGoogleFonts.notoSansArabicBold();
-      return _CvPdfFontSet(regular: regular, bold: bold, italic: regular);
-    }
-    if (lang.startsWith('zh')) {
-      final regular = await PdfGoogleFonts.notoSansSCRegular();
-      final bold = await PdfGoogleFonts.notoSansSCBold();
-      return _CvPdfFontSet(regular: regular, bold: bold, italic: regular);
-    }
-    if (lang.startsWith('ja')) {
-      final regular = await PdfGoogleFonts.notoSansJPRegular();
-      final bold = await PdfGoogleFonts.notoSansJPBold();
-      return _CvPdfFontSet(regular: regular, bold: bold, italic: regular);
-    }
-    if (lang.startsWith('ko')) {
-      final regular = await PdfGoogleFonts.notoSansKRRegular();
-      final bold = await PdfGoogleFonts.notoSansKRBold();
-      return _CvPdfFontSet(regular: regular, bold: bold, italic: regular);
+      return _CvPdfFontSet(
+        regular: fonts.devanagari,
+        bold: fonts.devanagari,
+        italic: fonts.devanagari,
+        fallbacks: allFallbacks.where((f) => f != fonts.devanagari).toList(),
+      );
+    } else if (lang.startsWith('ar')) {
+      return _CvPdfFontSet(
+        regular: fonts.arabic,
+        bold: fonts.arabic,
+        italic: fonts.arabic,
+        fallbacks: allFallbacks.where((f) => f != fonts.arabic).toList(),
+      );
+    } else if (lang.startsWith('zh')) {
+      return _CvPdfFontSet(
+        regular: fonts.chinese,
+        bold: fonts.chinese,
+        italic: fonts.chinese,
+        fallbacks: allFallbacks.where((f) => f != fonts.chinese).toList(),
+      );
+    } else if (lang.startsWith('ja')) {
+      return _CvPdfFontSet(
+        regular: fonts.japanese,
+        bold: fonts.japanese,
+        italic: fonts.japanese,
+        fallbacks: allFallbacks.where((f) => f != fonts.japanese).toList(),
+      );
+    } else if (lang.startsWith('ko')) {
+      return _CvPdfFontSet(
+        regular: fonts.korean,
+        bold: fonts.korean,
+        italic: fonts.korean,
+        fallbacks: allFallbacks.where((f) => f != fonts.korean).toList(),
+      );
     }
 
+    // Latin / Türkçe / Rusça / Almanca vb. → statik NotoSans
+    final nonLatinFallbacks = <pw.Font>[
+      fonts.arabic,
+      fonts.devanagari,
+      fonts.chinese,
+      fonts.japanese,
+      fonts.korean,
+    ];
     return _CvPdfFontSet(
-      regular: await PdfGoogleFonts.robotoRegular(),
-      bold: await PdfGoogleFonts.robotoBold(),
-      italic: await PdfGoogleFonts.robotoItalic(),
+      regular: fonts.latinRegular,
+      bold: fonts.latinBold,
+      italic: fonts.latinItalic,
+      fallbacks: nonLatinFallbacks,
     );
+  }
+
+  static Future<pw.ThemeData> _loadUniversalPdfTheme() async {
+    final fonts = await _loadCvPdfFonts(LocalizationService.currentLocale);
+    return pw.ThemeData.withFont(
+      base: fonts.regular,
+      bold: fonts.bold,
+      italic: fonts.italic,
+      fontFallback: fonts.fallbacks,
+    );
+  }
+
+  static pw.TextDirection _pdfTextDirection(String locale) {
+    return locale.toLowerCase().startsWith('ar')
+        ? pw.TextDirection.rtl
+        : pw.TextDirection.ltr;
   }
 
   static Future<Uint8List> generateCvPdf(CvModel cv, {String? locale}) async {
     final pdf = pw.Document();
-    final activeLocale = (cv.targetLanguage != null && cv.targetLanguage!.trim().isNotEmpty)
-        ? cv.targetLanguage!
-        : (locale ?? LocalizationService.currentLocale);
+    final activeLocale =
+        (cv.targetLanguage != null && cv.targetLanguage!.trim().isNotEmpty)
+            ? cv.targetLanguage!
+            : (locale ?? LocalizationService.currentLocale);
 
     final fonts = await _loadCvPdfFonts(activeLocale);
-    // Non-Latin CV locales still commonly contain Latin email addresses, URLs,
-    // and institution names. Keep those glyphs renderable in every template.
-    final latinFallback = await PdfGoogleFonts.robotoRegular();
 
     final theme = pw.ThemeData.withFont(
       base: fonts.regular,
       bold: fonts.bold,
       italic: fonts.italic,
-      fontFallback: [latinFallback],
+      fontFallback: fonts.fallbacks,
     );
 
     final primaryColor = PdfColor.fromInt(cv.primaryColorHex);
@@ -404,7 +513,10 @@ class PdfGeneratorService {
     final lightBg = PdfColor.fromHex('F8FAFC');
 
     if (CvPdfFlow.needsPagination(cv)) {
-      CvPdfFlow.build(pdf, cv, theme,
+      CvPdfFlow.build(
+          pdf,
+          cv,
+          theme,
           (section) => PdfCvLocaleHelper.getSectionTitle(section, activeLocale),
           PdfCvLocaleHelper.getPresentText(activeLocale));
       return pdf.save();
@@ -412,8 +524,16 @@ class PdfGeneratorService {
 
     switch (cv.template) {
       case CvTemplate.sidebarModern:
-        _buildSidebarModernTemplate(pdf, cv, theme, primaryColor, darkText,
-            mutedText, lightBg, activeLocale);
+        // The two-column sidebar uses a PDF layout primitive that cannot
+        // safely split a long RTL document across pages. Preserve all Arabic
+        // content with the responsive Modern Tech layout instead.
+        if (_pdfTextDirection(activeLocale) == pw.TextDirection.rtl) {
+          _buildModernTechTemplate(pdf, cv, theme, primaryColor, darkText,
+              mutedText, lightBg, activeLocale);
+        } else {
+          _buildSidebarModernTemplate(pdf, cv, theme, primaryColor, darkText,
+              mutedText, lightBg, activeLocale);
+        }
         break;
       case CvTemplate.executiveClassic:
         _buildExecutiveClassicTemplate(pdf, cv, theme, primaryColor, darkText,
@@ -488,10 +608,10 @@ class PdfGeneratorService {
                     fit: pw.BoxFit.cover,
                   )
                 : null,
-            color: (cv.profilePhotoBytes == null ||
-                    cv.profilePhotoBytes!.isEmpty)
-                ? backgroundColor
-                : null,
+            color:
+                (cv.profilePhotoBytes == null || cv.profilePhotoBytes!.isEmpty)
+                    ? backgroundColor
+                    : null,
           )
         : pw.BoxDecoration(
             borderRadius: pw.BorderRadius.circular(borderRadius),
@@ -503,10 +623,10 @@ class PdfGeneratorService {
                     fit: pw.BoxFit.cover,
                   )
                 : null,
-            color: (cv.profilePhotoBytes == null ||
-                    cv.profilePhotoBytes!.isEmpty)
-                ? backgroundColor
-                : null,
+            color:
+                (cv.profilePhotoBytes == null || cv.profilePhotoBytes!.isEmpty)
+                    ? backgroundColor
+                    : null,
           );
 
     if (cv.profilePhotoBytes != null && cv.profilePhotoBytes!.isNotEmpty) {
@@ -555,6 +675,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
+          textDirection: _pdfTextDirection(activeLocale),
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(0),
           buildBackground: (pw.Context context) {
@@ -731,8 +852,9 @@ class PdfGeneratorService {
                                           fontSize: 9,
                                           fontWeight: pw.FontWeight.bold)),
                                   pw.Text(
-                                      LocalizationService.normalizeLanguageLevel(
-                                          lang.level, activeLocale),
+                                      LocalizationService
+                                          .normalizeLanguageLevel(
+                                              lang.level, activeLocale),
                                       style: pw.TextStyle(
                                           color: primaryColor, fontSize: 8)),
                                 ],
@@ -753,7 +875,11 @@ class PdfGeneratorService {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: _buildOrderedSections(
-                        cv, primaryColor, darkText, mutedText, lightBg,
+                        cv,
+                        primaryColor,
+                        darkText,
+                        mutedText,
+                        lightBg,
                         isSidebarMode: true,
                         activeLocale: activeLocale,
                         experienceStyle: PdfExperienceStyle.timeline,
@@ -785,6 +911,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
             theme: theme,
+            textDirection: _pdfTextDirection(activeLocale),
             pageFormat: PdfPageFormat.a4,
             margin: const pw.EdgeInsets.all(28)),
         build: (pw.Context context) {
@@ -832,28 +959,25 @@ class PdfGeneratorService {
                     children: [
                       if (cv.email.isNotEmpty)
                         pw.Text(cv.email,
-                            style:
-                                pw.TextStyle(fontSize: 8, color: darkText)),
+                            style: pw.TextStyle(fontSize: 8, color: darkText)),
                       if (cv.phone.isNotEmpty)
                         pw.Text(cv.phone,
-                            style:
-                                pw.TextStyle(fontSize: 8, color: darkText)),
+                            style: pw.TextStyle(fontSize: 8, color: darkText)),
                       if (cv.location.isNotEmpty)
                         pw.Text(cv.location,
-                            style:
-                                pw.TextStyle(fontSize: 8, color: mutedText)),
+                            style: pw.TextStyle(fontSize: 8, color: mutedText)),
                       if (cv.linkedin.isNotEmpty)
                         pw.Text('LinkedIn: ${cv.linkedin}',
-                            style:
-                                pw.TextStyle(fontSize: 7.5, color: primaryColor)),
+                            style: pw.TextStyle(
+                                fontSize: 7.5, color: primaryColor)),
                       if (cv.github.isNotEmpty)
                         pw.Text('GitHub: ${cv.github}',
                             style:
                                 pw.TextStyle(fontSize: 7.5, color: darkText)),
                       if (cv.portfolioUrl.isNotEmpty)
                         pw.Text('Web: ${cv.portfolioUrl}',
-                            style:
-                                pw.TextStyle(fontSize: 7.5, color: primaryColor)),
+                            style: pw.TextStyle(
+                                fontSize: 7.5, color: primaryColor)),
                     ],
                   ),
                 ],
@@ -863,7 +987,11 @@ class PdfGeneratorService {
 
             // Dynamic Order Sections
             ..._buildOrderedSections(
-              cv, primaryColor, darkText, mutedText, lightBg,
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
               activeLocale: activeLocale,
               skillStyle: PdfSkillStyle.twoColBar,
               experienceStyle: PdfExperienceStyle.boxedCard,
@@ -890,6 +1018,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
             theme: theme,
+            textDirection: _pdfTextDirection(activeLocale),
             pageFormat: PdfPageFormat.a4,
             margin: const pw.EdgeInsets.all(32)),
         build: (pw.Context context) {
@@ -912,9 +1041,14 @@ class PdfGeneratorService {
                           letterSpacing: 1.2)),
                   pw.SizedBox(height: 6),
                   pw.Text(
-                    [cv.email, cv.phone, cv.location, cv.linkedin, cv.github, cv.portfolioUrl]
-                        .where((e) => e.isNotEmpty)
-                        .join('  |  '),
+                    [
+                      cv.email,
+                      cv.phone,
+                      cv.location,
+                      cv.linkedin,
+                      cv.github,
+                      cv.portfolioUrl
+                    ].where((e) => e.isNotEmpty).join('  |  '),
                     style: pw.TextStyle(fontSize: 8.5, color: mutedText),
                   ),
                 ],
@@ -924,7 +1058,11 @@ class PdfGeneratorService {
             pw.Divider(color: darkText, thickness: 1.2),
             pw.SizedBox(height: 8),
             ..._buildOrderedSections(
-              cv, primaryColor, darkText, mutedText, lightBg,
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
               activeLocale: activeLocale,
               skillStyle: PdfSkillStyle.dotRating,
               experienceStyle: PdfExperienceStyle.executiveClassic,
@@ -951,6 +1089,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
             theme: theme,
+            textDirection: _pdfTextDirection(activeLocale),
             pageFormat: PdfPageFormat.a4,
             margin: const pw.EdgeInsets.all(0)),
         build: (pw.Context context) {
@@ -1025,7 +1164,11 @@ class PdfGeneratorService {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: _buildOrderedSections(
-                  cv, primaryColor, darkText, mutedText, lightBg,
+                  cv,
+                  primaryColor,
+                  darkText,
+                  mutedText,
+                  lightBg,
                   activeLocale: activeLocale,
                   skillStyle: PdfSkillStyle.percentagePill,
                   experienceStyle: PdfExperienceStyle.timeline,
@@ -1054,6 +1197,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
             theme: theme,
+            textDirection: _pdfTextDirection(activeLocale),
             pageFormat: PdfPageFormat.a4,
             margin: const pw.EdgeInsets.all(36)),
         build: (pw.Context context) {
@@ -1068,14 +1212,23 @@ class PdfGeneratorService {
                 style: pw.TextStyle(fontSize: 11, color: mutedText)),
             pw.SizedBox(height: 6),
             pw.Text(
-              [cv.email, cv.phone, cv.location, cv.linkedin, cv.github, cv.portfolioUrl]
-                  .where((e) => e.isNotEmpty)
-                  .join(' • '),
+              [
+                cv.email,
+                cv.phone,
+                cv.location,
+                cv.linkedin,
+                cv.github,
+                cv.portfolioUrl
+              ].where((e) => e.isNotEmpty).join(' • '),
               style: pw.TextStyle(fontSize: 8.5, color: mutedText),
             ),
             pw.SizedBox(height: 14),
             ..._buildOrderedSections(
-              cv, primaryColor, darkText, mutedText, lightBg,
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
               activeLocale: activeLocale,
               skillStyle: PdfSkillStyle.academicText,
               experienceStyle: PdfExperienceStyle.standard,
@@ -1102,6 +1255,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
             theme: theme,
+            textDirection: _pdfTextDirection(activeLocale),
             pageFormat: PdfPageFormat.a4,
             margin: const pw.EdgeInsets.all(32)),
         build: (pw.Context context) {
@@ -1116,9 +1270,14 @@ class PdfGeneratorService {
                           color: darkText)),
                   pw.SizedBox(height: 3),
                   pw.Text(
-                    [cv.location, cv.phone, cv.email, cv.linkedin, cv.github, cv.portfolioUrl]
-                        .where((e) => e.isNotEmpty)
-                        .join(' | '),
+                    [
+                      cv.location,
+                      cv.phone,
+                      cv.email,
+                      cv.linkedin,
+                      cv.github,
+                      cv.portfolioUrl
+                    ].where((e) => e.isNotEmpty).join(' | '),
                     style: pw.TextStyle(fontSize: 8.5, color: darkText),
                   ),
                 ],
@@ -1126,7 +1285,11 @@ class PdfGeneratorService {
             ),
             pw.SizedBox(height: 12),
             ..._buildOrderedSections(
-              cv, primaryColor, darkText, mutedText, lightBg,
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
               activeLocale: activeLocale,
               skillStyle: PdfSkillStyle.academicText,
               experienceStyle: PdfExperienceStyle.executiveClassic,
@@ -1153,6 +1316,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
             theme: theme,
+            textDirection: _pdfTextDirection(activeLocale),
             pageFormat: PdfPageFormat.a4,
             margin: const pw.EdgeInsets.all(24)),
         build: (pw.Context context) {
@@ -1189,7 +1353,9 @@ class PdfGeneratorService {
                           style: pw.TextStyle(fontSize: 8, color: mutedText)),
                     if (cv.linkedin.isNotEmpty || cv.portfolioUrl.isNotEmpty)
                       pw.Text(
-                        [cv.linkedin, cv.portfolioUrl].where((e) => e.isNotEmpty).join(' • '),
+                        [cv.linkedin, cv.portfolioUrl]
+                            .where((e) => e.isNotEmpty)
+                            .join(' • '),
                         style: pw.TextStyle(fontSize: 7.5, color: primaryColor),
                       ),
                   ],
@@ -1200,7 +1366,11 @@ class PdfGeneratorService {
             pw.Divider(color: primaryColor, thickness: 1),
             pw.SizedBox(height: 6),
             ..._buildOrderedSections(
-              cv, primaryColor, darkText, mutedText, lightBg,
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
               activeLocale: activeLocale,
               skillStyle: PdfSkillStyle.twoColBar,
               experienceStyle: PdfExperienceStyle.standard,
@@ -2041,7 +2211,9 @@ class PdfGeneratorService {
                         pw.SizedBox(height: 2),
                         pw.Text(proj.description,
                             style: pw.TextStyle(
-                                fontSize: 8.5, color: darkText, lineSpacing: 1.2)),
+                                fontSize: 8.5,
+                                color: darkText,
+                                lineSpacing: 1.2)),
                       ],
                       if (techList.isNotEmpty) ...[
                         pw.SizedBox(height: 3),
@@ -2155,8 +2327,8 @@ class PdfGeneratorService {
                         child: pw.Column(
                           children: col1.map((s) {
                             return pw.Container(
-                              margin: const pw.EdgeInsets.only(
-                                  bottom: 4, right: 8),
+                              margin:
+                                  const pw.EdgeInsets.only(bottom: 4, right: 8),
                               child: pw.Column(
                                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                                 children: [
@@ -2315,8 +2487,8 @@ class PdfGeneratorService {
                           children: col2.map((s) {
                             final dots = (s.level / 20).round().clamp(1, 5);
                             return pw.Container(
-                              margin:
-                                  const pw.EdgeInsets.only(bottom: 3.5, left: 8),
+                              margin: const pw.EdgeInsets.only(
+                                  bottom: 3.5, left: 8),
                               child: pw.Row(
                                 mainAxisAlignment:
                                     pw.MainAxisAlignment.spaceBetween,
@@ -2458,8 +2630,8 @@ class PdfGeneratorService {
                       pw.Text(
                           LocalizationService.normalizeLanguageLevel(
                               l.level, activeLocale),
-                          style: pw.TextStyle(
-                              fontSize: 8.5, color: primaryColor)),
+                          style:
+                              pw.TextStyle(fontSize: 8.5, color: primaryColor)),
                     ],
                   ),
                 ),
@@ -2471,9 +2643,9 @@ class PdfGeneratorService {
 
         case CvSectionType.certificates:
           final validCerts = cv.certificates
-              .where((c) =>
-                  !(c.name.contains('Google Certified Associate Android Developer') ||
-                    c.credentialUrl.contains('verify.google.com/cert/12345')))
+              .where((c) => !(c.name.contains(
+                      'Google Certified Associate Android Developer') ||
+                  c.credentialUrl.contains('verify.google.com/cert/12345')))
               .toList();
           if (validCerts.isNotEmpty) {
             widgets.add(_buildSectionHeader(
@@ -2510,7 +2682,8 @@ class PdfGeneratorService {
                           if (c.date.isNotEmpty) ...[
                             pw.SizedBox(width: 8),
                             pw.Text(c.date,
-                                style: pw.TextStyle(fontSize: 8, color: mutedText)),
+                                style: pw.TextStyle(
+                                    fontSize: 8, color: mutedText)),
                           ],
                         ],
                       ),
@@ -2558,8 +2731,8 @@ class PdfGeneratorService {
                                 fontWeight: pw.FontWeight.bold,
                                 color: darkText)),
                         pw.Text('${r.position} - ${r.company}',
-                            style: pw.TextStyle(
-                                fontSize: 7.5, color: mutedText)),
+                            style:
+                                pw.TextStyle(fontSize: 7.5, color: mutedText)),
                         if (r.phone.isNotEmpty || r.email.isNotEmpty) ...[
                           pw.SizedBox(height: 1.5),
                           if (r.phone.isNotEmpty)
@@ -2584,8 +2757,7 @@ class PdfGeneratorService {
         case CvSectionType.customSections:
           if (cv.customSections.isNotEmpty) {
             for (final sec in cv.customSections) {
-              final cleanTitle =
-                  PdfCvLocaleHelper.sanitizePdfText(sec.title);
+              final cleanTitle = PdfCvLocaleHelper.sanitizePdfText(sec.title);
               widgets.add(_buildSectionHeader(
                 cleanTitle.toUpperCase(),
                 primaryColor,
@@ -2593,8 +2765,7 @@ class PdfGeneratorService {
               ));
               widgets.add(pw.SizedBox(height: 4));
               for (final it in sec.items) {
-                final cleanItem =
-                    PdfCvLocaleHelper.sanitizePdfText(it);
+                final cleanItem = PdfCvLocaleHelper.sanitizePdfText(it);
                 widgets.add(
                   pw.Padding(
                     padding: const pw.EdgeInsets.only(bottom: 2.5),
@@ -2661,8 +2832,8 @@ class PdfGeneratorService {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(label,
-              style: pw.TextStyle(
-                  color: PdfColor.fromHex('94A3B8'), fontSize: 7)),
+              style:
+                  pw.TextStyle(color: PdfColor.fromHex('94A3B8'), fontSize: 7)),
           pw.SizedBox(height: 1),
           pw.Text(
             value,
@@ -2674,6 +2845,7 @@ class PdfGeneratorService {
       ),
     );
   }
+
   static pw.Widget _buildSectionHeader(
     String title,
     PdfColor color, {
@@ -2810,6 +2982,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
+          textDirection: _pdfTextDirection(activeLocale),
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 22),
         ),
@@ -2866,7 +3039,8 @@ class PdfGeneratorService {
                             if (cv.email.isNotEmpty) cv.email,
                             if (cv.phone.isNotEmpty) cv.phone,
                             if (cv.location.isNotEmpty) cv.location,
-                            if (cv.linkedin.isNotEmpty) 'LinkedIn: ${cv.linkedin}',
+                            if (cv.linkedin.isNotEmpty)
+                              'LinkedIn: ${cv.linkedin}',
                             if (cv.github.isNotEmpty) 'GitHub: ${cv.github}',
                             if (cv.portfolioUrl.isNotEmpty)
                               'Web: ${cv.portfolioUrl}',
@@ -2891,8 +3065,8 @@ class PdfGeneratorService {
               decoration: pw.BoxDecoration(
                 color: lightBg,
                 borderRadius: pw.BorderRadius.circular(6),
-                border:
-                    pw.Border.all(color: PdfColor.fromHex('E2E8F0'), width: 0.8),
+                border: pw.Border.all(
+                    color: PdfColor.fromHex('E2E8F0'), width: 0.8),
               ),
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
@@ -3029,6 +3203,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
+          textDirection: _pdfTextDirection(activeLocale),
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(24),
         ),
@@ -3065,9 +3240,14 @@ class PdfGeneratorService {
                   ),
                   pw.SizedBox(height: 6),
                   pw.Text(
-                    [cv.email, cv.phone, cv.location, cv.linkedin, cv.github, cv.portfolioUrl]
-                        .where((e) => e.isNotEmpty)
-                        .join('   ◆   '),
+                    [
+                      cv.email,
+                      cv.phone,
+                      cv.location,
+                      cv.linkedin,
+                      cv.github,
+                      cv.portfolioUrl
+                    ].where((e) => e.isNotEmpty).join('   ◆   '),
                     style: pw.TextStyle(fontSize: 7.5, color: mutedText),
                   ),
                   pw.SizedBox(height: 8),
@@ -3076,7 +3256,11 @@ class PdfGeneratorService {
 
                   // Structured Body
                   ..._buildOrderedSections(
-                    cv, goldColor, darkText, mutedText, lightBg,
+                    cv,
+                    goldColor,
+                    darkText,
+                    mutedText,
+                    lightBg,
                     activeLocale: activeLocale,
                     skillStyle: PdfSkillStyle.dotRating,
                     experienceStyle: PdfExperienceStyle.executiveClassic,
@@ -3106,6 +3290,7 @@ class PdfGeneratorService {
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
+          textDirection: _pdfTextDirection(activeLocale),
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         ),
@@ -3140,9 +3325,14 @@ class PdfGeneratorService {
                             color: primaryColor),
                       ),
                       pw.Text(
-                        [cv.email, cv.phone, cv.location, cv.linkedin, cv.github, cv.portfolioUrl]
-                            .where((e) => e.isNotEmpty)
-                            .join('  |  '),
+                        [
+                          cv.email,
+                          cv.phone,
+                          cv.location,
+                          cv.linkedin,
+                          cv.github,
+                          cv.portfolioUrl
+                        ].where((e) => e.isNotEmpty).join('  |  '),
                         style: pw.TextStyle(fontSize: 7.5, color: mutedText),
                       ),
                     ],
@@ -3154,7 +3344,11 @@ class PdfGeneratorService {
 
             // Dynamic Sections
             ..._buildOrderedSections(
-              cv, primaryColor, darkText, mutedText, lightBg,
+              cv,
+              primaryColor,
+              darkText,
+              mutedText,
+              lightBg,
               activeLocale: activeLocale,
               skillStyle: PdfSkillStyle.tags,
               experienceStyle: PdfExperienceStyle.standard,
@@ -3181,23 +3375,274 @@ class PdfGeneratorService {
     final darkSidebarBg = PdfColor.fromHex('0F172A');
     const sidebarWidth = 190.0;
 
+    // Build sidebar content widget (reused across pages)
+    final sidebarContent = pw.Container(
+      width: sidebarWidth,
+      padding: const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      color: darkSidebarBg,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          // Gold Ringed Profile Avatar
+          pw.Center(
+            child: _buildPdfAvatar(
+              cv,
+              size: 70,
+              backgroundColor: PdfColor.fromHex('1E293B'),
+              borderColor: goldColor,
+              borderWidth: 2.5,
+              textColor: goldColor,
+            ),
+          ),
+          pw.SizedBox(height: 12),
+
+          // Name & Job Title in Sidebar
+          pw.Center(
+            child: pw.Text(
+              cv.fullName,
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(
+                color: PdfColors.white,
+                fontSize: 15,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+          ),
+          if (cv.jobTitle.isNotEmpty) ...[
+            pw.SizedBox(height: 3),
+            pw.Center(
+              child: pw.Text(
+                cv.jobTitle,
+                textAlign: pw.TextAlign.center,
+                style: pw.TextStyle(
+                  color: goldColor,
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+
+          pw.SizedBox(height: 12),
+          pw.Center(
+            child: pw.Container(
+              width: 32,
+              height: 1.5,
+              color: goldColor,
+            ),
+          ),
+          pw.SizedBox(height: 14),
+
+          // Sidebar Contact Info
+          _buildSidebarSectionHeader(
+              PdfCvLocaleHelper.getSidebarTitle('contact', activeLocale),
+              goldColor),
+          pw.SizedBox(height: 6),
+          if (cv.email.isNotEmpty)
+            _buildSidebarContactItem(
+                PdfCvLocaleHelper.getSidebarContactLabel('email', activeLocale),
+                cv.email),
+          if (cv.phone.isNotEmpty)
+            _buildSidebarContactItem(
+                PdfCvLocaleHelper.getSidebarContactLabel('phone', activeLocale),
+                cv.phone),
+          if (cv.location.isNotEmpty)
+            _buildSidebarContactItem(
+                PdfCvLocaleHelper.getSidebarContactLabel(
+                    'location', activeLocale),
+                cv.location),
+          if (cv.linkedin.isNotEmpty)
+            _buildSidebarContactItem('LinkedIn:', cv.linkedin),
+          if (cv.github.isNotEmpty)
+            _buildSidebarContactItem('GitHub:', cv.github),
+          if (cv.portfolioUrl.isNotEmpty)
+            _buildSidebarContactItem('Web:', cv.portfolioUrl),
+
+          // Single-Column Executive Skills (Gold 5-Dot Ratings)
+          if (cv.skills.isNotEmpty) ...[
+            pw.SizedBox(height: 14),
+            _buildSidebarSectionHeader(
+                PdfCvLocaleHelper.getSidebarTitle('skills', activeLocale),
+                goldColor),
+            pw.SizedBox(height: 8),
+            ...cv.skills.map((skill) {
+              final dots = (skill.level / 20).round().clamp(1, 5);
+              return pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 6),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Text(
+                        skill.name,
+                        maxLines: 1,
+                        overflow: pw.TextOverflow.clip,
+                        style: pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 8,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    pw.SizedBox(width: 4),
+                    pw.Row(
+                      mainAxisSize: pw.MainAxisSize.min,
+                      children: List.generate(5, (dotIdx) {
+                        final isFilled = dotIdx < dots;
+                        return pw.Container(
+                          margin: const pw.EdgeInsets.only(left: 2.5),
+                          width: 5,
+                          height: 5,
+                          decoration: pw.BoxDecoration(
+                            color: isFilled
+                                ? goldColor
+                                : PdfColor.fromHex('334155'),
+                            shape: pw.BoxShape.circle,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+
+          // Single-Column Languages
+          if (cv.languages.isNotEmpty) ...[
+            pw.SizedBox(height: 14),
+            _buildSidebarSectionHeader(
+                PdfCvLocaleHelper.getSidebarTitle('languages', activeLocale),
+                goldColor),
+            pw.SizedBox(height: 6),
+            ...cv.languages.map((lang) {
+              return pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 5),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Text(
+                        lang.language,
+                        maxLines: 1,
+                        overflow: pw.TextOverflow.clip,
+                        style: pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 8,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    pw.Text(
+                      LocalizationService.normalizeLanguageLevel(
+                          lang.level, activeLocale),
+                      style: pw.TextStyle(
+                        color: goldColor,
+                        fontSize: 7.5,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+
+          // Personal Traits (if any)
+          if (cv.personalTraits.isNotEmpty) ...[
+            pw.SizedBox(height: 14),
+            _buildSidebarSectionHeader(
+                PdfCvLocaleHelper.getSectionTitle(
+                    CvSectionType.personalTraits, activeLocale),
+                goldColor),
+            pw.SizedBox(height: 6),
+            pw.Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: cv.personalTraits.map((trait) {
+                return pw.Container(
+                  padding:
+                      const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColor.fromHex('1E293B'),
+                    borderRadius: pw.BorderRadius.circular(3),
+                    border: pw.Border.all(color: goldColor, width: 0.5),
+                  ),
+                  child: pw.Text(
+                    trait,
+                    style:
+                        const pw.TextStyle(color: PdfColors.white, fontSize: 7),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    // Build main content sections
+    final mainSections = _buildOrderedSections(
+      cv,
+      goldColor,
+      darkText,
+      mutedText,
+      lightBg,
+      excludedSections: {
+        CvSectionType.summary,
+        CvSectionType.skills,
+        CvSectionType.languages,
+        CvSectionType.personalTraits,
+      },
+      activeLocale: activeLocale,
+      experienceStyle: PdfExperienceStyle.standard,
+      headerStyle: PdfHeaderStyle.doubleRule,
+    );
+
+    // ── Elite Executive layout strategy ────────────────────────────────────
+    // The sidebar is drawn on every page by buildBackground. The MultiPage
+    // content starts with a left margin equal to sidebarWidth so it only
+    // occupies the right-hand white column. This avoids both issues:
+    //   1. pw.Partitions null-check crash in PartitionsContext.apply (RTL / multi-page)
+    //   2. "widget won't fit into page" when pw.Row exceeds page height
+    // ───────────────────────────────────────────────────────────────────────
     pdf.addPage(
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
+          textDirection: _pdfTextDirection(activeLocale),
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(0),
+          // Top-level margin: leave sidebarWidth on the left for the sidebar.
+          margin: const pw.EdgeInsets.only(
+            left: sidebarWidth,
+            right: 0,
+            top: 0,
+            bottom: 0,
+          ),
           buildBackground: (pw.Context context) {
+            // Paint the dark sidebar panel on every page.
             return pw.FullPage(
               ignoreMargins: true,
-              child: pw.Row(
+              child: pw.Stack(
                 children: [
-                  pw.Container(
-                    width: sidebarWidth,
-                    color: darkSidebarBg,
+                  pw.Container(color: PdfColors.white),
+                  pw.Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: pw.Container(
+                      width: sidebarWidth,
+                      color: darkSidebarBg,
+                    ),
                   ),
-                  pw.Expanded(
-                    child: pw.Container(color: PdfColors.white),
+                  // Sidebar content — rendered on page 1 only via context.pageNumber
+                  pw.Positioned(
+                    left: 0,
+                    top: 0,
+                    child: context.pageNumber == 1
+                        ? sidebarContent
+                        : pw.SizedBox(),
                   ),
                 ],
               ),
@@ -3205,294 +3650,52 @@ class PdfGeneratorService {
           },
         ),
         build: (pw.Context context) {
+          // Right-column main content (summary + ordered sections).
           return [
-            pw.Partitions(
-              children: [
-                // LEFT EXECUTIVE SIDEBAR (Dark column strictly bounded to sidebarWidth)
-                pw.Partition(
-                  width: sidebarWidth,
-                  child: pw.Container(
-                  width: sidebarWidth,
-                  padding: const pw.EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 24),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Gold Ringed Profile Avatar
-                      pw.Center(
-                        child: _buildPdfAvatar(
-                          cv,
-                          size: 70,
-                          backgroundColor: PdfColor.fromHex('1E293B'),
-                          borderColor: goldColor,
-                          borderWidth: 2.5,
-                          textColor: goldColor,
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(
+                  left: 22, right: 22, top: 24, bottom: 24),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Executive Summary Callout Box
+                  if (cv.summary.isNotEmpty) ...[
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(10),
+                      decoration: pw.BoxDecoration(
+                        color: lightBg,
+                        border: pw.Border(
+                          left: pw.BorderSide(color: goldColor, width: 3),
                         ),
                       ),
-                      pw.SizedBox(height: 12),
-
-                      // Name & Job Title in Sidebar
-                      pw.Center(
-                        child: pw.Text(
-                          cv.fullName,
-                          textAlign: pw.TextAlign.center,
-                          style: pw.TextStyle(
-                            color: PdfColors.white,
-                            fontSize: 15,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (cv.jobTitle.isNotEmpty) ...[
-                        pw.SizedBox(height: 3),
-                        pw.Center(
-                          child: pw.Text(
-                            cv.jobTitle,
-                            textAlign: pw.TextAlign.center,
-                            style: pw.TextStyle(
-                              color: goldColor,
-                              fontSize: 9,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-
-                      pw.SizedBox(height: 12),
-                      pw.Center(
-                        child: pw.Container(
-                          width: 32,
-                          height: 1.5,
-                          color: goldColor,
-                        ),
-                      ),
-                      pw.SizedBox(height: 14),
-
-                      // Sidebar Contact Info
-                      _buildSidebarSectionHeader(
-                          PdfCvLocaleHelper.getSidebarTitle(
-                              'contact', activeLocale),
-                          goldColor),
-                      pw.SizedBox(height: 6),
-                      if (cv.email.isNotEmpty)
-                        _buildSidebarContactItem(
-                            PdfCvLocaleHelper.getSidebarContactLabel(
-                                'email', activeLocale),
-                            cv.email),
-                      if (cv.phone.isNotEmpty)
-                        _buildSidebarContactItem(
-                            PdfCvLocaleHelper.getSidebarContactLabel(
-                                'phone', activeLocale),
-                            cv.phone),
-                      if (cv.location.isNotEmpty)
-                        _buildSidebarContactItem(
-                            PdfCvLocaleHelper.getSidebarContactLabel(
-                                'location', activeLocale),
-                            cv.location),
-                      if (cv.linkedin.isNotEmpty)
-                        _buildSidebarContactItem('LinkedIn:', cv.linkedin),
-                      if (cv.github.isNotEmpty)
-                        _buildSidebarContactItem('GitHub:', cv.github),
-                      if (cv.portfolioUrl.isNotEmpty)
-                        _buildSidebarContactItem('Web:', cv.portfolioUrl),
-
-                      // Single-Column Executive Skills (Gold 5-Dot Ratings strictly bounded)
-                      if (cv.skills.isNotEmpty) ...[
-                        pw.SizedBox(height: 14),
-                        _buildSidebarSectionHeader(
-                            PdfCvLocaleHelper.getSidebarTitle(
-                                'skills', activeLocale),
-                            goldColor),
-                        pw.SizedBox(height: 8),
-                        ...cv.skills.map((skill) {
-                          final dots = (skill.level / 20).round().clamp(1, 5);
-                          return pw.Container(
-                            margin: const pw.EdgeInsets.only(bottom: 6),
-                            child: pw.Row(
-                              mainAxisAlignment:
-                                  pw.MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: pw.CrossAxisAlignment.center,
-                              children: [
-                                pw.Expanded(
-                                  child: pw.Text(
-                                    skill.name,
-                                    maxLines: 1,
-                                    overflow: pw.TextOverflow.clip,
-                                    style: pw.TextStyle(
-                                      color: PdfColors.white,
-                                      fontSize: 8,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                pw.SizedBox(width: 4),
-                                pw.Row(
-                                  mainAxisSize: pw.MainAxisSize.min,
-                                  children: List.generate(5, (dotIdx) {
-                                    final isFilled = dotIdx < dots;
-                                    return pw.Container(
-                                      margin:
-                                          const pw.EdgeInsets.only(left: 2.5),
-                                      width: 5,
-                                      height: 5,
-                                      decoration: pw.BoxDecoration(
-                                        color: isFilled
-                                            ? goldColor
-                                            : PdfColor.fromHex('334155'),
-                                        shape: pw.BoxShape.circle,
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-
-                      // Single-Column Languages
-                      if (cv.languages.isNotEmpty) ...[
-                        pw.SizedBox(height: 14),
-                        _buildSidebarSectionHeader(
-                            PdfCvLocaleHelper.getSidebarTitle(
-                                'languages', activeLocale),
-                            goldColor),
-                        pw.SizedBox(height: 6),
-                        ...cv.languages.map((lang) {
-                          return pw.Container(
-                            margin: const pw.EdgeInsets.only(bottom: 5),
-                            child: pw.Row(
-                              mainAxisAlignment:
-                                  pw.MainAxisAlignment.spaceBetween,
-                              children: [
-                                pw.Expanded(
-                                  child: pw.Text(
-                                    lang.language,
-                                    maxLines: 1,
-                                    overflow: pw.TextOverflow.clip,
-                                    style: pw.TextStyle(
-                                      color: PdfColors.white,
-                                      fontSize: 8,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                pw.Text(
-                                  LocalizationService.normalizeLanguageLevel(
-                                      lang.level, activeLocale),
-                                  style: pw.TextStyle(
-                                    color: goldColor,
-                                    fontSize: 7.5,
-                                    fontWeight: pw.FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-
-                      // Personal Traits (if any)
-                      if (cv.personalTraits.isNotEmpty) ...[
-                        pw.SizedBox(height: 14),
-                        _buildSidebarSectionHeader(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
                             PdfCvLocaleHelper.getSectionTitle(
-                                CvSectionType.personalTraits, activeLocale),
-                            goldColor),
-                        pw.SizedBox(height: 6),
-                        pw.Wrap(
-                          spacing: 4,
-                          runSpacing: 4,
-                          children: cv.personalTraits.map((trait) {
-                            return pw.Container(
-                              padding: const pw.EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 2),
-                              decoration: pw.BoxDecoration(
-                                color: PdfColor.fromHex('1E293B'),
-                                borderRadius: pw.BorderRadius.circular(3),
-                                border: pw.Border.all(
-                                    color: goldColor, width: 0.5),
-                              ),
-                              child: pw.Text(
-                                trait,
-                                style: const pw.TextStyle(
-                                    color: PdfColors.white, fontSize: 7),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                ),
-
-                // RIGHT MAIN EXECUTIVE COLUMN (Generous space on white canvas)
-                pw.Partition(
-                  child: pw.Padding(
-                    padding: const pw.EdgeInsets.symmetric(
-                        horizontal: 22, vertical: 24),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        // Executive Summary Callout Box
-                        if (cv.summary.isNotEmpty) ...[
-                          pw.Container(
-                            padding: const pw.EdgeInsets.all(10),
-                            decoration: pw.BoxDecoration(
-                              color: lightBg,
-                              border: pw.Border(
-                                left: pw.BorderSide(color: goldColor, width: 3),
-                              ),
-                            ),
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(
-                                  PdfCvLocaleHelper.getSectionTitle(
-                                      CvSectionType.summary, activeLocale),
-                                  style: pw.TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: darkText,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 4),
-                                pw.Text(
-                                  cv.summary,
-                                  style: pw.TextStyle(
-                                      fontSize: 8.5,
-                                      color: darkText,
-                                      height: 1.35),
-                                ),
-                              ],
+                                CvSectionType.summary, activeLocale),
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                              color: darkText,
                             ),
                           ),
-                          pw.SizedBox(height: 14),
+                          pw.SizedBox(height: 4),
+                          pw.Text(
+                            cv.summary,
+                            style: pw.TextStyle(
+                                fontSize: 8.5, color: darkText, height: 1.35),
+                          ),
                         ],
-
-                        // Main Sections (Experience, Education, Projects, Certificates, References)
-                        ..._buildOrderedSections(
-                          cv,
-                          goldColor,
-                          darkText,
-                          mutedText,
-                          lightBg,
-                          excludedSections: {
-                            CvSectionType.summary,
-                            CvSectionType.skills,
-                            CvSectionType.languages,
-                            CvSectionType.personalTraits,
-                          },
-                          activeLocale: activeLocale,
-                          experienceStyle: PdfExperienceStyle.standard,
-                          headerStyle: PdfHeaderStyle.doubleRule,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                    pw.SizedBox(height: 14),
+                  ],
+
+                  // Main Sections (Experience, Education, Projects…)
+                  ...mainSections,
+                ],
+              ),
             ),
           ];
         },
@@ -3511,13 +3714,14 @@ class PdfGeneratorService {
     PdfColor lightBg,
     String activeLocale,
   ) {
-    final borderClr = PdfColor(
-        primaryColor.red, primaryColor.green, primaryColor.blue, 0.35);
+    final borderClr =
+        PdfColor(primaryColor.red, primaryColor.green, primaryColor.blue, 0.35);
 
     pdf.addPage(
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           theme: theme,
+          textDirection: _pdfTextDirection(activeLocale),
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         ),
@@ -3659,10 +3863,7 @@ class PdfGeneratorService {
     required String originalFormat,
   }) async {
     final pdf = pw.Document();
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-
-    final theme = pw.ThemeData.withFont(base: fontRegular, bold: fontBold);
+    final theme = await _loadUniversalPdfTheme();
 
     pdf.addPage(
       pw.Page(
@@ -3788,15 +3989,7 @@ class PdfGeneratorService {
     required List<PptxSlide> slides,
   }) async {
     final pdf = pw.Document();
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-    final fontItalic = await PdfGoogleFonts.robotoItalic();
-
-    final theme = pw.ThemeData.withFont(
-      base: fontRegular,
-      bold: fontBold,
-      italic: fontItalic,
-    );
+    final theme = await _loadUniversalPdfTheme();
 
     for (int i = 0; i < slides.length; i++) {
       final slide = slides[i];
@@ -4026,9 +4219,7 @@ class PdfGeneratorService {
     List<Uint8List?>? pageImages,
   }) async {
     final pdf = pw.Document();
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-    final theme = pw.ThemeData.withFont(base: fontRegular, bold: fontBold);
+    final theme = await _loadUniversalPdfTheme();
 
     for (int i = 0; i < pageNames.length; i++) {
       final pageName = pageNames[i];
@@ -4203,11 +4394,7 @@ class PdfGeneratorService {
     String author = 'CV AI User',
   }) async {
     final pdf = pw.Document();
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-    final fontItalic = await PdfGoogleFonts.robotoItalic();
-    final theme = pw.ThemeData.withFont(
-        base: fontRegular, bold: fontBold, italic: fontItalic);
+    final theme = await _loadUniversalPdfTheme();
 
     final paragraphs = content.split('\n');
 
@@ -4344,9 +4531,7 @@ class PdfGeneratorService {
     String sheetName = 'Sayfa 1',
   }) async {
     final pdf = pw.Document();
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-    final theme = pw.ThemeData.withFont(base: fontRegular, bold: fontBold);
+    final theme = await _loadUniversalPdfTheme();
 
     if (tableData.isEmpty) {
       tableData = [
@@ -4478,9 +4663,7 @@ class PdfGeneratorService {
     required DateTime signedDate,
   }) async {
     final pdf = pw.Document();
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-    final theme = pw.ThemeData.withFont(base: fontRegular, bold: fontBold);
+    final theme = await _loadUniversalPdfTheme();
 
     final signatureImage = pw.MemoryImage(signatureImageBytes);
 
@@ -4599,13 +4782,7 @@ class PdfGeneratorService {
   }) async {
     final pdf = pw.Document();
 
-    final fontRegular = await PdfGoogleFonts.robotoRegular();
-    final fontBold = await PdfGoogleFonts.robotoBold();
-
-    final theme = pw.ThemeData.withFont(
-      base: fontRegular,
-      bold: fontBold,
-    );
+    final theme = await _loadUniversalPdfTheme();
 
     for (int i = 0; i < pages.length; i++) {
       final pageData = pages[i];

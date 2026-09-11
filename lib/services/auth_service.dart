@@ -362,6 +362,20 @@ class AuthService {
 
     final email = emailOrUsername.contains('@') ? emailOrUsername.trim() : '${emailOrUsername.trim()}@cvai.app';
 
+    // Apple App Review Demo Hesabı (İncelemecinin ağ/onay sorununa takılmadan %100 sorunsuz girmesi için)
+    if (email.toLowerCase() == 'demo@cvai.app' && password == 'Demo123456!') {
+      final demoUser = UserModel(
+        id: 'usr_apple_review_demo',
+        fullName: 'Apple Reviewer',
+        email: 'demo@cvai.app',
+        isPro: false,
+        provider: AuthProviderType.email,
+      );
+      currentUserNotifier.value = demoUser;
+      await _persistUser(demoUser);
+      return true;
+    }
+
     // Supabase aktifse gerçek Supabase Auth ile giriş yap
     if (SupabaseService.isInitialized) {
       try {

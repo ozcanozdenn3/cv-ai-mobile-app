@@ -64,8 +64,29 @@ class AppPermissionService {
   }
 
   /// Request Microphone and Speech Recognition Permission for Voice-to-CV input.
+  /// NOTE: Permission.speech is iOS-only — Android only requires RECORD_AUDIO.
   static Future<bool> requestMicrophonePermission(BuildContext context) async {
     try {
+      if (Platform.isAndroid) {
+        // Android: sadece RECORD_AUDIO (microphone) gerekli.
+        // Permission.speech Android'de desteklenmez ve her zaman DENIED döner.
+        final micStatus = await Permission.microphone.status;
+        if (micStatus.isGranted || micStatus.isLimited) return true;
+
+        final micReq = await Permission.microphone.request();
+        if (micReq.isGranted || micReq.isLimited) return true;
+
+        if (context.mounted) {
+          await showPermissionSettingsDialog(
+            context,
+            isCamera: false,
+            isMicrophone: true,
+          );
+        }
+        return false;
+      }
+
+      // iOS: hem microphone hem speech recognition izni gerekli
       final micStatus = await Permission.microphone.status;
       final speechStatus = await Permission.speech.status;
       if ((micStatus.isGranted || micStatus.isLimited) &&
