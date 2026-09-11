@@ -46,6 +46,60 @@ post_install do |installer|
         'PERMISSION_MICROPHONE=1',
         'PERMISSION_SPEECH_RECOGNIZER=1',
       ]
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
     end
+  end
+
+  # Patch precompiled Google MLKit frameworks:
+  # When archiving for device (IPA), ensure platform 2 (iOS device).
+  # When running on simulator, patch platform 7 (iOS simulator).
+  if ENV['BUILDING_IPA'] == '1' || File.exist?(File.expand_path('../.building_ipa', __FILE__))
+    script_restore = <<-'PYTHON'
+import struct, glob, os
+pattern = b'\x32\x00\x00\x00'
+for fw in glob.glob('Pods/ML*/**/*.framework/*', recursive=True):
+    if not os.path.isfile(fw): continue
+    try:
+        with open(fw, 'rb') as f: data = bytearray(f.read())
+        idx, changed = 0, False
+        while True:
+            pos = data.find(pattern, idx)
+            if pos == -1 or pos + 12 > len(data): break
+            cmd, cmdsize, platform = struct.unpack_from('<III', data, pos)
+            if cmd == 0x32 and cmdsize >= 24 and platform == 7:
+                struct.pack_into('<I', data, pos + 8, 2)
+                changed = True
+                idx = pos + cmdsize
+            else:
+                idx = pos + 4
+        if changed:
+            with open(fw, 'wb') as f: f.write(data)
+    except Exception: pass
+PYTHON
+    system("python3", "-c", script_restore)
+  else
+    script = <<-'PYTHON'
+import struct, glob, os
+pattern = b'\x32\x00\x00\x00'
+for fw in glob.glob('Pods/ML*/**/*.framework/*', recursive=True):
+    if not os.path.isfile(fw): continue
+    try:
+        with open(fw, 'rb') as f: data = bytearray(f.read())
+        idx, changed = 0, False
+        while True:
+            pos = data.find(pattern, idx)
+            if pos == -1 or pos + 12 > len(data): break
+            cmd, cmdsize, platform = struct.unpack_from('<III', data, pos)
+            if cmd == 0x32 and cmdsize >= 24 and platform == 2:
+                struct.pack_into('<I', data, pos + 8, 7)
+                changed = True
+                idx = pos + cmdsize
+            else:
+                idx = pos + 4
+        if changed:
+            with open(fw, 'wb') as f: f.write(data)
+    except Exception: pass
+PYTHON
+    system("python3", "-c", script)
   end
 end

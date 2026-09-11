@@ -254,6 +254,81 @@ class _AmbientPainter extends CustomPainter {
         canvas.drawCircle(Offset(px, py), currentRadius * 2.2, glowPaint);
       }
     }
+
+    // 5. Cinematic Shooting Stars (Kayan Yıldızlar)
+    _drawShootingStars(canvas, size, particleColor, isDark);
+  }
+
+  void _drawShootingStars(
+    Canvas canvas,
+    Size size,
+    Color starColor,
+    bool isDark,
+  ) {
+    // 3 distinct shooting star trajectories during the 12s progress cycle
+    final shootingStars = [
+      (
+        startP: 0.08,
+        endP: 0.17,
+        from: Offset(size.width * 0.92, size.height * 0.06),
+        to: Offset(size.width * 0.15, size.height * 0.38),
+      ),
+      (
+        startP: 0.42,
+        endP: 0.51,
+        from: Offset(size.width * 0.85, size.height * 0.28),
+        to: Offset(size.width * 0.08, size.height * 0.62),
+      ),
+      (
+        startP: 0.73,
+        endP: 0.82,
+        from: Offset(size.width * 0.70, size.height * 0.02),
+        to: Offset(size.width * 0.02, size.height * 0.32),
+      ),
+    ];
+
+    for (final star in shootingStars) {
+      if (progress >= star.startP && progress <= star.endP) {
+        final localT = (progress - star.startP) / (star.endP - star.startP);
+        final head = Offset.lerp(star.from, star.to, localT)!;
+        final delta = star.to - star.from;
+        final length = delta.distance;
+        if (length == 0) continue;
+        final norm = delta / length;
+        final tailLen = math.min(100.0, length * 0.3);
+        final tail = head - norm * tailLen;
+
+        // Smooth fade-in, peak, fade-out
+        final fade = math.sin(localT * math.pi);
+
+        // Meteor Trail Gradient
+        final trailPaint = Paint()
+          ..shader = LinearGradient(
+            colors: [
+              Colors.transparent,
+              starColor.withValues(alpha: (isDark ? 0.65 : 0.45) * fade),
+              Colors.white.withValues(alpha: 0.95 * fade),
+            ],
+            stops: const [0.0, 0.65, 1.0],
+          ).createShader(Rect.fromPoints(tail, head))
+          ..strokeWidth = 2.2
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke;
+
+        canvas.drawLine(tail, head, trailPaint);
+
+        // Bright Glowing Star Head
+        final headGlow = Paint()
+          ..color = starColor.withValues(alpha: (isDark ? 0.6 : 0.4) * fade)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+        canvas.drawCircle(head, 4.0, headGlow);
+
+        final headCore = Paint()
+          ..color = Colors.white.withValues(alpha: 0.95 * fade)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(head, 2.0, headCore);
+      }
+    }
   }
 
   @override

@@ -379,7 +379,7 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
-                                'CV AI STUDIO',
+                                'CV AI',
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
@@ -435,51 +435,7 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
 
                     const SizedBox(height: 12),
 
-                    // Clean Guarantee & Discount Banner
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFFF59E0B)
-                                .withValues(alpha: isDark ? 0.18 : 0.12),
-                            const Color(0xFF8B5CF6)
-                                .withValues(alpha: isDark ? 0.16 : 0.08),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color:
-                              const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.verified_user_rounded,
-                              color: Color(0xFFF59E0B), size: 16),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              LocalizationService.tr('paywall_guarantee'),
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w800,
-                                color: isDark
-                                    ? const Color(0xFFFDE68A)
-                                    : const Color(0xFFB45309),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Feature Matrix Checklist
+                    // Feature Checklist (Core 3 Benefits)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
@@ -501,19 +457,11 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                         children: [
                           _buildFeatureItem(Icons.auto_awesome_rounded,
                               LocalizationService.tr('paywall_feat_1'), isDark),
-                          _buildFeatureItem(Icons.article_rounded,
-                              LocalizationService.tr('paywall_feat_2'), isDark),
                           _buildFeatureItem(Icons.document_scanner_rounded,
                               LocalizationService.tr('paywall_feat_3'), isDark),
                           _buildFeatureItem(
                               Icons.transform_rounded,
                               LocalizationService.tr('paywall_feat_office'),
-                              isDark),
-                          _buildFeatureItem(Icons.draw_rounded,
-                              LocalizationService.tr('paywall_feat_4'), isDark),
-                          _buildFeatureItem(
-                              Icons.cloud_sync_rounded,
-                              LocalizationService.tr('paywall_feat_cloud'),
                               isDark),
                         ],
                       ),
@@ -668,21 +616,7 @@ class _VipPaywallSheetState extends State<VipPaywallSheet>
                       spacing: 12,
                       runSpacing: 4,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.lock_outline_rounded,
-                                size: 13, color: Color(0xFF10B981)),
-                            const SizedBox(width: 4),
-                            Text(
-                              '256-Bit SSL',
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: subColor),
-                            ),
-                          ],
-                        ),
+
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

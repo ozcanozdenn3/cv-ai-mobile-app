@@ -7242,7 +7242,7 @@ class LocalizationService {
     'tr': {
       'add': 'Ekle',
       'app_subtitle': 'Akıllı Özgeçmiş & Belge Paketi',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Apple ile Devam Et',
@@ -7583,7 +7583,7 @@ class LocalizationService {
       'home_btn_start_cv': 'HEMEN CV OLUŞTURMAYA BAŞLA',
       'home_hero_desc':
           'Uluslararası formatlar, hazır sektör şablonları ve doğrudan vektörel HD PDF çıktısı.',
-      'home_hero_title': 'AI ile 3 Dakikada\nProfesyonel CV Hazırla',
+      'home_hero_title': 'Profesyonel CV Oluştur',
       'home_office_converters': 'Office & Format Dönüştürücü',
       'home_other_tools': 'Diğer Stüdyo Araçları',
       'home_quick_actions': 'Hızlı İşlemler',
@@ -7608,7 +7608,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Vesikalık fotoğraf başarıyla eklendi!',
       'nav_archive': 'Arşiv',
       'nav_convert': 'Dönüştür',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Ana Sayfa',
       'nav_scan': 'Tara',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -7828,7 +7828,7 @@ class LocalizationService {
     'en': {
       'add': 'Add',
       'app_subtitle': 'Smart Resume & Document Suite',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'You must accept the terms of service and privacy policy to continue.',
       'auth_apple': 'Continue with Apple',
@@ -8164,7 +8164,7 @@ class LocalizationService {
       'home_btn_start_cv': 'START BUILDING CV NOW',
       'home_hero_desc':
           'Global templates, industry-ready designs, and direct vector HD PDF export.',
-      'home_hero_title': 'Build a Professional Resume\nin 3 Minutes with AI',
+      'home_hero_title': 'Create Professional CV',
       'home_office_converters': 'Office & Format Converters',
       'home_other_tools': 'Other Studio Tools',
       'home_quick_actions': 'Quick Actions',
@@ -8189,7 +8189,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archive',
       'nav_convert': 'Convert',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Home',
       'nav_scan': 'Scan',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -8407,7 +8407,7 @@ class LocalizationService {
     'en_GB': {
       'add': 'Add',
       'app_subtitle': 'Smart Resume & Document Suite',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'You must accept the terms of service and privacy policy to continue.',
       'auth_apple': 'Continue with Apple',
@@ -8742,7 +8742,7 @@ class LocalizationService {
       'home_btn_start_cv': 'START BUILDING CV NOW',
       'home_hero_desc':
           'Global templates, industry-ready designs, and direct vector HD PDF export.',
-      'home_hero_title': 'Build a Professional Resume\nin 3 Minutes with AI',
+      'home_hero_title': 'Create Professional CV',
       'home_office_converters': 'Office & Format Converters',
       'home_other_tools': 'Other Studio Tools',
       'home_quick_actions': 'Quick Actions',
@@ -8767,7 +8767,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archive',
       'nav_convert': 'Convert',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Home',
       'nav_scan': 'Scan',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -8985,7 +8985,7 @@ class LocalizationService {
     'de': {
       'add': 'Hinzufügen',
       'app_subtitle': 'Smarter Lebenslauf & Dokumentensuite',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Mit Apple fortfahren',
@@ -9317,8 +9317,7 @@ class LocalizationService {
       'home_btn_start_cv': 'JETZT LEBENSLAUF ERSTELLEN',
       'home_hero_desc':
           'Internationale Vorlagen, fertige Layouts und direkter Vektor-HD-PDF-Export.',
-      'home_hero_title':
-          'Professionellen Lebenslauf\nin 3 Min. mit KI erstellen',
+      'home_hero_title': 'Professionellen Lebenslauf erstellen',
       'home_office_converters': 'Office & Format-Konverter',
       'home_other_tools': 'Weitere Studio-Tools',
       'home_quick_actions': 'Schnellaktionen',
@@ -9343,7 +9342,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archiv',
       'nav_convert': 'Konvertieren',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Startseite',
       'nav_scan': 'Scannen',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -9563,7 +9562,7 @@ class LocalizationService {
     'fr': {
       'add': 'Ajouter',
       'app_subtitle': 'Suite Intelligente de CV et Documents',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Continuer avec Apple',
@@ -9897,7 +9896,7 @@ class LocalizationService {
       'home_ats_badge': 'ASSISTANT IA COMPATIBLE ATS',
       'home_btn_start_cv': 'CRÉER MON CV MAINTENANT',
       'home_hero_desc': 'Modèles mondiaux, mises en page prêtes à l',
-      'home_hero_title': 'Créez un CV Professionnel\nen 3 minutes avec l',
+      'home_hero_title': 'Créer un CV professionnel',
       'home_office_converters': 'Convertisseurs Office & Formats',
       'home_other_tools': 'Autres Outils Studio',
       'home_quick_actions': 'Actions Rapides',
@@ -9922,7 +9921,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archives',
       'nav_convert': 'Convertir',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Accueil',
       'nav_scan': 'Scanner',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -10144,7 +10143,7 @@ class LocalizationService {
     'es': {
       'add': 'Agregar',
       'app_subtitle': 'Suite Inteligente de Currículum y Documentos',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Continuar con Apple',
@@ -10475,7 +10474,7 @@ class LocalizationService {
       'home_btn_start_cv': 'EMPEZAR A CREAR CV AHORA',
       'home_hero_desc':
           'Plantillas globales, diseños listos para la industria y exportación PDF vectorial HD directa.',
-      'home_hero_title': 'Crea un Currículum Profesional\nen 3 Minutos con IA',
+      'home_hero_title': 'Crear currículum profesional',
       'home_office_converters': 'Convertidores Office y Formatos',
       'home_other_tools': 'Otras Herramientas de Estudio',
       'home_quick_actions': 'Acciones Rápidas',
@@ -10500,7 +10499,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archivo',
       'nav_convert': 'Convertir',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Inicio',
       'nav_scan': 'Escanear',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -10719,7 +10718,7 @@ class LocalizationService {
     'es_MX': {
       'add': 'Add',
       'app_subtitle': 'Suite Inteligente de Currículum y Documentos',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Continuar con Apple',
@@ -11050,7 +11049,7 @@ class LocalizationService {
       'home_btn_start_cv': 'EMPEZAR A CREAR CV AHORA',
       'home_hero_desc':
           'Plantillas globales, diseños listos para la industria y exportación PDF vectorial HD directa.',
-      'home_hero_title': 'Crea un Currículum Profesional\nen 3 Minutos con IA',
+      'home_hero_title': 'Crear currículum profesional',
       'home_office_converters': 'Convertidores Office y Formatos',
       'home_other_tools': 'Otras Herramientas de Estudio',
       'home_quick_actions': 'Acciones Rápidas',
@@ -11075,7 +11074,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archivo',
       'nav_convert': 'Convertir',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Inicio',
       'nav_scan': 'Escanear',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -11297,7 +11296,7 @@ class LocalizationService {
     'pt_BR': {
       'add': 'Adicionar',
       'app_subtitle': 'Criador Inteligente de Currículo e Documentos',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Continuar com a Apple',
@@ -11633,7 +11632,7 @@ class LocalizationService {
       'home_btn_start_cv': 'CRIAR MEU CURRÍCULO AGORA',
       'home_hero_desc':
           'Modelos internacionais, layouts prontos para o mercado e exportação direta em PDF HD vetorial.',
-      'home_hero_title': 'Crie um Currículo Profissional\nem 3 Minutos com IA',
+      'home_hero_title': 'Criar currículo profissional',
       'home_office_converters': 'Conversores Office e Formatos',
       'home_other_tools': 'Outras Ferramentas do Studio',
       'home_quick_actions': 'Ações Rápidas',
@@ -11658,7 +11657,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Arquivo',
       'nav_convert': 'Converter',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Início',
       'nav_scan': 'Escanear',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -11880,7 +11879,7 @@ class LocalizationService {
     'pt_PT': {
       'add': 'Adicionar',
       'app_subtitle': 'Criador Inteligente de Currículo e Documentos',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Continuar com a Apple',
@@ -12218,7 +12217,7 @@ class LocalizationService {
       'home_btn_start_cv': 'CRIAR MEU CURRÍCULO AGORA',
       'home_hero_desc':
           'Modelos internacionais, layouts prontos para o mercado e exportação direta em PDF HD vetorial.',
-      'home_hero_title': 'Crie um Currículo Profissional\nem 3 Minutos com IA',
+      'home_hero_title': 'Criar currículo profissional',
       'home_office_converters': 'Conversores Office e Formatos',
       'home_other_tools': 'Outras Ferramentas do Studio',
       'home_quick_actions': 'Ações Rápidas',
@@ -12243,7 +12242,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Arquivo',
       'nav_convert': 'Converter',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Início',
       'nav_scan': 'Escanear',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -12465,7 +12464,7 @@ class LocalizationService {
     'it': {
       'add': 'Aggiungi',
       'app_subtitle': 'Suite Intelligente di Curriculum e Documenti',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Continua con Apple',
@@ -12799,7 +12798,7 @@ class LocalizationService {
       'home_ats_badge': 'ASSISTENTE IA COMPATIBILE ATS',
       'home_btn_start_cv': 'CREA IL TUO CV ADESSO',
       'home_hero_desc': 'Modelli globali, layout pronti per l',
-      'home_hero_title': 'Crea un CV Professionale\nin 3 Minuti con l',
+      'home_hero_title': 'Crea curriculum professionale',
       'home_office_converters': 'Convertitori Office & Formati',
       'home_other_tools': 'Altri Strumenti Studio',
       'home_quick_actions': 'Azioni Rapide',
@@ -12824,7 +12823,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archivio',
       'nav_convert': 'Converti',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Home',
       'nav_scan': 'Scansiona',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -13046,7 +13045,7 @@ class LocalizationService {
     'nl': {
       'add': 'Toevoegen',
       'app_subtitle': 'Slimme CV- & Documentenbundel',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Doorgaan met Apple',
@@ -13377,7 +13376,7 @@ class LocalizationService {
       'home_btn_start_cv': 'NU CV MAKEN',
       'home_hero_desc':
           'Wereldwijde sjablonen, kant-en-klare lay-outs en directe vector HD PDF-export.',
-      'home_hero_title': 'Maak een Professioneel CV\nin 3 Minuten met AI',
+      'home_hero_title': 'Professioneel cv maken',
       'home_office_converters': 'Office- & Formaatconverters',
       'home_other_tools': 'Andere Studio-tools',
       'home_quick_actions': 'Snelle Acties',
@@ -13402,7 +13401,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archief',
       'nav_convert': 'Converteren',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Home',
       'nav_scan': 'Scannen',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -13624,7 +13623,7 @@ class LocalizationService {
     'pl': {
       'add': 'Dodaj',
       'app_subtitle': 'Inteligentny Kreator CV i Dokumentów',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Kontynuuj z Apple',
@@ -13957,7 +13956,7 @@ class LocalizationService {
       'home_btn_start_cv': 'STWÓRZ CV TERAZ',
       'home_hero_desc':
           'Globalne szablony, gotowe układy i bezpośredni eksport wektorowego PDF HD.',
-      'home_hero_title': 'Stwórz Profesjonalne CV\nw 3 Minuty z AI',
+      'home_hero_title': 'Stwórz profesjonalne CV',
       'home_office_converters': 'Konwertery Office i Formatów',
       'home_other_tools': 'Inne Narzędzia Studio',
       'home_quick_actions': 'Szybkie Akcje',
@@ -13982,7 +13981,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Archiwum',
       'nav_convert': 'Konwertuj',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Główna',
       'nav_scan': 'Skanuj',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -14205,7 +14204,7 @@ class LocalizationService {
     'ru': {
       'add': 'Добавить',
       'app_subtitle': 'Умный конструктор резюме и документов',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Продолжить с Apple',
@@ -14534,7 +14533,7 @@ class LocalizationService {
       'home_btn_start_cv': 'СОЗДАТЬ РЕЗЮМЕ СЕЙЧАС',
       'home_hero_desc':
           'Международные шаблоны, готовые макеты и прямой экспорт векторного HD PDF.',
-      'home_hero_title': 'Создайте профи резюме\nза 3 минуты с ИИ',
+      'home_hero_title': 'Создать резюме',
       'home_office_converters': 'Конвертеры Office и форматов',
       'home_other_tools': 'Другие инструменты Studio',
       'home_quick_actions': 'Быстрые действия',
@@ -14559,7 +14558,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Фото профиля добавлено!',
       'nav_archive': 'Архив',
       'nav_convert': 'Конвертер',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Главная',
       'nav_scan': 'Скан',
       'ocr_error': 'Ошибка Google ML Kit OCR',
@@ -14781,7 +14780,7 @@ class LocalizationService {
     'ar': {
       'add': 'إضافة',
       'app_subtitle': 'حزمة السيرة الذاتية الذكية والمستندات',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'المتابعة باستخدام Apple',
@@ -15103,8 +15102,7 @@ class LocalizationService {
       'home_btn_start_cv': 'ابدأ إنشاء السيرة الذاتية الآن',
       'home_hero_desc':
           'نماذج عالمية، وتصميمات مهيأة لسوق العمل مع تصدير مباشر لملفات PDF عالية الدقة.',
-      'home_hero_title':
-          'أنشئ سيرة ذاتية احترافية\nخلال 3 دقائق بالذكاء الاصطناعي',
+      'home_hero_title': 'إنشاء سيرة ذاتية احترافية',
       'home_office_converters': 'محولات Office والصيغ',
       'home_other_tools': 'أدوات الاستوديو الأخرى',
       'home_quick_actions': 'إجراءات سريعة',
@@ -15129,7 +15127,7 @@ class LocalizationService {
       'msg_photo_added': '✨ تمت إضافة صورة الملف الشخصي!',
       'nav_archive': 'الأرشيف',
       'nav_convert': 'تحويل',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'الرئيسية',
       'nav_scan': 'مسح ضوئي',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -15346,7 +15344,7 @@ class LocalizationService {
     'hi': {
       'add': 'जोड़ें',
       'app_subtitle': 'स्मार्ट बायोडाटा और दस्तावेज़ सुइट',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Apple के साथ जारी रखें',
@@ -15673,7 +15671,7 @@ class LocalizationService {
       'home_btn_start_cv': 'अभी सीवी बनाना शुरू करें',
       'home_hero_desc':
           'वैश्विक टेम्पलेट्स, रेडी-टू-यूज़ लेआउट और डायरेक्ट एचडी पीडीएफ एक्सपोर्ट।',
-      'home_hero_title': 'AI के साथ 3 मिनट में\nपेशेवर सीवी बनाएं',
+      'home_hero_title': 'पेशेवर सीवी बनाएं',
       'home_office_converters': 'ऑफिस और फॉर्मेट कन्वर्टर्स',
       'home_other_tools': 'अन्य स्टूडियो टूल्स',
       'home_quick_actions': 'त्वरित क्रियाएं',
@@ -15698,7 +15696,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'संग्रह',
       'nav_convert': 'बदलें',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'होम',
       'nav_scan': 'स्कैन',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -15919,7 +15917,7 @@ class LocalizationService {
     'zh': {
       'add': '添加',
       'app_subtitle': '智能简历与文档处理套件',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': '通过 Apple 继续',
@@ -16225,7 +16223,7 @@ class LocalizationService {
       'home_ats_badge': '兼容 ATS 的 AI 向导',
       'home_btn_start_cv': '立即开始制作简历',
       'home_hero_desc': '国际通用模板、行业就绪设计，直接导出高清矢量 PDF。',
-      'home_hero_title': 'AI 赋能\n3分钟制作专业简历',
+      'home_hero_title': '创建专业简历',
       'home_office_converters': 'Office 与格式转换器',
       'home_other_tools': '其他工作室工具',
       'home_quick_actions': '快捷操作',
@@ -16250,7 +16248,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': '档案',
       'nav_convert': '转换',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': '首页',
       'nav_scan': '扫描',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -16461,7 +16459,7 @@ class LocalizationService {
     'ja': {
       'add': '追加',
       'app_subtitle': 'スマート履歴書＆ドキュメント総合ツール',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Appleで続ける',
@@ -16770,7 +16768,7 @@ class LocalizationService {
       'home_ats_badge': 'ATS対応 AIアシスタント',
       'home_btn_start_cv': '今すぐ履歴書を作成',
       'home_hero_desc': 'グローバル規格テンプレート、業界別デザイン、高品質ベクターPDF直接出力。',
-      'home_hero_title': 'AIでわずか3分\nプロ仕様の履歴書作成',
+      'home_hero_title': 'プロ仕様の履歴書作成',
       'home_office_converters': 'Office・ファイル変換',
       'home_other_tools': 'その他のスタジオツール',
       'home_quick_actions': 'クイックアクション',
@@ -16795,7 +16793,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': '保存一覧',
       'nav_convert': '変換',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'ホーム',
       'nav_scan': 'スキャン',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -17008,7 +17006,7 @@ class LocalizationService {
     'ko': {
       'add': '추가',
       'app_subtitle': '스마트 이력서 및 문서 종합 툴',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Apple로 계속하기',
@@ -17316,7 +17314,7 @@ class LocalizationService {
       'home_ats_badge': 'ATS 호환 AI 마법사',
       'home_btn_start_cv': '지금 이력서 만들기',
       'home_hero_desc': '글로벌 표준 템플릿, 직무별 레이아웃 및 초고화질 벡터 PDF 즉시 내보내기.',
-      'home_hero_title': 'AI와 함께 3분 만에\n전문적인 이력서 작성',
+      'home_hero_title': '전문 이력서 작성',
       'home_office_converters': '오피스 및 파일 변환기',
       'home_other_tools': '기타 스튜디오 도구',
       'home_quick_actions': '빠른 작업',
@@ -17341,7 +17339,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': '보관함',
       'nav_convert': '변환',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': '홈',
       'nav_scan': '스캔',
       'ocr_error': 'Google ML Kit OCR Hatası',
@@ -17554,7 +17552,7 @@ class LocalizationService {
     'id': {
       'add': 'Tambah',
       'app_subtitle': 'Paket Cerdas CV & Dokumen',
-      'app_title': 'CV AI Studio',
+      'app_title': 'CV AI',
       'auth_accept_terms':
           'Devam etmek için kullanım şartları ve gizlilik politikasını kabul etmelisiniz.',
       'auth_apple': 'Lanjutkan dengan Apple',
@@ -17891,7 +17889,7 @@ class LocalizationService {
       'home_btn_start_cv': 'MULAI BUAT CV SEKARANG',
       'home_hero_desc':
           'Template internasional, tata letak siap kerja, dan ekspor PDF HD vektor langsung.',
-      'home_hero_title': 'Buat CV Profesional\ndalam 3 Menit dengan AI',
+      'home_hero_title': 'Buat CV Profesional',
       'home_office_converters': 'Konverter Office & Format',
       'home_other_tools': 'Alat Studio Lainnya',
       'home_quick_actions': 'Aksi Cepat',
@@ -17916,7 +17914,7 @@ class LocalizationService {
       'msg_photo_added': '✨ Profile photo successfully added!',
       'nav_archive': 'Arsip',
       'nav_convert': 'Konversi',
-      'nav_cv': 'CV AI',
+      'nav_cv': 'CV',
       'nav_home': 'Beranda',
       'nav_scan': 'Pindai',
       'ocr_error': 'Google ML Kit OCR Hatası',

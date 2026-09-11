@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme_constants.dart';
 import '../services/auth_service.dart';
 import '../services/localization_service.dart';
-import '../widgets/dynamic_ambient_canvas.dart';
+import '../widgets/notebook_grid_painter.dart';
 import '../main.dart';
 import 'register_screen.dart';
 
@@ -230,25 +230,17 @@ class _LoginScreenState extends State<LoginScreen>
         final inputBg =
             isDark ? const Color(0xFF090D18) : const Color(0xFFF8FAFC);
 
-        return Scaffold(
-          body: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            behavior: HitTestBehavior.opaque,
-            child: Stack(
-              children: [
-                // 1. LIVE AMBIENT COSMIC PARTICLES CANVAS
-                const Positioned.fill(
-                  child: DynamicAmbientCanvas(
-                    theme: AmbientTheme.cosmicBlue,
-                    particleDensity: 0.9,
-                  ),
-                ),
-
-                // 2. MAIN SCROLLABLE CONTENT
-                SafeArea(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Center(
+        return CustomPaint(
+          painter: NotebookGridPainter(isDark: isDark),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.opaque,
+              child: SafeArea(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Center(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 22, vertical: 16),
@@ -264,21 +256,18 @@ class _LoginScreenState extends State<LoginScreen>
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(32),
                                   border: Border.all(
-                                    color: const Color(0xFFF59E0B)
-                                        .withValues(alpha: 0.35),
+                                    color: isDark
+                                        ? const Color(0xFF2B354C)
+                                        : const Color(0xFFE2E8F0),
                                     width: 1.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF1D4ED8)
-                                          .withValues(alpha: 0.45),
-                                      blurRadius: 32,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                    BoxShadow(
-                                      color: const Color(0xFFF59E0B)
-                                          .withValues(alpha: 0.25),
-                                      blurRadius: 18,
+                                      color: Colors.black.withValues(
+                                        alpha: isDark ? 0.45 : 0.10,
+                                      ),
+                                      blurRadius: 26,
+                                      offset: const Offset(0, 8),
                                     ),
                                   ],
                                 ),
@@ -315,8 +304,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [
+                                          Color(0xFF1D4ED8),
                                           Color(0xFF2563EB),
-                                          Color(0xFF7C3AED)
                                         ],
                                       ),
                                       borderRadius: BorderRadius.circular(8),
@@ -332,9 +321,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     child: const Text(
                                       'STUDIO',
                                       style: TextStyle(
-                                        fontSize: 10,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w900,
-                                        letterSpacing: 1.0,
+                                        letterSpacing: 0.5,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -351,26 +340,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   color: subColor),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 14),
-
-                            // TRUST CHIPS
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 8,
-                              runSpacing: 6,
-                              children: [
-                                _buildPillChip(
-                                    '⚡ ${LocalizationService.tr('login_pill_ai')}',
-                                    isDark),
-                                _buildPillChip(
-                                    '📄 ${LocalizationService.tr('login_pill_templates')}',
-                                    isDark),
-                                _buildPillChip(
-                                    '🔒 ${LocalizationService.tr('login_pill_ssl')}',
-                                    isDark),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
+                            const SizedBox(height: 20),
 
                             // AUTH CARD
                             Container(
@@ -393,56 +363,12 @@ class _LoginScreenState extends State<LoginScreen>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                          child: Text(
-                                        LocalizationService.tr(
-                                            'auth_btn_login'),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 18.5,
-                                            fontWeight: FontWeight.w900,
-                                            color: textColor),
-                                      )),
-                                      Flexible(
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          alignment: Alignment.centerRight,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF10B981)
-                                                  .withValues(alpha: 0.12),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                const Icon(
-                                                    Icons.shield_outlined,
-                                                    color: Color(0xFF10B981),
-                                                    size: 12),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  LocalizationService.tr(
-                                                      'login_badge_cloud'),
-                                                  style: const TextStyle(
-                                                    fontSize: 9.0,
-                                                    fontWeight: FontWeight.w900,
-                                                    color: Color(0xFF10B981),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    LocalizationService.tr('auth_btn_login'),
+                                    style: TextStyle(
+                                        fontSize: 18.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: textColor),
                                   ),
                                   const SizedBox(height: 16),
 
@@ -710,31 +636,10 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                 ),
-              ],
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildPillChip(String text, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131A2B) : Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-            color: isDark ? const Color(0xFF22304C) : const Color(0xFFE2E8F0)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
-        ),
-      ),
     );
   }
 

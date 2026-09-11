@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:printing/printing.dart';
 import '../constants/theme_constants.dart';
-import '../models/document_model.dart';
 import '../services/auth_service.dart';
-import '../services/cv_storage_service.dart';
 import '../services/localization_service.dart';
-import '../services/pdf_generator_service.dart';
 import 'cv_builder_screen.dart';
 import 'cam_scanner_screen.dart';
 import 'pdf_converter_screen.dart';
 import 'documents_library_screen.dart';
-import 'vip_paywall_sheet.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,10 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final onToggleTheme = widget.onToggleTheme;
     final textColor =
         isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final subColor =
-        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final cardBg = isDark ? const Color(0xFF161A28) : Colors.white;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final headerBg = isDark ? AppColors.darkBg : AppColors.lightBg;
 
     return ValueListenableBuilder<String>(
@@ -129,24 +120,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                             color: textColor,
                                           ),
                                         ),
-                                        const SizedBox(width: 6),
+                                        const SizedBox(width: 7),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 6, vertical: 2),
+                                              horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
                                             gradient: const LinearGradient(
                                               colors: [
-                                                Color(0xFF3B82F6),
-                                                Color(0xFF8B5CF6)
+                                                Color(0xFF1D4ED8),
+                                                Color(0xFF2563EB),
                                               ],
                                             ),
                                             borderRadius:
-                                                BorderRadius.circular(6),
+                                                BorderRadius.circular(8),
                                           ),
                                           child: const Text(
                                             'STUDIO',
                                             style: TextStyle(
-                                              fontSize: 8.5,
+                                              fontSize: 17,
                                               fontWeight: FontWeight.w900,
                                               color: Colors.white,
                                               letterSpacing: 0.5,
@@ -196,127 +187,97 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(35),
                               onTap: () => ProfileScreen.show(
                                 context,
                                 isDark: isDark,
                                 onToggleTheme: onToggleTheme ?? () {},
                                 isPro: isProUser,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Stack(
-                                  alignment: Alignment.bottomRight,
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: isProUser
-                                            ? const LinearGradient(
-                                                colors: [
-                                                  Color(0xFF2563EB),
-                                                  Color(0xFF7C3AED),
-                                                  Color(0xFFDB2777)
-                                                ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              )
-                                            : LinearGradient(
-                                                colors: isDark
-                                                    ? [
-                                                        const Color(0xFF1E293B),
-                                                        const Color(0xFF334155)
-                                                      ]
-                                                    : [
-                                                        const Color(0xFF3B82F6),
-                                                        const Color(0xFF2563EB)
-                                                      ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                        border: Border.all(
-                                          color: isProUser
-                                              ? const Color(0xFFFFD54F)
-                                              : (isDark
-                                                  ? const Color(0xFF475569)
-                                                  : const Color(0xFF93C5FD)),
-                                          width: isProUser ? 2 : 1.5,
-                                        ),
-                                        boxShadow: isProUser
-                                            ? [
-                                                BoxShadow(
-                                                  color: const Color(0xFF3B82F6)
-                                                      .withValues(
-                                                          alpha: isDark
-                                                              ? 0.45
-                                                              : 0.3),
-                                                  blurRadius: 12,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                                BoxShadow(
-                                                  color: const Color(0xFFFFD54F)
-                                                      .withValues(alpha: 0.35),
-                                                  blurRadius: 8,
-                                                ),
-                                              ]
-                                            : [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withValues(alpha: 0.15),
-                                                  blurRadius: 6,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
+                              child: Stack(
+                                alignment: Alignment.bottomRight,
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    width: 58,
+                                    height: 58,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF0F172A),
+                                          Color(0xFF1E293B),
+                                          Color(0xFF0F265C),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
-                                      child: Center(
-                                        child: Text(
-                                          initials,
-                                          style: const TextStyle(
-                                            fontSize: 14.5,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.white,
-                                            letterSpacing: 0.5,
+                                      border: Border.all(
+                                        color: isProUser
+                                            ? const Color(0xFFFFD54F)
+                                            : Colors.white.withValues(alpha: 0.18),
+                                        width: isProUser ? 2 : 1.2,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF0A0F1D)
+                                              .withValues(alpha: 0.35),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                        if (isProUser)
+                                          BoxShadow(
+                                            color: const Color(0xFFFFD54F)
+                                                .withValues(alpha: 0.3),
+                                            blurRadius: 8,
                                           ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        initials,
+                                        style: const TextStyle(
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
                                     ),
-                                    if (isProUser)
-                                      Positioned(
-                                        right: -2,
-                                        bottom: -2,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(3.5),
-                                          decoration: BoxDecoration(
-                                            gradient:
-                                                AppColors.radiantGoldGradient,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: isDark
-                                                  ? const Color(0xFF0C0D14)
-                                                  : Colors.white,
-                                              width: 2,
+                                  ),
+                                  if (isProUser)
+                                    Positioned(
+                                      right: -1,
+                                      bottom: -1,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          gradient:
+                                              AppColors.radiantGoldGradient,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isDark
+                                                ? const Color(0xFF0C0D14)
+                                                : Colors.white,
+                                            width: 2,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFFFA000)
+                                                  .withValues(alpha: 0.7),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 1),
                                             ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: const Color(0xFFFFA000)
-                                                    .withValues(alpha: 0.7),
-                                                blurRadius: 6,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                          child: const Icon(
-                                            Icons.workspace_premium_rounded,
-                                            size: 11,
-                                            color: Color(0xFF451A03),
-                                          ),
+                                          ],
+                                        ),
+                                        child: const Icon(
+                                          Icons.workspace_premium_rounded,
+                                          size: 13,
+                                          color: Color(0xFF451A03),
                                         ),
                                       ),
-                                  ],
-                                ),
+                                    ),
+                                ],
                               ),
                             ),
                           );
@@ -347,24 +308,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(18),
+                          padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [
-                                Color(0xFF1E3A8A),
-                                Color(0xFF2563EB),
-                                Color(0xFF7C3AED),
+                                Color(0xFF0F172A),
+                                Color(0xFF1E293B),
+                                Color(0xFF0F265C),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(22),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              width: 1.2,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF2563EB)
+                                color: const Color(0xFF0A0F1D)
                                     .withValues(alpha: 0.35),
-                                blurRadius: 18,
-                                offset: const Offset(0, 6),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
@@ -381,30 +346,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                       alignment: Alignment.centerLeft,
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 9, vertical: 3.5),
+                                            horizontal: 10, vertical: 5),
                                         decoration: BoxDecoration(
                                           color: Colors.white
-                                              .withValues(alpha: 0.2),
+                                              .withValues(alpha: 0.12),
                                           borderRadius:
-                                              BorderRadius.circular(16),
+                                              BorderRadius.circular(20),
                                           border: Border.all(
-                                              color: Colors.white
-                                                  .withValues(alpha: 0.3)),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.15),
+                                          ),
                                         ),
                                         child: Row(
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            const Icon(Icons.bolt_rounded,
-                                                color: AppColors.accentAmber,
-                                                size: 14),
-                                            const SizedBox(width: 4),
+                                            const Icon(
+                                              Icons.auto_awesome_rounded,
+                                              color: Color(0xFF60A5FA),
+                                              size: 13,
+                                            ),
+                                            const SizedBox(width: 5),
                                             Text(
-                                              LocalizationService.tr(
-                                                  'home_hero_badge'),
-                                              style: const TextStyle(
-                                                fontSize: 9.5,
-                                                fontWeight: FontWeight.w900,
-                                                color: Colors.white,
-                                                letterSpacing: 0.4,
+                                              'ATS INTELLIGENT',
+                                              style: TextStyle(
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.92),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 0.8,
                                               ),
                                             ),
                                           ],
@@ -412,21 +381,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.all(6),
+                                    padding: const EdgeInsets.all(7),
                                     decoration: BoxDecoration(
                                       color:
-                                          Colors.white.withValues(alpha: 0.15),
+                                          Colors.white.withValues(alpha: 0.12),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
-                                        Icons.arrow_forward_rounded,
-                                        color: Colors.white,
-                                        size: 16),
+                                      Icons.arrow_forward_rounded,
+                                      color: Colors.white,
+                                      size: 15,
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                               Text(
                                 LocalizationService.tr('home_hero_title'),
                                 style: const TextStyle(
@@ -439,14 +410,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                LocalizationService.tr('home_hero_sub'),
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: Color(0xFFDBEAFE),
-                                  height: 1.3,
+                                LocalizationService.tr('home_hero_desc'),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: Colors.white.withValues(alpha: 0.72),
+                                  height: 1.35,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 14),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 14, vertical: 10),
@@ -457,7 +431,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     BoxShadow(
                                       color:
                                           Colors.black.withValues(alpha: 0.12),
-                                      blurRadius: 8,
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
                                     ),
                                   ],
                                 ),
@@ -467,23 +442,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.edit_document,
-                                          color: Color(0xFF1E3A8A), size: 15),
-                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        Icons.add_circle_outline_rounded,
+                                        color: Color(0xFF0F172A),
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 7),
                                       Text(
                                         LocalizationService.tr('home_hero_cta'),
                                         style: const TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w900,
-                                          color: Color(0xFF1E3A8A),
-                                          letterSpacing: 0.3,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF0F172A),
+                                          letterSpacing: -0.1,
                                         ),
                                       ),
-                                      const SizedBox(width: 4),
+                                      const SizedBox(width: 6),
                                       const Icon(
-                                          Icons.arrow_forward_ios_rounded,
-                                          color: Color(0xFF1E3A8A),
-                                          size: 10),
+                                        Icons.arrow_forward_rounded,
+                                        color: Color(0xFF0F172A),
+                                        size: 13,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -493,51 +472,73 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
 
                       // Office Converters Header
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
-                              child: Text(
-                            LocalizationService.tr('home_converter_title'),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                              letterSpacing: -0.3,
-                            ),
-                          )),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              minimumSize: Size.zero,
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              if (widget.onNavigateTab != null) {
-                                widget.onNavigateTab!(3);
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PdfConverterScreen(),
-                                  ),
-                                );
-                              }
-                            },
-                            child: Tooltip(
-                              message: LocalizationService.tr(
-                                'home_converter_all',
+                            child: Text(
+                              LocalizationService.tr('home_converter_title'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                                letterSpacing: -0.3,
                               ),
-                              child: const Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 20,
-                                color: AppColors.primaryLight,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            fit: FlexFit.loose,
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                minimumSize: Size.zero,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 4),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              onPressed: () {
+                                if (widget.onNavigateTab != null) {
+                                  widget.onNavigateTab!(3);
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const PdfConverterScreen(),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      LocalizationService.tr(
+                                        'home_converter_all',
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 10,
+                                    color: AppColors.primary,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -607,20 +608,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
 
                       // Studio Tools
                       Text(
                         LocalizationService.tr('home_tools_title'),
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: textColor,
                           letterSpacing: -0.3,
                         ),
                       ),
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
 
                       Row(
                         children: [
@@ -628,20 +629,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: _buildActionCard(
                               context,
                               title: LocalizationService.tr('cam_title'),
-                              subtitle:
-                                  LocalizationService.tr('home_tool_cam_sub'),
-                              badge: LocalizationService.tr('cam_auto_mode'),
                               icon: Icons.document_scanner_rounded,
                               gradient: AppColors.emeraldGradient,
                               isDark: isDark,
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CamScannerScreen(),
-                                  ),
-                                );
+                                if (widget.onNavigateTab != null) {
+                                  widget.onNavigateTab!(2);
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CamScannerScreen(),
+                                    ),
+                                  );
+                                }
                               },
                             ),
                           ),
@@ -651,9 +653,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               title:
                                   LocalizationService.tr('convert_img_to_pdf'),
-                              subtitle:
-                                  LocalizationService.tr('home_tool_img_sub'),
-                              badge: 'HD PDF',
                               icon: Icons.photo_library_rounded,
                               gradient: AppColors.purpleGradient,
                               isDark: isDark,
@@ -672,9 +671,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               title:
                                   LocalizationService.tr('convert_ocr_to_txt'),
-                              subtitle:
-                                  LocalizationService.tr('home_tool_ocr_sub'),
-                              badge: 'AI OCR',
                               icon: Icons.text_snippet_rounded,
                               gradient: AppColors.purpleGradient,
                               isDark: isDark,
@@ -686,9 +682,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: _buildActionCard(
                               context,
                               title: LocalizationService.tr('home_saved_docs'),
-                              subtitle:
-                                  LocalizationService.tr('home_saved_docs_sub'),
-                              badge: LocalizationService.tr('nav_archive'),
                               icon: Icons.folder_shared_rounded,
                               gradient: AppColors.blueGradient,
                               isDark: isDark,
@@ -710,184 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 16),
 
-                      // Recent Documents Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                              child: Text(
-                            LocalizationService.tr('home_recent_title'),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                              letterSpacing: -0.3,
-                            ),
-                          )),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              minimumSize: Size.zero,
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              if (widget.onNavigateTab != null) {
-                                widget.onNavigateTab!(4);
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const DocumentsLibraryScreen(),
-                                  ),
-                                );
-                              }
-                            },
-                            child: Tooltip(
-                              message:
-                                  LocalizationService.tr('home_recent_all'),
-                              child: const Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 20,
-                                color: AppColors.primaryLight,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // Dynamic Real Documents List from Supabase / Local Storage
-                      FutureBuilder<List<DocumentModel>>(
-                        future: CvStorageService.loadDocuments(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Center(
-                                child: SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: AppColors.primary),
-                                ),
-                              ),
-                            );
-                          }
-
-                          final docs = snapshot.data ?? [];
-                          if (docs.isEmpty) {
-                            return Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 18, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: cardBg,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: borderColor),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF1E2438)
-                                          : const Color(0xFFEFF6FF),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(
-                                      Icons.folder_open_rounded,
-                                      color: isDark
-                                          ? const Color(0xFF60A5FA)
-                                          : AppColors.primary,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          LocalizationService.tr(
-                                              'docs_empty_title'),
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w800,
-                                            color: textColor,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          LocalizationService.tr(
-                                              'docs_empty_desc'),
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: subColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-
-                          final displayDocs = docs.take(3).toList();
-                          return Column(
-                            children: displayDocs.map((doc) {
-                              IconData icon;
-                              Color iconColor;
-                              switch (doc.type) {
-                                case DocumentType.cv:
-                                  icon = Icons.badge_rounded;
-                                  iconColor = AppColors.primary;
-                                  break;
-                                case DocumentType.scannedDocument:
-                                  icon = Icons.document_scanner_rounded;
-                                  iconColor = const Color(0xFF10B981);
-                                  break;
-                                case DocumentType.imageToPdf:
-                                case DocumentType.invoice:
-                                case DocumentType.signedContract:
-                                  icon = Icons.picture_as_pdf_rounded;
-                                  iconColor = const Color(0xFFF59E0B);
-                                  break;
-                              }
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: _buildRecentTile(
-                                  context,
-                                  icon: icon,
-                                  iconColor: iconColor,
-                                  title: doc.title,
-                                  type:
-                                      '${doc.typeLabel} • ${doc.pageCount} p • ${doc.fileSize}',
-                                  time:
-                                      '${doc.createdAt.day}.${doc.createdAt.month}.${doc.createdAt.year}',
-                                  isDark: isDark,
-                                  onTap: () => _showRecentDocumentModal(
-                                    context,
-                                    title: doc.title,
-                                    type:
-                                        '${doc.typeLabel} • ${doc.pageCount} p',
-                                    icon: icon,
-                                    iconColor: iconColor,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        },
-                      ),
                     ],
                   ),
                 ),
@@ -907,138 +723,27 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF131826) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF222B3D) : const Color(0xFFE2E8F0);
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final brandColor = gradient.colors.first;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 200,
+        width: 190,
         height: 158 * MediaQuery.textScalerOf(context).scale(1),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: gradient.colors.first.withValues(alpha: 0.38),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      padding: const EdgeInsets.all(9),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.24),
-                        borderRadius: BorderRadius.circular(13),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.35),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Icon(icon, color: Colors.white, size: 24),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 14,
-                  ),
-                ),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.22),
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                  child: Text(
-                    format,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white.withValues(alpha: 0.95),
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String badge,
-    required IconData icon,
-    required LinearGradient gradient,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final titleColor =
-        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final subColor =
-        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 145,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: borderColor),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor, width: 1.1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-              blurRadius: 14,
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -1054,35 +759,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     gradient: gradient,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(13),
                     boxShadow: [
                       BoxShadow(
-                        color: gradient.colors.first.withValues(alpha: 0.35),
+                        color: brandColor.withValues(alpha: 0.28),
                         blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-                  child: Icon(icon, color: Colors.white, size: 22),
+                  child: Icon(icon, color: Colors.white, size: 20),
                 ),
-                Flexible(
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: gradient.colors.first.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      badge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: gradient.colors.first,
-                      ),
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1E2638)
+                        : const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_rounded,
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B),
+                    size: 13,
                   ),
                 ),
               ],
@@ -1093,198 +794,37 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   title,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13.5,
                     fontWeight: FontWeight.w800,
                     color: titleColor,
+                    letterSpacing: -0.2,
+                    height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: subColor,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showRecentDocumentModal(
-    BuildContext context, {
-    required String title,
-    required String type,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF161A28) : Colors.white;
-    final textColor =
-        isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: cardBg,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
+                const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    color: brandColor.withValues(alpha: isDark ? 0.2 : 0.08),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, color: iconColor, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        type,
-                        style:
-                            const TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
-                    ],
+                  child: Text(
+                    format,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? const Color(0xFF93C5FD) : brandColor,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 18),
-            const Divider(),
-            const SizedBox(height: 6),
-
-            // Open & Preview PDF
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.visibility_rounded,
-                    color: AppColors.primaryLight, size: 20),
-              ),
-              title: Text(LocalizationService.tr('open_preview_pdf'),
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: textColor,
-                      fontSize: 13)),
-              onTap: () async {
-                Navigator.pop(ctx);
-                if (!(AuthService.currentUser?.isPro ?? false)) {
-                  VipPaywallSheet.show(context);
-                  return;
-                }
-                final pdfBytes =
-                    await PdfGeneratorService.generateConvertedDocumentPdf(
-                  fileName: title.replaceAll('.pdf', ''),
-                  fileType: 'PDF',
-                  originalFormat: 'Belge',
-                );
-                await Printing.layoutPdf(
-                  onLayout: (_) => pdfBytes,
-                  name: title,
-                );
-              },
-            ),
-
-            // Share PDF
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0284C7).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.share_rounded,
-                    color: Color(0xFF0284C7), size: 20),
-              ),
-              title: Text(LocalizationService.tr('share_as_pdf'),
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: textColor,
-                      fontSize: 13)),
-              onTap: () async {
-                Navigator.pop(ctx);
-                if (!(AuthService.currentUser?.isPro ?? false)) {
-                  VipPaywallSheet.show(context);
-                  return;
-                }
-                final pdfBytes =
-                    await PdfGeneratorService.generateConvertedDocumentPdf(
-                  fileName: title.replaceAll('.pdf', ''),
-                  fileType: 'PDF',
-                  originalFormat: 'Belge',
-                );
-                await Printing.sharePdf(
-                  bytes: pdfBytes,
-                  filename: title,
-                );
-              },
-            ),
-
-            // Print Document
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.accentEmerald.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.print_rounded,
-                    color: AppColors.accentEmerald, size: 20),
-              ),
-              title: Text(LocalizationService.tr('print_document'),
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: textColor,
-                      fontSize: 13)),
-              onTap: () async {
-                Navigator.pop(ctx);
-                if (!(AuthService.currentUser?.isPro ?? false)) {
-                  VipPaywallSheet.show(context);
-                  return;
-                }
-                final pdfBytes =
-                    await PdfGeneratorService.generateConvertedDocumentPdf(
-                  fileName: title.replaceAll('.pdf', ''),
-                  fileType: 'PDF',
-                  originalFormat: 'Belge',
-                );
-                await Printing.layoutPdf(
-                  onLayout: (_) => pdfBytes,
-                  name: title,
-                );
-              },
             ),
           ],
         ),
@@ -1292,85 +832,84 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildRecentTile(
+  Widget _buildActionCard(
     BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
     required String title,
-    required String type,
-    required String time,
+    required IconData icon,
+    required LinearGradient gradient,
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final cardBg = isDark ? const Color(0xFF131826) : AppColors.lightSurface;
+    final borderColor =
+        isDark ? const Color(0xFF222B3D) : AppColors.lightBorder;
     final titleColor =
         isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                blurRadius: 8,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: titleColor,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height:
+            118 * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: borderColor, width: 1.1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: gradient,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: gradient.colors.first.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$type • $time',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark
-                            ? AppColors.darkTextMuted
-                            : AppColors.lightTextMuted,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 19),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 11,
+                  color: isDark
+                      ? const Color(0xFF475569)
+                      : const Color(0xFFCBD5E1),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Flexible(
+              child: Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: titleColor,
+                  height: 1.2,
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color:
-                    isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                size: 14,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

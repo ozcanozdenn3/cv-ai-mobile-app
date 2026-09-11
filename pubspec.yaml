@@ -1,7 +1,7 @@
 name: mobile_app
 description: "CV AI - All-in-One Professional CV Builder, Cam Scanner & PDF Converter"
 publish_to: 'none'
-version: 1.0.5+2
+version: 1.0.6+3
 
 environment:
   sdk: '>=3.2.0 <4.0.0'

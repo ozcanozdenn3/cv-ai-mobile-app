@@ -201,9 +201,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
         selectedIcon: Icons.sync_alt_rounded,
         label: LocalizationService.tr('nav_convert'),
         gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
         ),
-        glowColor: const Color(0xFF8B5CF6),
+        glowColor: const Color(0xFF2563EB),
       ),
       NavItem(
         icon: Icons.folder_outlined,
@@ -236,10 +236,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
             }
 
             final isDark = widget.isDark;
-            final navBarBg =
-                isDark ? AppColors.darkSurface : AppColors.lightSurface;
-            final borderColor =
-                isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
             final List<Widget> screens = [
               HomeScreen(
@@ -282,19 +278,20 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                     : Container(
                         margin: const EdgeInsets.fromLTRB(14, 0, 14, 22),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 8),
+                            horizontal: 8, vertical: 9.5),
                         decoration: BoxDecoration(
-                          color: navBarBg,
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: borderColor, width: 1.2),
+                          color: const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            width: 1.2,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: isDark
-                                  ? Colors.black.withValues(alpha: 0.45)
-                                  : const Color(0xFFF43F5E)
-                                      .withValues(alpha: 0.08),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
+                              color: const Color(0xFF0A0F1D)
+                                  .withValues(alpha: 0.45),
+                              blurRadius: 26,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -310,22 +307,24 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                                   setState(() => _currentIndex = index),
                               behavior: HitTestBehavior.opaque,
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
+                                duration: const Duration(milliseconds: 220),
                                 curve: Curves.easeOutCubic,
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isSelected ? 12 : 8,
-                                  vertical: 7,
+                                  horizontal: isSelected ? 14 : 9,
+                                  vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  gradient: isSelected ? item.gradient : null,
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(22),
                                   boxShadow: isSelected
                                       ? [
                                           BoxShadow(
-                                            color: item.glowColor
-                                                .withValues(alpha: 0.4),
+                                            color: Colors.black
+                                                .withValues(alpha: 0.18),
                                             blurRadius: 10,
-                                            offset: const Offset(0, 3),
+                                            offset: const Offset(0, 2),
                                           ),
                                         ]
                                       : null,
@@ -338,11 +337,10 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                                           ? item.selectedIcon
                                           : item.icon,
                                       color: isSelected
-                                          ? Colors.white
-                                          : (isDark
-                                              ? const Color(0xFF94A3B8)
-                                              : const Color(0xFF64748B)),
-                                      size: isSelected ? 20 : 21,
+                                          ? const Color(0xFF0F172A)
+                                          : Colors.white
+                                              .withValues(alpha: 0.65),
+                                      size: isSelected ? 20.5 : 22,
                                     ),
                                     if (isSelected) ...[
                                       const SizedBox(width: 6),
@@ -353,9 +351,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                                             item.label,
                                             maxLines: 1,
                                             style: const TextStyle(
-                                              fontSize: 11.5,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w900,
-                                              color: Colors.white,
+                                              color: Color(0xFF0F172A),
                                               letterSpacing: -0.2,
                                             ),
                                           ),

@@ -15,6 +15,7 @@ import 'package:mobile_app/screens/profile_screen.dart';
 import 'package:mobile_app/screens/vip_paywall_sheet.dart';
 import 'package:mobile_app/models/cv_model.dart';
 import 'package:mobile_app/screens/cv_preview_screen.dart';
+import 'package:mobile_app/screens/splash_screen.dart';
 import 'package:mobile_app/services/auth_service.dart';
 import 'package:mobile_app/services/document_parser_service.dart';
 import 'package:mobile_app/services/pdf_generator_service.dart';
@@ -52,7 +53,7 @@ void main() {
   testWidgets('CV AI smoke and splash to home navigation test', (WidgetTester tester) async {
     await tester.pumpWidget(const CvAiApp());
     await tester.pump(const Duration(milliseconds: 200));
-    expect(find.text('CV AI'), findsWidgets);
+    expect(find.byType(SplashScreen), findsOneWidget);
 
     // Let splash finish and navigate to Home
     await tester.pump(const Duration(milliseconds: 2400));
@@ -274,7 +275,12 @@ void main() {
     // 2. Tap document item to open action sheet if present
     final docItem = find.textContaining('Canberk_Yilmaz');
     if (docItem.evaluate().isNotEmpty) {
-      await tester.tap(docItem.first);
+      final moreBtn = find.byIcon(Icons.more_vert_rounded);
+      if (moreBtn.evaluate().isNotEmpty) {
+        await tester.tap(moreBtn.first);
+      } else {
+        await tester.tap(docItem.first);
+      }
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -577,7 +583,7 @@ void main() {
 
     // 1. Verify title and clean guarantee text
     expect(find.text(LocalizationService.tr('paywall_subtitle')), findsOneWidget);
-    expect(find.text(LocalizationService.tr('paywall_guarantee')), findsWidgets);
+    expect(find.text(LocalizationService.tr('paywall_cancel_anytime')), findsWidgets);
     expect(find.textContaining('3 Gün Ücretsiz Deneme'), findsNothing);
     expect(find.textContaining('3-Day Free Trial'), findsNothing);
 

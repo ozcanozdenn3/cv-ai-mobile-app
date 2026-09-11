@@ -303,35 +303,110 @@ class _DocumentsLibraryScreenState extends State<DocumentsLibraryScreen> {
             backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
             elevation: 0,
             automaticallyImplyLeading: false,
+            leadingWidth: (Navigator.of(context).canPop() || widget.onReturnHome != null) ? 46 : 0,
+            titleSpacing: (Navigator.of(context).canPop() || widget.onReturnHome != null) ? 6 : 14,
             leading: (Navigator.of(context).canPop() || widget.onReturnHome != null)
-                ? IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1B2032) : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: borderColor),
+                ? Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E2638) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: borderColor, width: 1.1),
+                        ),
+                        child: Icon(Icons.arrow_back_ios_new_rounded, size: 14, color: textColor),
                       ),
-                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 15, color: textColor),
+                      onPressed: () {
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        } else if (widget.onReturnHome != null) {
+                          widget.onReturnHome!();
+                        }
+                      },
                     ),
-                    onPressed: () {
-                      if (Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop();
-                      } else if (widget.onReturnHome != null) {
-                        widget.onReturnHome!();
-                      }
-                    },
                   )
                 : null,
-            title: Text(
-              LocalizationService.tr('docs_title'),
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: textColor),
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    LocalizationService.tr('docs_title'),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 17,
+                      color: textColor,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFDBEAFE),
+                    ),
+                  ),
+                  child: Text(
+                    '${_documents.length}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.workspace_premium_rounded,
-                    color: AppColors.accentAmber, size: 26),
-                onPressed: () => VipPaywallSheet.show(context),
+              Padding(
+                padding: const EdgeInsets.only(right: 14),
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () => VipPaywallSheet.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'PRO',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -339,15 +414,37 @@ class _DocumentsLibraryScreenState extends State<DocumentsLibraryScreen> {
             children: [
               // Filter Chips Row
               Container(
-                height: 38,
-                margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                height: 40,
+                margin: const EdgeInsets.fromLTRB(14, 4, 14, 12),
                 child: ListView(
                   scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
                   children: [
-                    _buildFilterChip('📂 ${LocalizationService.tr('docs_filter_all')} (${_documents.length})', 0, isDark),
-                    _buildFilterChip('👤 ${LocalizationService.tr('docs_filter_cv')}', 1, isDark),
-                    _buildFilterChip('📷 ${LocalizationService.tr('docs_filter_scans')}', 2, isDark),
-                    _buildFilterChip('⚡ ${LocalizationService.tr('docs_filter_converters')}', 3, isDark),
+                    _buildFilterChip(
+                      label: LocalizationService.tr('docs_filter_all'),
+                      icon: Icons.grid_view_rounded,
+                      index: 0,
+                      isDark: isDark,
+                      count: _documents.length,
+                    ),
+                    _buildFilterChip(
+                      label: LocalizationService.tr('docs_filter_cv'),
+                      icon: Icons.badge_rounded,
+                      index: 1,
+                      isDark: isDark,
+                    ),
+                    _buildFilterChip(
+                      label: LocalizationService.tr('docs_filter_scans'),
+                      icon: Icons.document_scanner_rounded,
+                      index: 2,
+                      isDark: isDark,
+                    ),
+                    _buildFilterChip(
+                      label: LocalizationService.tr('docs_filter_converters'),
+                      icon: Icons.sync_alt_rounded,
+                      index: 3,
+                      isDark: isDark,
+                    ),
                   ],
                 ),
               ),
@@ -525,43 +622,65 @@ class _DocumentsLibraryScreenState extends State<DocumentsLibraryScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, int index, bool isDark) {
+  Widget _buildFilterChip({
+    required String label,
+    required IconData icon,
+    required int index,
+    required bool isDark,
+    int? count,
+  }) {
     final isSelected = _selectedFilterIndex == index;
-    final cardBg = isDark ? const Color(0xFF161A28) : Colors.white;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final cardBg = isDark ? const Color(0xFF131826) : Colors.white;
+    final borderColor =
+        isDark ? const Color(0xFF222B3D) : const Color(0xFFE2E8F0);
+    final activeBg = isDark ? Colors.white : const Color(0xFF0F172A);
+    final activeText = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final inactiveText =
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     return GestureDetector(
       onTap: () => setState(() => _selectedFilterIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : cardBg,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? activeBg : cardBg,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? Colors.transparent : borderColor,
+            width: 1.1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 6,
+                    color:
+                        Colors.black.withValues(alpha: isDark ? 0.3 : 0.15),
+                    blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ]
               : null,
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-              color: isSelected ? Colors.white : textColor,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14.5,
+              color: isSelected ? activeText : inactiveText,
             ),
-          ),
+            const SizedBox(width: 6),
+            Text(
+              count != null ? '$label ($count)' : label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                color: isSelected ? activeText : inactiveText,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
         ),
       ),
     );

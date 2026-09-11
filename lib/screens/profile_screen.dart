@@ -1088,128 +1088,155 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : const Color(0xFF93C5FD),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.goldGradient,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(Icons.diamond_rounded,
-                          color: Color(0xFF451A03), size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxWidth < 320;
+                    if (isCompact) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            LocalizationService.tr('profile_vip_status'),
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w900,
-                              color: textColor,
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.goldGradient,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(Icons.diamond_rounded,
+                                    color: Color(0xFF451A03), size: 24),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      LocalizationService.tr('profile_vip_status'),
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      LocalizationService.tr('profile_vip_desc'),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: subColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            LocalizationService.tr('profile_vip_desc'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: subColor,
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_isPro) {
+                                _showSubscriptionManagementSheet(context);
+                              } else {
+                                VipPaywallSheet.show(context);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF59E0B),
+                              foregroundColor: const Color(0xFF451A03),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              elevation: 3,
+                            ),
+                            child: Text(
+                              _isPro
+                                  ? LocalizationService.tr('profile_btn_manage')
+                                  : LocalizationService.tr('profile_btn_upgrade'),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w900, fontSize: 12),
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_isPro) {
-                          _showSubscriptionManagementSheet(context);
-                        } else {
-                          VipPaywallSheet.show(context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF59E0B),
-                        foregroundColor: const Color(0xFF451A03),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 9),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        elevation: 3,
-                      ),
-                      child: Text(
-                        _isPro
-                            ? LocalizationService.tr('profile_btn_manage')
-                            : LocalizationService.tr('profile_btn_upgrade'),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w900, fontSize: 12),
-                      ),
-                    ),
-                  ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.goldGradient,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.diamond_rounded,
+                              color: Color(0xFF451A03), size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                LocalizationService.tr('profile_vip_status'),
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: textColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                LocalizationService.tr('profile_vip_desc'),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: subColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_isPro) {
+                              _showSubscriptionManagementSheet(context);
+                            } else {
+                              VipPaywallSheet.show(context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF59E0B),
+                            foregroundColor: const Color(0xFF451A03),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 9),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            elevation: 3,
+                          ),
+                          child: Text(
+                            _isPro
+                                ? LocalizationService.tr('profile_btn_manage')
+                                : LocalizationService.tr('profile_btn_upgrade'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w900, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
 
-              const SizedBox(height: 16),
-
-              // USAGE STATS
-              Text(
-                LocalizationService.tr('profile_stats_title'),
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: textColor),
-              ),
-              const SizedBox(height: 8),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                        '3',
-                        LocalizationService.tr('profile_stat_cvs'),
-                        Icons.description_rounded,
-                        const Color(0xFF3B82F6),
-                        cardBg,
-                        borderColor,
-                        textColor,
-                        subColor),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatCard(
-                        '14',
-                        LocalizationService.tr('profile_stat_scans'),
-                        Icons.document_scanner_rounded,
-                        const Color(0xFF10B981),
-                        cardBg,
-                        borderColor,
-                        textColor,
-                        subColor),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatCard(
-                        '9',
-                        LocalizationService.tr('profile_stat_converts'),
-                        Icons.swap_horiz_rounded,
-                        const Color(0xFF8B5CF6),
-                        cardBg,
-                        borderColor,
-                        textColor,
-                        subColor),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
 
               // PREFERENCES & SETTINGS
               Text(
@@ -1370,43 +1397,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard(
-    String value,
-    String label,
-    IconData icon,
-    Color color,
-    Color cardBg,
-    Color borderColor,
-    Color textColor,
-    Color subColor,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w900, color: textColor),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 9.5, fontWeight: FontWeight.w600, color: subColor),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSettingTile({
     required IconData icon,

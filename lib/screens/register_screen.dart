@@ -5,7 +5,7 @@ import '../constants/theme_constants.dart';
 import '../services/auth_service.dart';
 import '../services/supabase_service.dart';
 import '../services/localization_service.dart';
-import '../widgets/dynamic_ambient_canvas.dart';
+import '../widgets/notebook_grid_painter.dart';
 import '../main.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -528,48 +528,40 @@ class _RegisterScreenState extends State<RegisterScreen>
         final inputBg =
             isDark ? const Color(0xFF090D18) : const Color(0xFFF8FAFC);
 
-        return Scaffold(
-          appBar: AppBar(
+        return CustomPaint(
+          painter: NotebookGridPainter(isDark: isDark),
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF111728) : Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: borderColor),
-                ),
-                child: Icon(Icons.arrow_back_ios_new_rounded,
-                    color: textColor, size: 15),
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: Text(
-              LocalizationService.tr('auth_btn_register'),
-              style: TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w900, color: textColor),
-            ),
-            centerTitle: true,
-          ),
-          body: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            behavior: HitTestBehavior.opaque,
-            child: Stack(
-              children: [
-                // 1. LIVE AMBIENT CANVAS
-                const Positioned.fill(
-                  child: DynamicAmbientCanvas(
-                    theme: AmbientTheme.cosmicBlue,
-                    particleDensity: 0.85,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF111728) : Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: borderColor),
                   ),
+                  child: Icon(Icons.arrow_back_ios_new_rounded,
+                      color: textColor, size: 15),
                 ),
-
-                // 2. MAIN SCROLLABLE FORM
-                SafeArea(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Center(
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: Text(
+                LocalizationService.tr('auth_btn_register'),
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w900, color: textColor),
+              ),
+              centerTitle: true,
+            ),
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.opaque,
+              child: SafeArea(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Center(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 22, vertical: 8),
@@ -584,21 +576,18 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(28),
                                   border: Border.all(
-                                    color: const Color(0xFFF59E0B)
-                                        .withValues(alpha: 0.35),
+                                    color: isDark
+                                        ? const Color(0xFF2B354C)
+                                        : const Color(0xFFE2E8F0),
                                     width: 1.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF1D4ED8)
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 28,
+                                      color: Colors.black.withValues(
+                                        alpha: isDark ? 0.45 : 0.10,
+                                      ),
+                                      blurRadius: 24,
                                       offset: const Offset(0, 8),
-                                    ),
-                                    BoxShadow(
-                                      color: const Color(0xFFF59E0B)
-                                          .withValues(alpha: 0.25),
-                                      blurRadius: 16,
                                     ),
                                   ],
                                 ),
@@ -1052,7 +1041,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                 ),
-              ],
             ),
           ),
         );
